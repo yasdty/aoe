@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TownCenterData
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Buildings.BuildingData
   displayName: Town Center
-  villagerTrainTime: 5
+  villagerTrainTime: 3
   villagerUnitData: {fileID: 11400000, guid: f1276b33e6e8ad44ab09060d9f915c63, type: 2}
   defaultColor: {r: 0.75, g: 0.65, b: 0.45, a: 1}
   selectedColor: {r: 0.95, g: 0.85, b: 0.35, a: 1}

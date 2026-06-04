@@ -28,5 +28,14 @@ namespace AoE.RTS.Economy
 
             instance.wood += amount;
         }
+
+        public static bool TrySpendWood(float amount)
+        {
+            if (instance == null || amount <= 0f || instance.wood < amount)
+                return false;
+
+            instance.wood -= amount;
+            return true;
+        }
     }
 }

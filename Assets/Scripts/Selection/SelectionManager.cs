@@ -29,8 +29,21 @@ namespace AoE.RTS.Selection
 
         void Update()
         {
+            if (input != null && GameUiInput.IsPointerOverHud(input.PointerScreenPosition))
+            {
+                if (BuildingPlacementManager.IsPlacementModeActive && input.WasCommandPressedThisFrame())
+                    BuildingPlacementManager.CancelPlacementMode();
+                return;
+            }
+
             if (input == null || mainCamera == null)
                 return;
+
+            if (BuildingPlacementManager.IsPlacementModeActive)
+            {
+                HandlePlacementModeInput();
+                return;
+            }
 
             if (input.WasSelectPressedThisFrame())
             {
@@ -53,20 +66,46 @@ namespace AoE.RTS.Selection
 
             if (input.WasSelectReleasedThisFrame())
             {
-                if (isDragging)
+                if (!ResourceHudView.IsPointerOverHud(input.PointerScreenPosition))
                 {
-                    ApplyBoxSelection(dragStartScreen, input.PointerScreenPosition, input.IsShiftHeld);
-                    selectionBoxView?.Hide();
-                    isDragging = false;
-                }
-                else
-                {
-                    HandleClickSelect(input.IsShiftHeld);
+                    if (isDragging)
+                    {
+                        ApplyBoxSelection(dragStartScreen, input.PointerScreenPosition, input.IsShiftHeld);
+                        selectionBoxView?.Hide();
+                        isDragging = false;
+                    }
+                    else
+                    {
+                        HandleClickSelect(input.IsShiftHeld);
+                    }
                 }
             }
 
             if (input.WasCommandPressedThisFrame())
                 HandleMoveCommand();
+        }
+
+        void HandlePlacementModeInput()
+        {
+            if (input.WasSelectPressedThisFrame() && !ResourceHudView.IsPointerOverHud(input.PointerScreenPosition))
+            {
+                dragStartScreen = input.PointerScreenPosition;
+                isDragging = false;
+            }
+
+            if (input.IsSelectPressed && !ResourceHudView.IsPointerOverHud(input.PointerScreenPosition))
+            {
+                float thresholdSq = dragThresholdPixels * dragThresholdPixels;
+                if ((input.PointerScreenPosition - dragStartScreen).sqrMagnitude >= thresholdSq)
+                    isDragging = true;
+            }
+
+            if (input.WasSelectReleasedThisFrame() && !isDragging
+                && !ResourceHudView.IsPointerOverHud(input.PointerScreenPosition))
+                BuildingPlacementManager.TryConfirmPlacement(selectedUnits);
+
+            if (input.WasCommandPressedThisFrame())
+                BuildingPlacementManager.CancelPlacementMode();
         }
 
         void HandleClickSelect(bool additive)
@@ -152,6 +191,7 @@ namespace AoE.RTS.Selection
                 TreeResource tree = hit.collider.GetComponentInParent<TreeResource>();
                 if (tree != null && !tree.IsDepleted)
                 {
+                    BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
                     GatherManager.IssueGatherCommand(selectedUnits, tree);
                     return;
                 }
@@ -160,6 +200,7 @@ namespace AoE.RTS.Selection
             if (!Physics.Raycast(ray, out hit, 1000f, GameLayers.GroundMask))
                 return;
 
+            BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
             GatherManager.CancelForUnits(selectedUnits);
             GroupMoveFormation.AssignMoveTargets(selectedUnits, hit.point, groupMoveSpacing);
         }

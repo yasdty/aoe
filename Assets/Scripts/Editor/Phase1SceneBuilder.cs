@@ -19,6 +19,7 @@ namespace AoE.RTS.EditorTools
         const string UnitDataPath = "Assets/Data/UnitData/DefaultUnit.asset";
         const string TownCenterDataPath = "Assets/Data/BuildingData/TownCenterData.asset";
         const string DefaultTreeDataPath = GameAssetPaths.DefaultTreeData;
+        const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
 
         public static bool EnsureEditModeForSceneSetup()
         {
@@ -177,17 +178,52 @@ namespace AoE.RTS.EditorTools
                     EditorUtility.SetDirty(existing);
                 }
 
+                if (existing.villagerTrainTime != 3f)
+                {
+                    existing.villagerTrainTime = 3f;
+                    EditorUtility.SetDirty(existing);
+                }
+
                 AssetDatabase.SaveAssets();
                 return existing;
             }
 
             BuildingData data = ScriptableObject.CreateInstance<BuildingData>();
             data.displayName = "Town Center";
-            data.villagerTrainTime = 5f;
+            data.villagerTrainTime = 3f;
             data.villagerUnitData = villagerData;
             data.spawnForwardOffset = 8f;
             data.spawnClearance = 4f;
             AssetDatabase.CreateAsset(data, TownCenterDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureHouseData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultHouseDataPath);
+            if (existing != null)
+            {
+                if (existing.buildTime != 3f)
+                {
+                    existing.buildTime = 3f;
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.displayName = "House";
+            data.woodCost = 25f;
+            data.buildTime = 3f;
+            AssetDatabase.CreateAsset(data, DefaultHouseDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }
@@ -276,6 +312,34 @@ namespace AoE.RTS.EditorTools
             return treeObject;
         }
 
+        public static GameObject CreateHouse(PlacedBuildingData houseData, Vector3 position)
+        {
+            GameObject houseObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            houseObject.name = "House";
+            houseObject.layer = LayerMask.NameToLayer("Building");
+            houseObject.transform.localScale = new Vector3(
+                houseData.footprintWidth,
+                houseData.buildingHeight,
+                houseData.footprintDepth);
+            houseObject.transform.position = new Vector3(
+                position.x,
+                houseData.buildingHeight * 0.5f + 0.05f,
+                position.z);
+
+            Renderer renderer = houseObject.GetComponent<Renderer>();
+            renderer.sharedMaterial = SceneMaterialFactory.CreateLitMaterial(
+                houseData != null ? houseData.defaultColor : new Color(0.65f, 0.45f, 0.3f));
+
+            House house = houseObject.AddComponent<House>();
+            SerializedObject serializedHouse = new SerializedObject(house);
+            serializedHouse.FindProperty("data").objectReferenceValue = houseData;
+            serializedHouse.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(house);
+            EditorUtility.SetDirty(houseObject);
+
+            return houseObject;
+        }
+
         public static void CreateLighting()
         {
             GameObject lightObject = new GameObject("Directional Light");
@@ -320,9 +384,6 @@ namespace AoE.RTS.EditorTools
             UnityEngine.Camera camera = cameraObject.AddComponent<UnityEngine.Camera>();
             cameraObject.AddComponent<AudioListener>();
 
-            cameraObject.transform.position = new Vector3(50f, 45f, 50f);
-            cameraObject.transform.rotation = Quaternion.Euler(55f, -45f, 0f);
-
             RTSInputReader inputReader = cameraObject.AddComponent<RTSInputReader>();
             SerializedObject serializedInput = new SerializedObject(inputReader);
             serializedInput.FindProperty("inputActions").objectReferenceValue = inputActions;
@@ -333,7 +394,39 @@ namespace AoE.RTS.EditorTools
             serializedCamera.FindProperty("input").objectReferenceValue = inputReader;
             serializedCamera.ApplyModifiedPropertiesWithoutUndo();
 
+            ApplyOverviewCamera(cameraObject.transform, Vector3.zero);
+
             return cameraObject;
+        }
+
+        public static void ApplyOverviewCamera(Transform cameraTransform, Vector3 focusPoint)
+        {
+            const float startHeight = 45f;
+            const float startPitch = 55f;
+            const float startYaw = -45f;
+
+            Quaternion rotation = Quaternion.Euler(startPitch, startYaw, 0f);
+            cameraTransform.rotation = rotation;
+
+            Vector3 forward = rotation * Vector3.forward;
+            if (Mathf.Abs(forward.y) > 0.001f)
+            {
+                float distance = (focusPoint.y - startHeight) / forward.y;
+                cameraTransform.position = focusPoint - forward * distance;
+            }
+
+            RTSCameraController controller = cameraTransform.GetComponent<RTSCameraController>();
+            if (controller == null)
+                return;
+
+            SerializedObject serializedCamera = new SerializedObject(controller);
+            serializedCamera.FindProperty("startFocusPoint").vector3Value = focusPoint;
+            serializedCamera.FindProperty("startHeight").floatValue = startHeight;
+            serializedCamera.FindProperty("startPitch").floatValue = startPitch;
+            serializedCamera.FindProperty("startYaw").floatValue = startYaw;
+            serializedCamera.FindProperty("applyStartViewOnLoad").boolValue = true;
+            serializedCamera.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(controller);
         }
 
         static void CreateManagers(InputActionAsset inputActions, UnityEngine.Camera mainCamera)

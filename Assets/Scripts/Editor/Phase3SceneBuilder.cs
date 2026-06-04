@@ -39,8 +39,7 @@ namespace AoE.RTS.EditorTools
             Phase1SceneBuilder.CreateGround();
             GameObject townCenter = Phase1SceneBuilder.CreateTownCenter(townCenterData, Vector3.zero);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
-            cameraRig.transform.position = new Vector3(18f, 22f, 18f);
-            cameraRig.transform.rotation = Quaternion.Euler(55f, -45f, 0f);
+            Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, Vector3.zero);
             CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>());
 
             Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);

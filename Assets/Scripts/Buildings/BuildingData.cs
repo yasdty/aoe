@@ -7,7 +7,7 @@ namespace AoE.RTS.Buildings
     public class BuildingData : ScriptableObject
     {
         public string displayName = "Town Center";
-        public float villagerTrainTime = 5f;
+        public float villagerTrainTime = 3f;
         public UnitData villagerUnitData;
         public Color defaultColor = new Color(0.75f, 0.65f, 0.45f);
         public Color selectedColor = new Color(0.95f, 0.85f, 0.35f);

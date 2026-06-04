@@ -12,6 +12,30 @@ namespace AoE.RTS.Camera
         [SerializeField] float zoomSpeed = 25f;
         [SerializeField] float minHeight = 12f;
         [SerializeField] float maxHeight = 80f;
+        [SerializeField] bool applyStartViewOnLoad = true;
+        [SerializeField] Vector3 startFocusPoint;
+        [SerializeField] float startHeight = 45f;
+        [SerializeField] float startPitch = 55f;
+        [SerializeField] float startYaw = -45f;
+
+        void Start()
+        {
+            if (applyStartViewOnLoad)
+                ApplyOverviewView(startFocusPoint);
+        }
+
+        public void ApplyOverviewView(Vector3 focusPoint)
+        {
+            Quaternion rotation = Quaternion.Euler(startPitch, startYaw, 0f);
+            transform.rotation = rotation;
+
+            Vector3 forward = rotation * Vector3.forward;
+            if (Mathf.Abs(forward.y) < 0.001f)
+                return;
+
+            float distance = (focusPoint.y - startHeight) / forward.y;
+            transform.position = focusPoint - forward * distance;
+        }
 
         void ApplyCameraMove(Vector2 moveInput, float speed)
         {

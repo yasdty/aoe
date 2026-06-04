@@ -23,7 +23,7 @@ namespace AoE.RTS.Economy
         }
 
         const float CarryCapacity = 10f;
-        const float GatherRate = 1f;
+        const float GatherRate = 2.5f;
         const float GatherReachDistance = 2.5f;
         const float DepositReachDistance = 5f;
 
@@ -35,7 +35,7 @@ namespace AoE.RTS.Economy
         void Awake()
         {
             instance = this;
-            depositTarget = FindFirstObjectByType<TownCenter>();
+            depositTarget = FindAnyObjectByType<TownCenter>();
         }
 
         void OnDestroy()

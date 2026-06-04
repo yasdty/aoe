@@ -11,9 +11,9 @@ using UnityEngine.SceneManagement;
 
 namespace AoE.RTS.EditorTools
 {
-    public static class Phase4SceneBuilder
+    public static class Phase5SceneBuilder
     {
-        const string ScenePath = "Assets/Scenes/Phase4.unity";
+        const string ScenePath = "Assets/Scenes/Phase5.unity";
 
         static readonly Vector3[] TreePositions =
         {
@@ -27,11 +27,11 @@ namespace AoE.RTS.EditorTools
             new Vector3(-16f, 0f, 18f)
         };
 
-        [MenuItem("AoE/Setup Phase4 Scene", true)]
-        static bool ValidateSetupPhase4Scene() => !EditorApplication.isPlaying;
+        [MenuItem("AoE/Setup Phase5 Scene", true)]
+        static bool ValidateSetupPhase5Scene() => !EditorApplication.isPlaying;
 
-        [MenuItem("AoE/Setup Phase4 Scene")]
-        public static void SetupPhase4Scene()
+        [MenuItem("AoE/Setup Phase5 Scene")]
+        public static void SetupPhase5Scene()
         {
             if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
                 return;
@@ -40,6 +40,7 @@ namespace AoE.RTS.EditorTools
             UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
             BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
             ResourceNodeData treeData = Phase1SceneBuilder.EnsureDefaultTreeData();
+            PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
             if (inputActions == null)
             {
@@ -55,13 +56,13 @@ namespace AoE.RTS.EditorTools
             CreateTrees(treeData);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
             Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, Vector3.zero);
-            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>());
+            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData);
 
             Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
             EditorSceneManager.SaveScene(scene, ScenePath);
             UnityEditor.Selection.activeGameObject = townCenter;
 
-            Debug.Log("Phase4 scene created at " + ScenePath);
+            Debug.Log("Phase5 scene created at " + ScenePath);
         }
 
         static void CreateTrees(ResourceNodeData treeData)
@@ -70,7 +71,10 @@ namespace AoE.RTS.EditorTools
                 Phase1SceneBuilder.CreateTree(treeData, TreePositions[i]);
         }
 
-        static void CreateManagers(InputActionAsset inputActions, UnityEngine.Camera mainCamera)
+        static void CreateManagers(
+            InputActionAsset inputActions,
+            UnityEngine.Camera mainCamera,
+            PlacedBuildingData houseData)
         {
             GameObject systems = new GameObject("Systems");
 
@@ -90,12 +94,16 @@ namespace AoE.RTS.EditorTools
             gatherManagerObject.transform.SetParent(systems.transform);
             gatherManagerObject.AddComponent<GatherManager>();
 
+            GameObject placementManagerObject = new GameObject("BuildingPlacementManager");
+            placementManagerObject.transform.SetParent(systems.transform);
+            BuildingPlacementManager placementManager = placementManagerObject.AddComponent<BuildingPlacementManager>();
+
             GameObject selectionManagerObject = new GameObject("SelectionManager");
             selectionManagerObject.transform.SetParent(systems.transform);
             SelectionManager selectionManager = selectionManagerObject.AddComponent<SelectionManager>();
             selectionManagerObject.AddComponent<SelectionBoxView>();
             selectionManagerObject.AddComponent<ProductionPanelView>();
-            selectionManagerObject.AddComponent<ResourceHudView>();
+            ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
 
             RTSInputReader inputReader = mainCamera.GetComponent<RTSInputReader>();
             SerializedObject serializedSelection = new SerializedObject(selectionManager);
@@ -110,6 +118,19 @@ namespace AoE.RTS.EditorTools
             serializedProductionPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
             serializedProductionPanel.FindProperty("input").objectReferenceValue = inputReader;
             serializedProductionPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedPlacement = new SerializedObject(placementManager);
+            serializedPlacement.FindProperty("mainCamera").objectReferenceValue = mainCamera;
+            serializedPlacement.FindProperty("input").objectReferenceValue = inputReader;
+            serializedPlacement.FindProperty("houseData").objectReferenceValue = houseData;
+            serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
+            serializedResourceHud.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedResourceHud.FindProperty("houseData").objectReferenceValue = houseData;
+            serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(resourceHud);
+            EditorUtility.SetDirty(placementManager);
         }
     }
 }
