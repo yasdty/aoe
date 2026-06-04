@@ -209,9 +209,21 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultHouseDataPath);
             if (existing != null)
             {
+                bool dirty = false;
                 if (existing.buildTime != 3f)
                 {
                     existing.buildTime = 3f;
+                    dirty = true;
+                }
+
+                if (existing.housingProvided != 5)
+                {
+                    existing.housingProvided = 5;
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
                     EditorUtility.SetDirty(existing);
                     AssetDatabase.SaveAssets();
                 }
@@ -223,6 +235,7 @@ namespace AoE.RTS.EditorTools
             data.displayName = "House";
             data.woodCost = 25f;
             data.buildTime = 3f;
+            data.housingProvided = 5;
             AssetDatabase.CreateAsset(data, DefaultHouseDataPath);
             AssetDatabase.SaveAssets();
             return data;

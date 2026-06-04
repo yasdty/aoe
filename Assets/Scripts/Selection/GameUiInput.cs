@@ -47,7 +47,7 @@ namespace AoE.RTS.Selection
 
             const float margin = 12f;
             const float panelWidth = 210f;
-            const float panelHeight = 72f;
+            const float panelHeight = 100f;
             SetHudPanelScreenRect(GuiRectToScreenRect(new Rect(margin, margin, panelWidth, panelHeight)));
         }
 

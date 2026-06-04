@@ -294,6 +294,8 @@ namespace AoE.RTS.Buildings
             DestroySiteVisual(site.siteVisual);
             site.builder.ClearMoveTarget();
             RuntimeBuildingFactory.CreateHouse(site.data, site.position);
+            if (site.data != null)
+                PopulationManager.AddHousing(site.data.housingProvided);
         }
 
         Vector3 SnapToFootprint(Vector3 worldPoint)

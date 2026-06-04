@@ -44,6 +44,8 @@ namespace AoE.RTS.Units
             buffer.AddRange(instance.units);
         }
 
+        public static int UnitCount => instance != null ? instance.units.Count : 0;
+
         void Update()
         {
             float deltaTime = Time.deltaTime;

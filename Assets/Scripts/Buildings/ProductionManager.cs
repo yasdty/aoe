@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -53,6 +54,9 @@ namespace AoE.RTS.Buildings
                 return false;
 
             if (IsProducing(townCenter))
+                return false;
+
+            if (!PopulationManager.CanTrainUnit())
                 return false;
 
             instance.activeJobs.Add(new ProductionJob

@@ -1,4 +1,5 @@
 using AoE.RTS.Buildings;
+using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using UnityEngine;
 
@@ -29,10 +30,14 @@ namespace AoE.RTS.Selection
             GUILayout.Label("Town Center");
 
             bool isProducing = ProductionManager.IsProducing(townCenter);
-            GUI.enabled = !isProducing;
+            bool populationFull = !PopulationManager.CanTrainUnit();
+            GUI.enabled = !isProducing && !populationFull;
             if (GUILayout.Button("Create Villager (Q)"))
                 townCenter.TryQueueVillagerProduction();
             GUI.enabled = true;
+
+            if (populationFull && !isProducing)
+                GUILayout.Label("Population full");
 
             if (isProducing)
             {

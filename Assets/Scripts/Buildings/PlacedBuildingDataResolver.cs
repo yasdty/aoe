@@ -23,6 +23,7 @@ namespace AoE.RTS.Buildings
             cached.displayName = "House";
             cached.woodCost = 25f;
             cached.buildTime = 3f;
+            cached.housingProvided = 5;
             return cached;
         }
     }
