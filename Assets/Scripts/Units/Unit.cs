@@ -1,3 +1,8 @@
+using System.Collections.Generic;
+using AoE.RTS.Buildings;
+using AoE.RTS.Combat;
+using AoE.RTS.Economy;
+using AoE.RTS.Selection;
 using UnityEngine;
 
 namespace AoE.RTS.Units
@@ -8,23 +13,43 @@ namespace AoE.RTS.Units
     {
         [SerializeField] UnitData data;
         [SerializeField] UnitTeam team = UnitTeam.Player;
+
         float currentHp;
         Vector3? moveTarget;
         Renderer cachedRenderer;
         MaterialPropertyBlock propertyBlock;
         bool isSelected;
+        bool isDead;
 
         public float CurrentHp => currentHp;
         public float MaxHp => data != null ? data.maxHp : 100f;
+        public bool IsAlive => !isDead;
         public bool IsSelected => isSelected;
         public UnitData Data => data;
         public UnitTeam Team => team;
         public bool HasMoveTarget => moveTarget.HasValue;
-        public bool CanAttack => data != null && data.CanAttack;
+        public bool CanAttack => IsAlive && data != null && data.CanAttack;
         public float AttackPower => data != null ? data.attack : 0f;
         public float Armor => data != null ? data.armor : 0f;
         public float AttackRange => data != null ? data.attackRange : 1.5f;
         public float AttackCooldownSeconds => data != null ? data.attackCooldown : 1f;
+
+        public UnitState State
+        {
+            get
+            {
+                if (isDead)
+                    return UnitState.Dead;
+
+                if (AttackManager.IsUnitAttacking(this))
+                    return UnitState.Attack;
+
+                if (HasMoveTarget)
+                    return UnitState.Move;
+
+                return UnitState.Idle;
+            }
+        }
 
         void Awake()
         {
@@ -35,13 +60,15 @@ namespace AoE.RTS.Units
 
         void OnEnable()
         {
-            UnitManager.Register(this);
+            if (!isDead)
+                UnitManager.Register(this);
             UpdateVisual();
         }
 
         void Start()
         {
-            UnitManager.Register(this);
+            if (!isDead)
+                UnitManager.Register(this);
         }
 
         void OnDisable()
@@ -78,10 +105,27 @@ namespace AoE.RTS.Units
 
         public void TakeDamage(float amount)
         {
-            if (amount <= 0f)
+            if (!IsAlive || amount <= 0f)
                 return;
 
             currentHp = Mathf.Max(0f, currentHp - amount);
+            if (currentHp <= 0f)
+                Die();
+        }
+
+        public void Die()
+        {
+            if (isDead)
+                return;
+
+            isDead = true;
+            ClearMoveTarget();
+
+            GatherManager.CancelForUnit(this);
+            BuildingPlacementManager.AbortConstructionForUnit(this);
+            SelectionManager.HandleUnitDied(this);
+
+            Destroy(gameObject);
         }
 
         public void SetSelected(bool selected)
@@ -92,6 +136,9 @@ namespace AoE.RTS.Units
 
         public void SetMoveTarget(Vector3 worldPosition)
         {
+            if (!IsAlive)
+                return;
+
             moveTarget = new Vector3(worldPosition.x, transform.position.y, worldPosition.z);
         }
 
@@ -109,7 +156,7 @@ namespace AoE.RTS.Units
 
         public void TickMovement(float deltaTime)
         {
-            if (!moveTarget.HasValue)
+            if (!IsAlive || !moveTarget.HasValue)
                 return;
 
             Vector3 target = moveTarget.Value;
@@ -131,6 +178,11 @@ namespace AoE.RTS.Units
             transform.position = position + toTarget / distance * step;
         }
 
+        public void NotifyStateChanged()
+        {
+            UpdateVisual();
+        }
+
         void UpdateVisual()
         {
             if (cachedRenderer == null)
@@ -144,6 +196,12 @@ namespace AoE.RTS.Units
             Color color = isSelected
                 ? (data != null ? data.selectedColor : Color.green)
                 : (data != null ? data.defaultColor : Color.white);
+
+            if (IsAlive && AttackManager.IsUnitAttacking(this))
+            {
+                Color attackTint = new Color(0.95f, 0.45f, 0.2f);
+                color = Color.Lerp(color, attackTint, 0.55f);
+            }
 
             cachedRenderer.GetPropertyBlock(propertyBlock);
             propertyBlock.SetColor("_BaseColor", color);

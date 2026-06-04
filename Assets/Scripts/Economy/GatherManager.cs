@@ -76,6 +76,18 @@ namespace AoE.RTS.Economy
                 instance.RemoveJobForUnit(units[i]);
         }
 
+        static readonly List<Unit> singleUnitCancelBuffer = new List<Unit>(1);
+
+        public static void CancelForUnit(Unit unit)
+        {
+            if (unit == null)
+                return;
+
+            singleUnitCancelBuffer.Clear();
+            singleUnitCancelBuffer.Add(unit);
+            CancelForUnits(singleUnitCancelBuffer);
+        }
+
         void RemoveJobForUnit(Unit unit)
         {
             for (int i = jobs.Count - 1; i >= 0; i--)
@@ -94,7 +106,7 @@ namespace AoE.RTS.Economy
             for (int i = jobs.Count - 1; i >= 0; i--)
             {
                 GatherJob job = jobs[i];
-                if (job.unit == null)
+                if (job.unit == null || !job.unit.IsAlive)
                 {
                     jobs.RemoveAt(i);
                     continue;

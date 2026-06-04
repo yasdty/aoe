@@ -38,15 +38,20 @@ namespace AoE.RTS.Combat
             for (int i = activeJobs.Count - 1; i >= 0; i--)
             {
                 AttackJob job = activeJobs[i];
-                if (job.attacker == null || job.target == null)
+                if (!IsValidCombatUnit(job.attacker) || !IsValidCombatUnit(job.target))
                 {
+                    Unit staleAttacker = job.attacker;
                     activeJobs.RemoveAt(i);
+                    if (staleAttacker != null)
+                        staleAttacker.NotifyStateChanged();
                     continue;
                 }
 
                 if (job.attacker.Team == job.target.Team)
                 {
+                    Unit staleAttacker = job.attacker;
                     activeJobs.RemoveAt(i);
+                    staleAttacker.NotifyStateChanged();
                     continue;
                 }
 
@@ -67,24 +72,76 @@ namespace AoE.RTS.Combat
                 }
 
                 float damage = Mathf.Max(1f, job.attacker.AttackPower - job.target.Armor);
-                job.target.TakeDamage(damage);
-                job.cooldownRemaining = job.attacker.AttackCooldownSeconds;
+                Unit attacker = job.attacker;
+                Unit target = job.target;
+                target.TakeDamage(damage);
+
+                if (i >= activeJobs.Count || activeJobs[i].attacker != attacker)
+                    continue;
+
+                if (!IsValidCombatUnit(attacker))
+                {
+                    activeJobs.RemoveAt(i);
+                    continue;
+                }
+
+                if (!IsValidCombatUnit(target))
+                {
+                    activeJobs.RemoveAt(i);
+                    attacker.NotifyStateChanged();
+                    continue;
+                }
+
+                job.cooldownRemaining = attacker.AttackCooldownSeconds;
+                job.attacker = attacker;
+                job.target = target;
                 activeJobs[i] = job;
 
                 Debug.Log(
-                    $"{job.attacker.Data?.displayName ?? "Unit"} hit {job.target.Data?.displayName ?? "Unit"} for {damage:0} (HP {job.target.CurrentHp:0}/{job.target.MaxHp:0})");
+                    $"{attacker.Data?.displayName ?? "Unit"} hit {target.Data?.displayName ?? "Unit"} for {damage:0} (HP {target.CurrentHp:0}/{target.MaxHp:0})");
             }
+
+            RefreshAttackerVisuals();
+        }
+
+        void RefreshAttackerVisuals()
+        {
+            for (int i = 0; i < activeJobs.Count; i++)
+            {
+                Unit attacker = activeJobs[i].attacker;
+                if (attacker != null)
+                    attacker.NotifyStateChanged();
+            }
+        }
+
+        static bool IsValidCombatUnit(Unit unit)
+        {
+            return unit != null && unit.IsAlive;
+        }
+
+        public static bool IsUnitAttacking(Unit unit)
+        {
+            if (instance == null || unit == null)
+                return false;
+
+            for (int i = 0; i < instance.activeJobs.Count; i++)
+            {
+                if (instance.activeJobs[i].attacker == unit)
+                    return true;
+            }
+
+            return false;
         }
 
         public static void IssueAttack(IReadOnlyList<Unit> attackers, Unit target)
         {
-            if (instance == null || target == null || attackers == null)
+            if (instance == null || target == null || attackers == null || !target.IsAlive)
                 return;
 
             for (int i = 0; i < attackers.Count; i++)
             {
                 Unit attacker = attackers[i];
-                if (attacker == null || !attacker.CanAttack)
+                if (!IsValidCombatUnit(attacker) || !attacker.CanAttack)
                     continue;
 
                 if (attacker.Team == target.Team)
@@ -100,6 +157,24 @@ namespace AoE.RTS.Combat
                     target = target,
                     cooldownRemaining = 0f
                 });
+            }
+        }
+
+        public static void CancelJobsForUnit(Unit unit)
+        {
+            if (instance == null || unit == null)
+                return;
+
+            for (int i = instance.activeJobs.Count - 1; i >= 0; i--)
+            {
+                AttackJob job = instance.activeJobs[i];
+                if (job.attacker == unit || job.target == unit)
+                {
+                    Unit staleAttacker = job.attacker;
+                    instance.activeJobs.RemoveAt(i);
+                    if (staleAttacker != null)
+                        staleAttacker.NotifyStateChanged();
+                }
             }
         }
 
@@ -123,6 +198,7 @@ namespace AoE.RTS.Combat
                         continue;
 
                     instance.activeJobs.RemoveAt(i);
+                    attacker.NotifyStateChanged();
                     break;
                 }
             }

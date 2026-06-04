@@ -323,6 +323,18 @@ namespace AoE.RTS.Buildings
             }
         }
 
+        static readonly List<Unit> singleUnitAbortBuffer = new List<Unit>(1);
+
+        public static void AbortConstructionForUnit(Unit unit)
+        {
+            if (unit == null)
+                return;
+
+            singleUnitAbortBuffer.Clear();
+            singleUnitAbortBuffer.Add(unit);
+            AbortConstructionForUnits(singleUnitAbortBuffer);
+        }
+
         void CompleteConstruction(ref ConstructionSite site)
         {
             DestroySiteVisual(site.siteVisual);

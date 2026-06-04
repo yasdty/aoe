@@ -11,7 +11,7 @@ namespace AoE.RTS.Economy
 
         int housingCap;
 
-        public static int CurrentPopulation => UnitManager.UnitCount;
+        public static int CurrentPopulation => UnitManager.PlayerUnitCount;
         public static int MaxPopulation => instance != null ? instance.housingCap : 0;
 
         void Awake()

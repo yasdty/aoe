@@ -46,11 +46,36 @@ namespace AoE.RTS.Units
 
         public static int UnitCount => instance != null ? instance.units.Count : 0;
 
+        public static int PlayerUnitCount
+        {
+            get
+            {
+                if (instance == null)
+                    return 0;
+
+                int count = 0;
+                for (int i = 0; i < instance.units.Count; i++)
+                {
+                    Unit unit = instance.units[i];
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
+                        count++;
+                }
+
+                return count;
+            }
+        }
+
         void Update()
         {
             float deltaTime = Time.deltaTime;
             for (int i = 0; i < units.Count; i++)
-                units[i].TickMovement(deltaTime);
+            {
+                Unit unit = units[i];
+                if (unit == null || !unit.IsAlive)
+                    continue;
+
+                unit.TickMovement(deltaTime);
+            }
         }
     }
 }

@@ -17,6 +17,8 @@ namespace AoE.RTS.Selection
         [SerializeField] float dragThresholdPixels = 8f;
         [SerializeField] float groupMoveSpacing = 2f;
 
+        static SelectionManager instance;
+
         readonly List<Unit> selectedUnits = new List<Unit>();
         readonly List<Unit> selectionBuffer = new List<Unit>();
         readonly List<Unit> attackCommandBuffer = new List<Unit>();
@@ -30,6 +32,25 @@ namespace AoE.RTS.Selection
         public IReadOnlyList<Unit> SelectedUnits => selectedUnits;
         public TownCenter SelectedTownCenter => selectedTownCenter;
         public Barracks SelectedBarracks => selectedBarracks;
+
+        void Awake()
+        {
+            instance = this;
+        }
+
+        void OnDestroy()
+        {
+            if (instance == this)
+                instance = null;
+        }
+
+        public static void HandleUnitDied(Unit unit)
+        {
+            if (instance == null || unit == null)
+                return;
+
+            instance.selectedUnits.Remove(unit);
+        }
 
         void Update()
         {
@@ -332,7 +353,7 @@ namespace AoE.RTS.Selection
 
         static bool IsPlayerUnit(Unit unit)
         {
-            return unit != null && unit.Team == UnitTeam.Player;
+            return unit != null && unit.IsAlive && unit.Team == UnitTeam.Player;
         }
 
         static Rect ScreenRectFromPoints(Vector2 a, Vector2 b)
