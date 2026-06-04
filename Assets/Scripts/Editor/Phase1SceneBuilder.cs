@@ -20,6 +20,9 @@ namespace AoE.RTS.EditorTools
         const string TownCenterDataPath = "Assets/Data/BuildingData/TownCenterData.asset";
         const string DefaultTreeDataPath = GameAssetPaths.DefaultTreeData;
         const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
+        const string DefaultBarracksDataPath = GameAssetPaths.DefaultBarracksData;
+        const string MilitiaDataPath = GameAssetPaths.MilitiaData;
+        const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
 
         public static bool EnsureEditModeForSceneSetup()
         {
@@ -222,6 +225,12 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
+                if (existing.kind != PlacedBuildingKind.House)
+                {
+                    existing.kind = PlacedBuildingKind.House;
+                    dirty = true;
+                }
+
                 if (dirty)
                 {
                     EditorUtility.SetDirty(existing);
@@ -232,11 +241,120 @@ namespace AoE.RTS.EditorTools
             }
 
             PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.House;
             data.displayName = "House";
             data.woodCost = 25f;
             data.buildTime = 3f;
             data.housingProvided = 5;
             AssetDatabase.CreateAsset(data, DefaultHouseDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static UnitData EnsureMilitiaData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/UnitData"))
+                AssetDatabase.CreateFolder("Assets/Data", "UnitData");
+
+            UnitData existing = AssetDatabase.LoadAssetAtPath<UnitData>(MilitiaDataPath);
+            if (existing != null)
+            {
+                bool dirty = SyncMilitiaStats(existing);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            UnitData data = ScriptableObject.CreateInstance<UnitData>();
+            data.displayName = "Militia";
+            SyncMilitiaStats(data);
+            AssetDatabase.CreateAsset(data, MilitiaDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static UnitData EnsureEnemyDummyData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/UnitData"))
+                AssetDatabase.CreateFolder("Assets/Data", "UnitData");
+
+            UnitData existing = AssetDatabase.LoadAssetAtPath<UnitData>(EnemyDummyDataPath);
+            if (existing != null)
+            {
+                bool dirty = SyncEnemyDummyStats(existing);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            UnitData data = ScriptableObject.CreateInstance<UnitData>();
+            data.displayName = "Enemy Dummy";
+            SyncEnemyDummyStats(data);
+            AssetDatabase.CreateAsset(data, EnemyDummyDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureBarracksData(UnitData militiaData)
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultBarracksDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.Barracks)
+                {
+                    existing.kind = PlacedBuildingKind.Barracks;
+                    dirty = true;
+                }
+
+                if (existing.trainUnitData != militiaData && militiaData != null)
+                {
+                    existing.trainUnitData = militiaData;
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.Barracks;
+            data.displayName = "Barracks";
+            data.woodCost = 50f;
+            data.buildTime = 5f;
+            data.footprintWidth = 6f;
+            data.footprintDepth = 6f;
+            data.buildingHeight = 3.5f;
+            data.housingProvided = 0;
+            data.trainUnitData = militiaData;
+            data.trainTime = 3f;
+            data.trainWoodCost = 20f;
+            data.spawnClearance = 4f;
+            data.defaultColor = new Color(0.55f, 0.35f, 0.32f);
+            data.selectedColor = new Color(0.95f, 0.55f, 0.35f);
+            AssetDatabase.CreateAsset(data, DefaultBarracksDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }
@@ -375,16 +493,21 @@ namespace AoE.RTS.EditorTools
             return ground;
         }
 
-        public static GameObject CreateUnit(UnitData unitData, Vector3 position)
+        public static GameObject CreateUnit(UnitData unitData, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             GameObject unitObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            unitObject.name = "Unit";
+            unitObject.name = unitData != null ? unitData.displayName : "Unit";
             unitObject.layer = LayerMask.NameToLayer("Unit");
             unitObject.transform.position = position;
 
             Unit unit = unitObject.AddComponent<Unit>();
+            if (unitData != null)
+                unit.SetData(unitData);
+            unit.SetTeam(team);
+
             SerializedObject serializedUnit = new SerializedObject(unit);
             serializedUnit.FindProperty("data").objectReferenceValue = unitData;
+            serializedUnit.FindProperty("team").enumValueIndex = (int)team;
             serializedUnit.ApplyModifiedPropertiesWithoutUndo();
 
             return unitObject;
@@ -467,6 +590,31 @@ namespace AoE.RTS.EditorTools
             SerializedProperty boxView = serializedSelection.FindProperty("selectionBoxView");
             boxView.objectReferenceValue = selectionManagerObject.GetComponent<SelectionBoxView>();
             serializedSelection.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static bool SyncMilitiaStats(UnitData data)
+        {
+            bool dirty = false;
+            if (data.displayName != "Militia") { data.displayName = "Militia"; dirty = true; }
+            if (data.maxHp != 40f) { data.maxHp = 40f; dirty = true; }
+            if (data.moveSpeed != 5f) { data.moveSpeed = 5f; dirty = true; }
+            if (data.attack != 4f) { data.attack = 4f; dirty = true; }
+            if (data.armor != 0f) { data.armor = 0f; dirty = true; }
+            if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
+            if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
+            if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            return dirty;
+        }
+
+        static bool SyncEnemyDummyStats(UnitData data)
+        {
+            bool dirty = false;
+            if (data.displayName != "Enemy Dummy") { data.displayName = "Enemy Dummy"; dirty = true; }
+            if (data.maxHp != 100f) { data.maxHp = 100f; dirty = true; }
+            if (data.moveSpeed != 0f) { data.moveSpeed = 0f; dirty = true; }
+            if (data.attack != 0f) { data.attack = 0f; dirty = true; }
+            if (data.team != UnitTeam.Enemy) { data.team = UnitTeam.Enemy; dirty = true; }
+            return dirty;
         }
     }
 }

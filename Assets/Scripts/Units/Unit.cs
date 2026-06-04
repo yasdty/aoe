@@ -7,7 +7,7 @@ namespace AoE.RTS.Units
     public class Unit : MonoBehaviour
     {
         [SerializeField] UnitData data;
-
+        [SerializeField] UnitTeam team = UnitTeam.Player;
         float currentHp;
         Vector3? moveTarget;
         Renderer cachedRenderer;
@@ -18,11 +18,18 @@ namespace AoE.RTS.Units
         public float MaxHp => data != null ? data.maxHp : 100f;
         public bool IsSelected => isSelected;
         public UnitData Data => data;
+        public UnitTeam Team => team;
         public bool HasMoveTarget => moveTarget.HasValue;
+        public bool CanAttack => data != null && data.CanAttack;
+        public float AttackPower => data != null ? data.attack : 0f;
+        public float Armor => data != null ? data.armor : 0f;
+        public float AttackRange => data != null ? data.attackRange : 1.5f;
+        public float AttackCooldownSeconds => data != null ? data.attackCooldown : 1f;
 
         void Awake()
         {
             cachedRenderer = GetComponentInChildren<Renderer>();
+            ApplyTeamFromData();
             currentHp = MaxHp;
         }
 
@@ -45,8 +52,36 @@ namespace AoE.RTS.Units
         public void SetData(UnitData unitData)
         {
             data = unitData;
+            ApplyTeamFromData();
             currentHp = MaxHp;
             UpdateVisual();
+        }
+
+        void ApplyTeamFromData()
+        {
+            if (data != null)
+            {
+                team = data.team;
+                if (data.displayName == "Enemy Dummy")
+                    team = UnitTeam.Enemy;
+                return;
+            }
+
+            if (gameObject.name == "Enemy Dummy")
+                team = UnitTeam.Enemy;
+        }
+
+        public void SetTeam(UnitTeam unitTeam)
+        {
+            team = unitTeam;
+        }
+
+        public void TakeDamage(float amount)
+        {
+            if (amount <= 0f)
+                return;
+
+            currentHp = Mathf.Max(0f, currentHp - amount);
         }
 
         public void SetSelected(bool selected)

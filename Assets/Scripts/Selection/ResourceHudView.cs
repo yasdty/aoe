@@ -10,12 +10,14 @@ namespace AoE.RTS.Selection
     {
         [SerializeField] SelectionManager selectionManager;
         [SerializeField] PlacedBuildingData houseData;
+        [SerializeField] PlacedBuildingData barracksData;
 
         const float Margin = 12f;
         const float PanelWidth = 210f;
         const float WoodLineHeight = 24f;
         const float PopLineHeight = 24f;
         const float ButtonHeight = 28f;
+        const float ButtonGap = 4f;
         const float Padding = 8f;
 
         static ResourceHudView instance;
@@ -23,7 +25,8 @@ namespace AoE.RTS.Selection
         void Awake()
         {
             instance = this;
-            houseData = PlacedBuildingDataResolver.Resolve(ref houseData);
+            houseData = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
+            barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             if (selectionManager == null)
                 selectionManager = FindAnyObjectByType<SelectionManager>();
         }
@@ -41,39 +44,48 @@ namespace AoE.RTS.Selection
 
         void OnGUI()
         {
-            PlacedBuildingData data = PlacedBuildingDataResolver.Resolve(ref houseData);
-            float panelHeight = Padding * 2f + WoodLineHeight + 4f + PopLineHeight + 4f + ButtonHeight;
+            PlacedBuildingData house = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
+            PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
+            float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + PopLineHeight + ButtonGap
+                + ButtonHeight + ButtonGap + ButtonHeight;
             Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
             GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
 
             GUI.Box(panelRect, GUIContent.none);
 
-            Rect woodRect = new Rect(Margin + Padding, Margin + Padding, PanelWidth - Padding * 2f, WoodLineHeight);
+            float y = Margin + Padding;
+
+            Rect woodRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, WoodLineHeight);
             GUI.Label(woodRect, $"Wood: {Mathf.FloorToInt(ResourceManager.Wood)}");
+            y += WoodLineHeight + ButtonGap;
 
-            Rect popRect = new Rect(
-                Margin + Padding,
-                Margin + Padding + WoodLineHeight + 4f,
-                PanelWidth - Padding * 2f,
-                PopLineHeight);
+            Rect popRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, PopLineHeight);
             GUI.Label(popRect, $"Pop: {PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}");
+            y += PopLineHeight + ButtonGap;
 
-            Rect buttonRect = new Rect(
-                Margin + Padding,
-                Margin + Padding + WoodLineHeight + 4f + PopLineHeight + 4f,
-                PanelWidth - Padding * 2f,
-                ButtonHeight);
-
-            bool canAfford = ResourceManager.Wood >= data.woodCost;
             bool inPlacementMode = BuildingPlacementManager.IsPlacementModeActive;
 
-            GUI.enabled = canAfford && !inPlacementMode;
-            if (GUI.Button(buttonRect, $"Build House ({data.woodCost} Wood)"))
+            Rect houseButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canAffordHouse = ResourceManager.Wood >= house.woodCost;
+            GUI.enabled = canAffordHouse && !inPlacementMode;
+            if (GUI.Button(houseButtonRect, $"Build House ({house.woodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
                     : null;
                 BuildingPlacementManager.EnterHousePlacementMode(builders);
+            }
+            y += ButtonHeight + ButtonGap;
+
+            Rect barracksButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canAffordBarracks = ResourceManager.Wood >= barracks.woodCost;
+            GUI.enabled = canAffordBarracks && !inPlacementMode;
+            if (GUI.Button(barracksButtonRect, $"Build Barracks ({barracks.woodCost} Wood)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterBarracksPlacementMode(builders);
             }
             GUI.enabled = true;
 
@@ -86,7 +98,7 @@ namespace AoE.RTS.Selection
             else
             {
                 GameUiInput.ClearHudHintScreenRect();
-                if (!canAfford)
+                if (!canAffordHouse && !canAffordBarracks)
                 {
                     Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
                     GUI.Label(hintRect, "Need more Wood.");

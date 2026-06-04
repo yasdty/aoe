@@ -28,6 +28,28 @@ namespace AoE.RTS.Buildings
             return house;
         }
 
+        public static Barracks CreateBarracks(PlacedBuildingData data, Vector3 position)
+        {
+            if (data == null)
+                return null;
+
+            GameObject barracksObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            barracksObject.name = "Barracks";
+            barracksObject.layer = LayerMask.NameToLayer("Building");
+            barracksObject.transform.localScale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
+            barracksObject.transform.position = new Vector3(
+                position.x,
+                data.buildingHeight * 0.5f + 0.05f,
+                position.z);
+
+            EnsureSharedMaterial();
+            barracksObject.GetComponent<Renderer>().sharedMaterial = sharedLitMaterial;
+
+            Barracks barracks = barracksObject.AddComponent<Barracks>();
+            barracks.SetData(data);
+            return barracks;
+        }
+
         static void EnsureSharedMaterial()
         {
             if (sharedLitMaterial != null)

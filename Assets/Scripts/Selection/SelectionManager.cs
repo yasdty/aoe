@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
+using AoE.RTS.Combat;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
@@ -18,14 +19,17 @@ namespace AoE.RTS.Selection
 
         readonly List<Unit> selectedUnits = new List<Unit>();
         readonly List<Unit> selectionBuffer = new List<Unit>();
+        readonly List<Unit> attackCommandBuffer = new List<Unit>();
 
         TownCenter selectedTownCenter;
+        Barracks selectedBarracks;
 
         Vector2 dragStartScreen;
         bool isDragging;
 
         public IReadOnlyList<Unit> SelectedUnits => selectedUnits;
         public TownCenter SelectedTownCenter => selectedTownCenter;
+        public Barracks SelectedBarracks => selectedBarracks;
 
         void Update()
         {
@@ -114,13 +118,19 @@ namespace AoE.RTS.Selection
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, GameLayers.UnitMask))
             {
                 Unit unit = hit.collider.GetComponentInParent<Unit>();
-                if (unit != null)
+                if (unit != null && IsPlayerUnit(unit))
                 {
-                    ClearTownCenterSelection();
+                    ClearBuildingSelection();
                     if (additive)
                         ToggleUnitSelection(unit);
                     else
                         SetSelection(unit);
+                    return;
+                }
+
+                if (unit != null && !additive)
+                {
+                    ClearAllSelection();
                     return;
                 }
             }
@@ -132,6 +142,14 @@ namespace AoE.RTS.Selection
                 {
                     if (!additive)
                         SetTownCenterSelection(townCenter);
+                    return;
+                }
+
+                Barracks barracks = hit.collider.GetComponentInParent<Barracks>();
+                if (barracks != null)
+                {
+                    if (!additive)
+                        SetBarracksSelection(barracks);
                     return;
                 }
             }
@@ -151,17 +169,17 @@ namespace AoE.RTS.Selection
             {
                 ClearSelectionVisuals();
                 selectedUnits.Clear();
-                ClearTownCenterSelection();
+                ClearBuildingSelection();
             }
             else
             {
-                ClearTownCenterSelection();
+                ClearBuildingSelection();
             }
 
             for (int i = 0; i < selectionBuffer.Count; i++)
             {
                 Unit unit = selectionBuffer[i];
-                if (unit == null)
+                if (unit == null || !IsPlayerUnit(unit))
                     continue;
 
                 Vector3 screenPoint = mainCamera.WorldToScreenPoint(unit.transform.position);
@@ -192,9 +210,17 @@ namespace AoE.RTS.Selection
                 if (tree != null && !tree.IsDepleted)
                 {
                     BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
+                    AttackManager.CancelForUnits(selectedUnits);
                     GatherManager.IssueGatherCommand(selectedUnits, tree);
                     return;
                 }
+            }
+
+            if (Physics.Raycast(ray, out hit, 1000f, GameLayers.UnitMask))
+            {
+                Unit targetUnit = hit.collider.GetComponentInParent<Unit>();
+                if (targetUnit != null && TryIssueAttackCommand(targetUnit))
+                    return;
             }
 
             if (!Physics.Raycast(ray, out hit, 1000f, GameLayers.GroundMask))
@@ -202,7 +228,29 @@ namespace AoE.RTS.Selection
 
             BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
             GatherManager.CancelForUnits(selectedUnits);
+            AttackManager.CancelForUnits(selectedUnits);
             GroupMoveFormation.AssignMoveTargets(selectedUnits, hit.point, groupMoveSpacing);
+        }
+
+        bool TryIssueAttackCommand(Unit targetUnit)
+        {
+            attackCommandBuffer.Clear();
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit == null || !unit.CanAttack || unit.Team == targetUnit.Team)
+                    continue;
+
+                attackCommandBuffer.Add(unit);
+            }
+
+            if (attackCommandBuffer.Count == 0)
+                return false;
+
+            BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
+            GatherManager.CancelForUnits(selectedUnits);
+            AttackManager.IssueAttack(attackCommandBuffer, targetUnit);
+            return true;
         }
 
         void SetSelection(Unit unit)
@@ -221,7 +269,7 @@ namespace AoE.RTS.Selection
                 return;
             }
 
-            ClearTownCenterSelection();
+            ClearBuildingSelection();
             selectedUnits.Add(unit);
             unit.SetSelected(true);
         }
@@ -239,6 +287,13 @@ namespace AoE.RTS.Selection
             townCenter.SetSelected(true);
         }
 
+        void SetBarracksSelection(Barracks barracks)
+        {
+            ClearAllSelection();
+            selectedBarracks = barracks;
+            barracks.SetSelected(true);
+        }
+
         void ClearTownCenterSelection()
         {
             if (selectedTownCenter != null)
@@ -248,16 +303,36 @@ namespace AoE.RTS.Selection
             }
         }
 
+        void ClearBarracksSelection()
+        {
+            if (selectedBarracks != null)
+            {
+                selectedBarracks.SetSelected(false);
+                selectedBarracks = null;
+            }
+        }
+
+        void ClearBuildingSelection()
+        {
+            ClearTownCenterSelection();
+            ClearBarracksSelection();
+        }
+
         void ClearAllSelection()
         {
             ClearSelection();
-            ClearTownCenterSelection();
+            ClearBuildingSelection();
         }
 
         void ClearSelectionVisuals()
         {
             for (int i = 0; i < selectedUnits.Count; i++)
                 selectedUnits[i].SetSelected(false);
+        }
+
+        static bool IsPlayerUnit(Unit unit)
+        {
+            return unit != null && unit.Team == UnitTeam.Player;
         }
 
         static Rect ScreenRectFromPoints(Vector2 a, Vector2 b)

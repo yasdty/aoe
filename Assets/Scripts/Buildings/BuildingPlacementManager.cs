@@ -30,6 +30,9 @@ namespace AoE.RTS.Buildings
         [SerializeField] UnityEngine.Camera mainCamera;
         [SerializeField] RTSInputReader input;
         [SerializeField] PlacedBuildingData houseData;
+        [SerializeField] PlacedBuildingData barracksData;
+
+        PlacedBuildingData activePlacementData;
 
         readonly List<ConstructionSite> sites = new List<ConstructionSite>();
         readonly List<Unit> stashedBuilders = new List<Unit>();
@@ -48,7 +51,8 @@ namespace AoE.RTS.Buildings
         void Awake()
         {
             instance = this;
-            houseData = PlacedBuildingDataResolver.Resolve(ref houseData);
+            houseData = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
+            barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             if (mainCamera == null)
                 mainCamera = UnityEngine.Camera.main;
             if (input == null)
@@ -81,10 +85,11 @@ namespace AoE.RTS.Buildings
             if (instance == null)
                 return;
 
-            instance.houseData = PlacedBuildingDataResolver.Resolve(ref instance.houseData);
+            instance.houseData = PlacedBuildingDataResolver.ResolveHouse(ref instance.houseData);
             if (instance.houseData == null)
                 return;
 
+            instance.activePlacementData = instance.houseData;
             instance.stashedBuilders.Clear();
             if (builders != null)
             {
@@ -107,12 +112,40 @@ namespace AoE.RTS.Buildings
             EnterHousePlacementMode(null);
         }
 
+        public static void EnterBarracksPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null)
+                return;
+
+            instance.barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref instance.barracksData);
+            if (instance.barracksData == null)
+                return;
+
+            instance.stashedBuilders.Clear();
+            if (builders != null)
+            {
+                for (int i = 0; i < builders.Count; i++)
+                {
+                    Unit unit = builders[i];
+                    if (unit != null)
+                        instance.stashedBuilders.Add(unit);
+                }
+            }
+
+            instance.activePlacementData = instance.barracksData;
+            instance.isPlacementModeActive = true;
+            instance.placementOpenedFrame = Time.frameCount;
+            instance.ghostObject.SetActive(true);
+            instance.RefreshGhostFromPointer();
+        }
+
         public static void CancelPlacementMode()
         {
             if (instance == null)
                 return;
 
             instance.isPlacementModeActive = false;
+            instance.activePlacementData = null;
             instance.ghostObject.SetActive(false);
             instance.stashedBuilders.Clear();
             instance.placementOpenedFrame = -1;
@@ -120,7 +153,7 @@ namespace AoE.RTS.Buildings
 
         public static bool TryConfirmPlacement(IReadOnlyList<Unit> builders)
         {
-            if (instance == null || !instance.isPlacementModeActive || instance.houseData == null)
+            if (instance == null || !instance.isPlacementModeActive || instance.activePlacementData == null)
                 return false;
 
             if (Time.frameCount <= instance.placementOpenedFrame)
@@ -133,12 +166,13 @@ namespace AoE.RTS.Buildings
             if (!instance.TryGetPointerPlacementPosition(out Vector3 placementPosition))
                 return false;
 
+            PlacedBuildingData placementData = instance.activePlacementData;
             instance.ghostPosition = placementPosition;
-            instance.ghostValid = instance.CanPlaceAt(placementPosition, instance.houseData);
+            instance.ghostValid = instance.CanPlaceAt(placementPosition, placementData);
             if (!instance.ghostValid)
                 return false;
 
-            if (!ResourceManager.TrySpendWood(instance.houseData.woodCost))
+            if (!ResourceManager.TrySpendWood(placementData.woodCost))
                 return false;
 
             instance.builderLookupBuffer.Clear();
@@ -146,17 +180,17 @@ namespace AoE.RTS.Buildings
             GatherManager.CancelForUnits(instance.builderLookupBuffer);
             instance.RemoveIncompleteSitesForBuilder(builder);
 
-            Vector3 approach = instance.GetBuildApproachPosition(instance.ghostPosition, instance.houseData);
+            Vector3 approach = instance.GetBuildApproachPosition(instance.ghostPosition, placementData);
             builder.SetMoveTarget(approach);
 
             instance.sites.Add(new ConstructionSite
             {
-                data = instance.houseData,
+                data = placementData,
                 builder = builder,
                 position = instance.ghostPosition,
-                remainingTime = instance.houseData.buildTime,
+                remainingTime = placementData.buildTime,
                 builderArrived = false,
-                siteVisual = instance.CreateConstructionVisual(instance.houseData, instance.ghostPosition)
+                siteVisual = instance.CreateConstructionVisual(placementData, instance.ghostPosition)
             });
 
             CancelPlacementMode();
@@ -196,15 +230,15 @@ namespace AoE.RTS.Buildings
 
         void RefreshGhostFromPointer()
         {
-            if (mainCamera == null || input == null || houseData == null)
+            if (mainCamera == null || input == null || activePlacementData == null)
                 return;
 
             if (!TryGetPointerPlacementPosition(out Vector3 placementPosition))
                 return;
 
             ghostPosition = placementPosition;
-            ghostValid = CanPlaceAt(ghostPosition, houseData);
-            UpdateGhostVisual(houseData, ghostPosition, ghostValid);
+            ghostValid = CanPlaceAt(ghostPosition, activePlacementData);
+            UpdateGhostVisual(activePlacementData, ghostPosition, ghostValid);
         }
 
         bool TryGetPointerPlacementPosition(out Vector3 placementPosition)
@@ -235,7 +269,7 @@ namespace AoE.RTS.Buildings
 
                 if (!site.builderArrived)
                 {
-                    PlacedBuildingData siteData = site.data ?? houseData;
+                    PlacedBuildingData siteData = site.data ?? activePlacementData ?? houseData;
                     if (HasBuilderArrived(site.builder, site.position, siteData))
                     {
                         site.builder.ClearMoveTarget();
@@ -250,7 +284,7 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
-                PlacedBuildingData buildData = site.data ?? houseData;
+                PlacedBuildingData buildData = site.data ?? activePlacementData ?? houseData;
                 if (!HasBuilderArrived(site.builder, site.position, buildData))
                     continue;
 
@@ -293,8 +327,18 @@ namespace AoE.RTS.Buildings
         {
             DestroySiteVisual(site.siteVisual);
             site.builder.ClearMoveTarget();
+
+            if (site.data == null)
+                return;
+
+            if (site.data.kind == PlacedBuildingKind.Barracks)
+            {
+                RuntimeBuildingFactory.CreateBarracks(site.data, site.position);
+                return;
+            }
+
             RuntimeBuildingFactory.CreateHouse(site.data, site.position);
-            if (site.data != null)
+            if (site.data.housingProvided > 0)
                 PopulationManager.AddHousing(site.data.housingProvided);
         }
 
