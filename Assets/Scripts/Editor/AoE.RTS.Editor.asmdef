@@ -1,0 +1,19 @@
+{
+    "name": "AoE.RTS.Editor",
+    "rootNamespace": "AoE.RTS.EditorTools",
+    "references": [
+        "AoE.RTS",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
