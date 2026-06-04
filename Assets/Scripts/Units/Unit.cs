@@ -18,6 +18,7 @@ namespace AoE.RTS.Units
         public float MaxHp => data != null ? data.maxHp : 100f;
         public bool IsSelected => isSelected;
         public UnitData Data => data;
+        public bool HasMoveTarget => moveTarget.HasValue;
 
         void Awake()
         {
@@ -57,6 +58,18 @@ namespace AoE.RTS.Units
         public void SetMoveTarget(Vector3 worldPosition)
         {
             moveTarget = new Vector3(worldPosition.x, transform.position.y, worldPosition.z);
+        }
+
+        public void ClearMoveTarget()
+        {
+            moveTarget = null;
+        }
+
+        public bool IsNear(Vector3 worldPosition, float radius)
+        {
+            Vector3 delta = transform.position - worldPosition;
+            delta.y = 0f;
+            return delta.sqrMagnitude <= radius * radius;
         }
 
         public void TickMovement(float deltaTime)

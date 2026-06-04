@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Core;
+using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -145,9 +146,21 @@ namespace AoE.RTS.Selection
                 return;
 
             Ray ray = mainCamera.ScreenPointToRay(input.PointerScreenPosition);
-            if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, GameLayers.GroundMask))
+
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, GameLayers.ResourceMask))
+            {
+                TreeResource tree = hit.collider.GetComponentInParent<TreeResource>();
+                if (tree != null && !tree.IsDepleted)
+                {
+                    GatherManager.IssueGatherCommand(selectedUnits, tree);
+                    return;
+                }
+            }
+
+            if (!Physics.Raycast(ray, out hit, 1000f, GameLayers.GroundMask))
                 return;
 
+            GatherManager.CancelForUnits(selectedUnits);
             GroupMoveFormation.AssignMoveTargets(selectedUnits, hit.point, groupMoveSpacing);
         }
 

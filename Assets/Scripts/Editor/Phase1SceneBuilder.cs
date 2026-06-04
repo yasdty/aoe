@@ -1,5 +1,7 @@
 using AoE.RTS.Buildings;
 using AoE.RTS.Camera;
+using AoE.RTS.Core;
+using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Selection;
 using AoE.RTS.Units;
@@ -16,6 +18,7 @@ namespace AoE.RTS.EditorTools
         const string ScenePath = "Assets/Scenes/Phase1.unity";
         const string UnitDataPath = "Assets/Data/UnitData/DefaultUnit.asset";
         const string TownCenterDataPath = "Assets/Data/BuildingData/TownCenterData.asset";
+        const string DefaultTreeDataPath = GameAssetPaths.DefaultTreeData;
 
         public static bool EnsureEditModeForSceneSetup()
         {
@@ -122,6 +125,7 @@ namespace AoE.RTS.EditorTools
             SetLayerName(layers, 8, "Ground");
             SetLayerName(layers, 9, "Unit");
             SetLayerName(layers, 10, "Building");
+            SetLayerName(layers, 11, "Resource");
             tagManager.ApplyModifiedProperties();
         }
 
@@ -219,6 +223,57 @@ namespace AoE.RTS.EditorTools
             EditorUtility.SetDirty(townCenterObject);
 
             return townCenterObject;
+        }
+
+        public static ResourceNodeData EnsureDefaultTreeData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/ResourceData"))
+                AssetDatabase.CreateFolder("Assets/Data", "ResourceData");
+
+            ResourceNodeData existing = AssetDatabase.LoadAssetAtPath<ResourceNodeData>(DefaultTreeDataPath);
+            if (existing != null)
+                return existing;
+
+            ResourceNodeData data = ScriptableObject.CreateInstance<ResourceNodeData>();
+            data.displayName = "Tree";
+            data.initialWood = 100f;
+            AssetDatabase.CreateAsset(data, DefaultTreeDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static GameObject CreateTree(ResourceNodeData treeData, Vector3 position)
+        {
+            const float treeHeight = 4f;
+            const float treeRadius = 0.6f;
+
+            GameObject treeObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            treeObject.name = "Tree";
+            treeObject.layer = LayerMask.NameToLayer("Resource");
+            treeObject.transform.localScale = new Vector3(treeRadius * 2f, treeHeight * 0.5f, treeRadius * 2f);
+            float groundClearance = 0.05f;
+            treeObject.transform.position = new Vector3(
+                position.x,
+                treeHeight * 0.5f + groundClearance,
+                position.z);
+
+            Color baseColor = treeData != null
+                ? treeData.defaultColor
+                : new Color(0.2f, 0.5f, 0.22f);
+
+            Renderer renderer = treeObject.GetComponent<Renderer>();
+            renderer.sharedMaterial = SceneMaterialFactory.CreateLitMaterial(baseColor);
+
+            TreeResource treeResource = treeObject.AddComponent<TreeResource>();
+            SerializedObject serializedTree = new SerializedObject(treeResource);
+            serializedTree.FindProperty("data").objectReferenceValue = treeData;
+            serializedTree.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(treeResource);
+            EditorUtility.SetDirty(treeObject);
+
+            return treeObject;
         }
 
         public static void CreateLighting()
