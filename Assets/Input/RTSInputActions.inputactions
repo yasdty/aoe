@@ -4,12 +4,12 @@
     "maps": [
         {
             "name": "Gameplay",
-            "id": "f979092c-c77c-4d5f-a10e-393c4c1a7047",
+            "id": "8e10d541-5bb5-4b3f-97ca-32514bcd8336",
             "actions": [
                 {
                     "name": "Select",
                     "type": "Button",
-                    "id": "a9e72860-ddab-4100-873a-aa6721799d8f",
+                    "id": "61e3defd-4468-4f39-8daa-b3f54656ce9f",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -18,7 +18,7 @@
                 {
                     "name": "Command",
                     "type": "Button",
-                    "id": "da63018c-9879-430a-93b8-17841937a4bd",
+                    "id": "d0da4cbc-5b0b-49c9-ad0b-cec872ddb3c5",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -27,7 +27,7 @@
                 {
                     "name": "MoveCamera",
                     "type": "Value",
-                    "id": "70ef52b6-0593-43c8-b67f-0cc858ea4c26",
+                    "id": "fa120396-26b6-4ceb-96aa-d78427187bc8",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
@@ -36,7 +36,7 @@
                 {
                     "name": "Zoom",
                     "type": "Value",
-                    "id": "3960a69c-94f4-45ef-9f49-782fcfa6865c",
+                    "id": "b78fd2ac-b567-4640-b082-dda916ed9056",
                     "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
@@ -45,17 +45,26 @@
                 {
                     "name": "PointerPosition",
                     "type": "Value",
-                    "id": "baf78b3c-1be7-4547-a502-c350ce23f377",
+                    "id": "f079756d-eb57-4cad-939e-4d51d427ead0",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "TrainVillager",
+                    "type": "Button",
+                    "id": "da944909-de19-432f-85f4-695b23ef80e1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
                 {
                     "name": "",
-                    "id": "b75e4626-db30-4c25-ad43-c64bdbd78116",
+                    "id": "37900e96-3b3d-42ac-b4b0-b4327452c760",
                     "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
@@ -66,7 +75,7 @@
                 },
                 {
                     "name": "",
-                    "id": "1c4c8678-21a0-4477-9c82-8366c2d544eb",
+                    "id": "1361f170-d90d-4bdc-8862-e0eb816e8e06",
                     "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
@@ -77,7 +86,7 @@
                 },
                 {
                     "name": "2DVector",
-                    "id": "d8c87250-6275-424b-a650-4076a5f2d623",
+                    "id": "bb971bbb-5eb0-4c02-9f84-ad41663ca2f8",
                     "path": "2DVector",
                     "interactions": "",
                     "processors": "",
@@ -88,7 +97,7 @@
                 },
                 {
                     "name": "Up",
-                    "id": "075c3392-e10c-4321-b8f4-74da07fdd368",
+                    "id": "2de777be-46a8-4a0c-9f75-7345f7caa411",
                     "path": "<Keyboard>/w",
                     "interactions": "",
                     "processors": "",
@@ -99,7 +108,7 @@
                 },
                 {
                     "name": "Down",
-                    "id": "067bb8a5-33c3-4627-93ad-64fc0f6c0265",
+                    "id": "89bf0c2a-b9c0-47d5-9f17-9ef44628d693",
                     "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
@@ -110,7 +119,7 @@
                 },
                 {
                     "name": "Left",
-                    "id": "4753ad48-1fb6-455f-9c90-63c80c285ff6",
+                    "id": "b870300d-8cf6-4e9a-888f-af57a48cce67",
                     "path": "<Keyboard>/a",
                     "interactions": "",
                     "processors": "",
@@ -121,7 +130,7 @@
                 },
                 {
                     "name": "Right",
-                    "id": "7f8761f5-db96-4447-aa3b-51ab6b42b4c7",
+                    "id": "401b9b2a-54f9-422f-bdfa-5bacb2f76662",
                     "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
@@ -132,7 +141,7 @@
                 },
                 {
                     "name": "",
-                    "id": "c4e4b372-cad8-4069-8e79-8b05d923cbf2",
+                    "id": "22545428-006d-447e-acf7-f9fd267992f7",
                     "path": "<Mouse>/scroll/y",
                     "interactions": "",
                     "processors": "",
@@ -143,12 +152,23 @@
                 },
                 {
                     "name": "",
-                    "id": "97065796-4c7f-4dc7-97bd-68629262e266",
+                    "id": "c2255a08-0adf-49a1-86ee-b43909055030",
                     "path": "<Mouse>/position",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "PointerPosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ab4a47b1-698e-4bec-b27e-c89d34b09d7c",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "TrainVillager",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

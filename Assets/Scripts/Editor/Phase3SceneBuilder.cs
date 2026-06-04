@@ -1,3 +1,4 @@
+using AoE.RTS.Buildings;
 using AoE.RTS.Input;
 using AoE.RTS.Selection;
 using AoE.RTS.Units;
@@ -9,21 +10,22 @@ using UnityEngine.SceneManagement;
 
 namespace AoE.RTS.EditorTools
 {
-    public static class Phase2SceneBuilder
+    public static class Phase3SceneBuilder
     {
-        const string ScenePath = "Assets/Scenes/Phase2.unity";
+        const string ScenePath = "Assets/Scenes/Phase3.unity";
 
-        [MenuItem("AoE/Setup Phase2 Scene", true)]
-        static bool ValidateSetupPhase2Scene() => !EditorApplication.isPlaying;
+        [MenuItem("AoE/Setup Phase3 Scene", true)]
+        static bool ValidateSetupPhase3Scene() => !EditorApplication.isPlaying;
 
-        [MenuItem("AoE/Setup Phase2 Scene")]
-        public static void SetupPhase2Scene()
+        [MenuItem("AoE/Setup Phase3 Scene")]
+        public static void SetupPhase3Scene()
         {
             if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
                 return;
 
             Phase1SceneBuilder.EnsureLayers();
-            UnitData unitData = Phase1SceneBuilder.EnsureDefaultUnitData();
+            UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
+            BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
             if (inputActions == null)
             {
@@ -35,30 +37,17 @@ namespace AoE.RTS.EditorTools
 
             Phase1SceneBuilder.CreateLighting();
             Phase1SceneBuilder.CreateGround();
-            CreateUnitGrid(unitData);
+            GameObject townCenter = Phase1SceneBuilder.CreateTownCenter(townCenterData, Vector3.zero);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
+            cameraRig.transform.position = new Vector3(18f, 22f, 18f);
+            cameraRig.transform.rotation = Quaternion.Euler(55f, -45f, 0f);
             CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>());
 
             Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
             EditorSceneManager.SaveScene(scene, ScenePath);
-            Debug.Log("Phase2 scene created at " + ScenePath);
-        }
+            UnityEditor.Selection.activeGameObject = townCenter;
 
-        static void CreateUnitGrid(UnitData unitData)
-        {
-            const int gridSize = 3;
-            const float spacing = 3f;
-            float origin = -(gridSize - 1) * spacing * 0.5f;
-
-            for (int row = 0; row < gridSize; row++)
-            {
-                for (int column = 0; column < gridSize; column++)
-                {
-                    Vector3 position = new Vector3(origin + column * spacing, 1f, origin + row * spacing);
-                    GameObject unitObject = Phase1SceneBuilder.CreateUnit(unitData, position);
-                    unitObject.name = $"Unit_{row}_{column}";
-                }
-            }
+            Debug.Log("Phase3 scene created at " + ScenePath);
         }
 
         static void CreateManagers(InputActionAsset inputActions, UnityEngine.Camera mainCamera)
@@ -69,10 +58,15 @@ namespace AoE.RTS.EditorTools
             unitManagerObject.transform.SetParent(systems.transform);
             unitManagerObject.AddComponent<UnitManager>();
 
+            GameObject productionManagerObject = new GameObject("ProductionManager");
+            productionManagerObject.transform.SetParent(systems.transform);
+            productionManagerObject.AddComponent<ProductionManager>();
+
             GameObject selectionManagerObject = new GameObject("SelectionManager");
             selectionManagerObject.transform.SetParent(systems.transform);
             SelectionManager selectionManager = selectionManagerObject.AddComponent<SelectionManager>();
             selectionManagerObject.AddComponent<SelectionBoxView>();
+            ProductionPanelView productionPanel = selectionManagerObject.AddComponent<ProductionPanelView>();
 
             RTSInputReader inputReader = mainCamera.GetComponent<RTSInputReader>();
             SerializedObject serializedSelection = new SerializedObject(selectionManager);
@@ -81,6 +75,11 @@ namespace AoE.RTS.EditorTools
             SerializedProperty boxView = serializedSelection.FindProperty("selectionBoxView");
             boxView.objectReferenceValue = selectionManagerObject.GetComponent<SelectionBoxView>();
             serializedSelection.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedProductionPanel = new SerializedObject(productionPanel);
+            serializedProductionPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedProductionPanel.FindProperty("input").objectReferenceValue = inputReader;
+            serializedProductionPanel.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }

@@ -1,3 +1,4 @@
+using AoE.RTS.Buildings;
 using AoE.RTS.Camera;
 using AoE.RTS.Input;
 using AoE.RTS.Selection;
@@ -14,9 +15,26 @@ namespace AoE.RTS.EditorTools
     {
         const string ScenePath = "Assets/Scenes/Phase1.unity";
         const string UnitDataPath = "Assets/Data/UnitData/DefaultUnit.asset";
+        const string TownCenterDataPath = "Assets/Data/BuildingData/TownCenterData.asset";
+
+        public static bool EnsureEditModeForSceneSetup()
+        {
+            if (!EditorApplication.isPlaying && !EditorApplication.isPlayingOrWillChangePlaymode)
+                return true;
+
+            Debug.LogWarning("Stop Play mode before running AoE scene setup menus.");
+            return false;
+        }
+
+        [MenuItem("AoE/Fix Phase1 Input References", true)]
+        static bool ValidateFixPhase1InputReferences() => !EditorApplication.isPlaying;
+
         [MenuItem("AoE/Fix Phase1 Input References")]
         public static void FixPhase1InputReferences()
         {
+            if (!EnsureEditModeForSceneSetup())
+                return;
+
             RTSInputActionsProjectSettings.ClearStaleProjectWideBinding();
 
             InputActionAsset inputActions;
@@ -48,9 +66,15 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Phase1 input references updated.");
         }
 
+        [MenuItem("AoE/Setup Phase1 Scene", true)]
+        static bool ValidateSetupPhase1Scene() => !EditorApplication.isPlaying;
+
         [MenuItem("AoE/Setup Phase1 Scene")]
         public static void SetupPhase1Scene()
         {
+            if (!EnsureEditModeForSceneSetup())
+                return;
+
             EnsureLayers();
             UnitData unitData = EnsureDefaultUnitData();
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
@@ -89,12 +113,15 @@ namespace AoE.RTS.EditorTools
 
         public static void EnsureLayers()
         {
+            RenderPipelineSetup.EnsureRenderPipeline();
+
             SerializedObject tagManager = new SerializedObject(
                 AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
             SerializedProperty layers = tagManager.FindProperty("layers");
 
             SetLayerName(layers, 8, "Ground");
             SetLayerName(layers, 9, "Unit");
+            SetLayerName(layers, 10, "Building");
             tagManager.ApplyModifiedProperties();
         }
 
@@ -123,6 +150,77 @@ namespace AoE.RTS.EditorTools
             return data;
         }
 
+        public static BuildingData EnsureTownCenterData(UnitData villagerData)
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            BuildingData existing = AssetDatabase.LoadAssetAtPath<BuildingData>(TownCenterDataPath);
+            if (existing != null)
+            {
+                if (existing.villagerUnitData == null && villagerData != null)
+                {
+                    existing.villagerUnitData = villagerData;
+                    EditorUtility.SetDirty(existing);
+                }
+
+                if (existing.spawnClearance < 4f)
+                {
+                    existing.spawnForwardOffset = 8f;
+                    existing.spawnClearance = 4f;
+                    EditorUtility.SetDirty(existing);
+                }
+
+                AssetDatabase.SaveAssets();
+                return existing;
+            }
+
+            BuildingData data = ScriptableObject.CreateInstance<BuildingData>();
+            data.displayName = "Town Center";
+            data.villagerTrainTime = 5f;
+            data.villagerUnitData = villagerData;
+            data.spawnForwardOffset = 8f;
+            data.spawnClearance = 4f;
+            AssetDatabase.CreateAsset(data, TownCenterDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static GameObject CreateTownCenter(BuildingData buildingData, Vector3 position)
+        {
+            const float buildingHeight = 4f;
+            const float buildingWidth = 8f;
+
+            GameObject townCenterObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            townCenterObject.name = "TownCenter";
+            townCenterObject.layer = LayerMask.NameToLayer("Building");
+            townCenterObject.transform.localScale = new Vector3(buildingWidth, buildingHeight, buildingWidth);
+            float groundClearance = 0.05f;
+            townCenterObject.transform.position = new Vector3(
+                position.x,
+                buildingHeight * 0.5f + groundClearance,
+                position.z);
+
+            Color baseColor = buildingData != null
+                ? buildingData.defaultColor
+                : new Color(0.75f, 0.65f, 0.45f);
+
+            Renderer renderer = townCenterObject.GetComponent<Renderer>();
+            renderer.sharedMaterial = SceneMaterialFactory.CreateLitMaterial(baseColor);
+
+            TownCenter townCenter = townCenterObject.AddComponent<TownCenter>();
+            SerializedObject serializedTownCenter = new SerializedObject(townCenter);
+            serializedTownCenter.Update();
+            serializedTownCenter.FindProperty("data").objectReferenceValue = buildingData;
+            serializedTownCenter.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(townCenter);
+            EditorUtility.SetDirty(townCenterObject);
+
+            return townCenterObject;
+        }
+
         public static void CreateLighting()
         {
             GameObject lightObject = new GameObject("Directional Light");
@@ -140,9 +238,7 @@ namespace AoE.RTS.EditorTools
             ground.transform.localScale = new Vector3(10f, 1f, 10f);
 
             Renderer renderer = ground.GetComponent<Renderer>();
-            Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            material.color = new Color(0.35f, 0.55f, 0.3f);
-            renderer.sharedMaterial = material;
+            renderer.sharedMaterial = SceneMaterialFactory.CreateLitMaterial(new Color(0.35f, 0.55f, 0.3f));
 
             return ground;
         }

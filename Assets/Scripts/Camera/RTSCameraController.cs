@@ -39,15 +39,21 @@ namespace AoE.RTS.Camera
             Vector2 keyboardMove = input.CameraMove;
             Vector2 edgeMove = Vector2.zero;
 
-            Vector2 pointer = input.PointerScreenPosition;
-            if (pointer.x <= edgeScrollBorderPixels)
-                edgeMove.x -= 1f;
-            if (pointer.x >= Screen.width - edgeScrollBorderPixels)
-                edgeMove.x += 1f;
-            if (pointer.y <= edgeScrollBorderPixels)
-                edgeMove.y -= 1f;
-            if (pointer.y >= Screen.height - edgeScrollBorderPixels)
-                edgeMove.y += 1f;
+            if (Application.isFocused && Time.timeSinceLevelLoad >= 0.25f)
+            {
+                Vector2 pointer = input.PointerScreenPosition;
+                if (pointer.sqrMagnitude > 1f)
+                {
+                    if (pointer.x <= edgeScrollBorderPixels)
+                        edgeMove.x -= 1f;
+                    if (pointer.x >= Screen.width - edgeScrollBorderPixels)
+                        edgeMove.x += 1f;
+                    if (pointer.y <= edgeScrollBorderPixels)
+                        edgeMove.y -= 1f;
+                    if (pointer.y >= Screen.height - edgeScrollBorderPixels)
+                        edgeMove.y += 1f;
+                }
+            }
 
             ApplyCameraMove(keyboardMove, moveSpeed);
             ApplyCameraMove(edgeMove, edgeScrollSpeed);
@@ -55,8 +61,9 @@ namespace AoE.RTS.Camera
             float zoom = input.ZoomDelta;
             if (Mathf.Abs(zoom) > 0.001f)
             {
+                float direction = Mathf.Sign(zoom);
                 Vector3 position = transform.position;
-                position.y = Mathf.Clamp(position.y - zoom * zoomSpeed * Time.deltaTime, minHeight, maxHeight);
+                position.y = Mathf.Clamp(position.y - direction * zoomSpeed * Time.deltaTime, minHeight, maxHeight);
                 transform.position = position;
             }
         }

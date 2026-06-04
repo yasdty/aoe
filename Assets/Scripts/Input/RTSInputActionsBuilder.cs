@@ -35,6 +35,9 @@ namespace AoE.RTS.Input
             map.AddAction("PointerPosition", InputActionType.Value, expectedControlLayout: "Vector2")
                 .AddBinding("<Mouse>/position", groups: "Keyboard&Mouse");
 
+            map.AddAction("TrainVillager", InputActionType.Button)
+                .AddBinding("<Keyboard>/q", groups: "Keyboard&Mouse");
+
             asset.AddControlScheme("Keyboard&Mouse")
                 .WithBindingGroup("Keyboard&Mouse")
                 .WithRequiredDevice<Keyboard>()

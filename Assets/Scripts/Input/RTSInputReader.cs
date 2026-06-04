@@ -17,6 +17,7 @@ namespace AoE.RTS.Input
         InputAction moveCameraAction;
         InputAction zoomAction;
         InputAction pointerAction;
+        InputAction trainVillagerAction;
 
         public Vector2 CameraMove => moveCameraAction?.ReadValue<Vector2>() ?? Vector2.zero;
         public float ZoomDelta => zoomAction?.ReadValue<float>() ?? 0f;
@@ -44,6 +45,7 @@ namespace AoE.RTS.Input
             moveCameraAction = map.FindAction("MoveCamera", true);
             zoomAction = map.FindAction("Zoom", true);
             pointerAction = map.FindAction("PointerPosition", true);
+            trainVillagerAction = map.FindAction("TrainVillager", false);
         }
 
         void OnEnable()
@@ -87,6 +89,11 @@ namespace AoE.RTS.Input
         public bool IsShiftHeld =>
             Keyboard.current != null &&
             (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
+
+        public bool WasTrainVillagerPressedThisFrame()
+        {
+            return trainVillagerAction != null && trainVillagerAction.WasPressedThisFrame();
+        }
 
         static InputActionAsset TryResolveInputActions()
         {

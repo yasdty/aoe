@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AoE.RTS.Buildings;
 using AoE.RTS.Core;
 using AoE.RTS.Input;
 using AoE.RTS.Units;
@@ -17,10 +18,13 @@ namespace AoE.RTS.Selection
         readonly List<Unit> selectedUnits = new List<Unit>();
         readonly List<Unit> selectionBuffer = new List<Unit>();
 
+        TownCenter selectedTownCenter;
+
         Vector2 dragStartScreen;
         bool isDragging;
 
         public IReadOnlyList<Unit> SelectedUnits => selectedUnits;
+        public TownCenter SelectedTownCenter => selectedTownCenter;
 
         void Update()
         {
@@ -72,6 +76,7 @@ namespace AoE.RTS.Selection
                 Unit unit = hit.collider.GetComponentInParent<Unit>();
                 if (unit != null)
                 {
+                    ClearTownCenterSelection();
                     if (additive)
                         ToggleUnitSelection(unit);
                     else
@@ -80,8 +85,19 @@ namespace AoE.RTS.Selection
                 }
             }
 
+            if (Physics.Raycast(ray, out hit, 1000f, GameLayers.BuildingMask))
+            {
+                TownCenter townCenter = hit.collider.GetComponentInParent<TownCenter>();
+                if (townCenter != null)
+                {
+                    if (!additive)
+                        SetTownCenterSelection(townCenter);
+                    return;
+                }
+            }
+
             if (!additive)
-                ClearSelection();
+                ClearAllSelection();
         }
 
         void ApplyBoxSelection(Vector2 screenStart, Vector2 screenEnd, bool additive)
@@ -95,6 +111,11 @@ namespace AoE.RTS.Selection
             {
                 ClearSelectionVisuals();
                 selectedUnits.Clear();
+                ClearTownCenterSelection();
+            }
+            else
+            {
+                ClearTownCenterSelection();
             }
 
             for (int i = 0; i < selectionBuffer.Count; i++)
@@ -132,7 +153,7 @@ namespace AoE.RTS.Selection
 
         void SetSelection(Unit unit)
         {
-            ClearSelection();
+            ClearAllSelection();
             selectedUnits.Add(unit);
             unit.SetSelected(true);
         }
@@ -146,6 +167,7 @@ namespace AoE.RTS.Selection
                 return;
             }
 
+            ClearTownCenterSelection();
             selectedUnits.Add(unit);
             unit.SetSelected(true);
         }
@@ -154,6 +176,28 @@ namespace AoE.RTS.Selection
         {
             ClearSelectionVisuals();
             selectedUnits.Clear();
+        }
+
+        void SetTownCenterSelection(TownCenter townCenter)
+        {
+            ClearAllSelection();
+            selectedTownCenter = townCenter;
+            townCenter.SetSelected(true);
+        }
+
+        void ClearTownCenterSelection()
+        {
+            if (selectedTownCenter != null)
+            {
+                selectedTownCenter.SetSelected(false);
+                selectedTownCenter = null;
+            }
+        }
+
+        void ClearAllSelection()
+        {
+            ClearSelection();
+            ClearTownCenterSelection();
         }
 
         void ClearSelectionVisuals()

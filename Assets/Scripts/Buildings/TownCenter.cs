@@ -1,0 +1,143 @@
+using AoE.RTS.Core;
+using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+namespace AoE.RTS.Buildings
+{
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(Collider))]
+    public class TownCenter : MonoBehaviour
+    {
+        [SerializeField] BuildingData data;
+
+        Renderer cachedRenderer;
+        MaterialPropertyBlock propertyBlock;
+        bool isSelected;
+
+        public BuildingData Data => data;
+        public bool IsSelected => isSelected;
+
+        void Awake()
+        {
+            cachedRenderer = GetComponentInChildren<Renderer>();
+            EnsureDataReference();
+        }
+
+        void OnEnable()
+        {
+            ProductionManager.Register(this);
+            UpdateVisual();
+        }
+
+        void Start()
+        {
+            ProductionManager.Register(this);
+        }
+
+        void OnDisable()
+        {
+            ProductionManager.Unregister(this);
+        }
+
+        public void SetData(BuildingData buildingData)
+        {
+            data = buildingData;
+            UpdateVisual();
+        }
+
+        public void SetSelected(bool selected)
+        {
+            isSelected = selected;
+            UpdateVisual();
+        }
+
+        public bool TryQueueVillagerProduction()
+        {
+            if (data == null || data.villagerUnitData == null)
+                return false;
+
+            return ProductionManager.TryQueueProduction(this, data.villagerUnitData, data.villagerTrainTime);
+        }
+
+        public Vector3 GetVillagerSpawnPosition()
+        {
+            const float villagerGroundY = 1f;
+            float clearance = data != null ? data.spawnClearance : 4f;
+
+            Vector3 exitDirection = ResolveSpawnDirection();
+            float halfExtent = GetHorizontalHalfExtentAlong(exitDirection);
+            Vector3 spawn = transform.position + exitDirection * (halfExtent + clearance);
+            spawn.y = villagerGroundY;
+            return spawn;
+        }
+
+        Vector3 ResolveSpawnDirection()
+        {
+            UnityEngine.Camera mainCamera = UnityEngine.Camera.main;
+            if (mainCamera != null)
+            {
+                Vector3 toCamera = mainCamera.transform.position - transform.position;
+                toCamera.y = 0f;
+                if (toCamera.sqrMagnitude > 0.01f)
+                    return toCamera.normalized;
+            }
+
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude > 0.0001f)
+                return forward.normalized;
+
+            return Vector3.forward;
+        }
+
+        float GetHorizontalHalfExtentAlong(Vector3 worldDirection)
+        {
+            Vector3 localDirection = transform.InverseTransformDirection(worldDirection);
+            localDirection.y = 0f;
+            if (localDirection.sqrMagnitude < 0.0001f)
+                localDirection = Vector3.forward;
+            localDirection.Normalize();
+
+            Vector3 halfSize = transform.lossyScale * 0.5f;
+            return Mathf.Abs(localDirection.x) * halfSize.x + Mathf.Abs(localDirection.z) * halfSize.z;
+        }
+
+        void UpdateVisual()
+        {
+            if (cachedRenderer == null)
+                cachedRenderer = GetComponentInChildren<Renderer>();
+            if (cachedRenderer == null)
+                return;
+
+            if (!isSelected)
+            {
+                cachedRenderer.SetPropertyBlock(null);
+                return;
+            }
+
+            if (propertyBlock == null)
+                propertyBlock = new MaterialPropertyBlock();
+
+            Color color = data != null
+                ? data.selectedColor
+                : new Color(0.95f, 0.85f, 0.35f);
+
+            cachedRenderer.GetPropertyBlock(propertyBlock);
+            propertyBlock.SetColor("_BaseColor", color);
+            propertyBlock.SetColor("_Color", color);
+            cachedRenderer.SetPropertyBlock(propertyBlock);
+        }
+
+        void EnsureDataReference()
+        {
+            if (data != null)
+                return;
+
+#if UNITY_EDITOR
+            data = AssetDatabase.LoadAssetAtPath<BuildingData>(GameAssetPaths.TownCenterData);
+#endif
+        }
+    }
+}
