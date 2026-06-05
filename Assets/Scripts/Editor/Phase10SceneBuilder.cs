@@ -1,6 +1,7 @@
 using AoE.RTS.AI;
 using AoE.RTS.Buildings;
 using AoE.RTS.Combat;
+using AoE.RTS.Commands;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
@@ -149,6 +150,10 @@ namespace AoE.RTS.EditorTools
             GameObject simulationTickObject = new GameObject("SimulationTick");
             simulationTickObject.transform.SetParent(systems.transform);
             simulationTickObject.AddComponent<SimulationTick>();
+
+            GameObject commandQueueObject = new GameObject("CommandQueue");
+            commandQueueObject.transform.SetParent(systems.transform);
+            commandQueueObject.AddComponent<CommandQueue>();
 
             GameObject unitPoolObject = new GameObject("UnitPool");
             unitPoolObject.transform.SetParent(systems.transform);

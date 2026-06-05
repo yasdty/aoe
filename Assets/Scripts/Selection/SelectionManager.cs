@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
-using AoE.RTS.Combat;
+using AoE.RTS.Commands;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
@@ -131,7 +131,7 @@ namespace AoE.RTS.Selection
 
             if (input.WasSelectReleasedThisFrame() && !isDragging
                 && !ResourceHudView.IsPointerOverHud(input.PointerScreenPosition))
-                BuildingPlacementManager.TryConfirmPlacement(selectedUnits);
+                CommandQueue.Enqueue(new BuildConfirmCommand(selectedUnits));
 
             if (input.WasCommandPressedThisFrame())
                 BuildingPlacementManager.CancelPlacementMode();
@@ -290,9 +290,7 @@ namespace AoE.RTS.Selection
                 TreeResource tree = hit.collider.GetComponentInParent<TreeResource>();
                 if (tree != null && !tree.IsDepleted)
                 {
-                    BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
-                    AttackManager.CancelForUnits(selectedUnits);
-                    GatherManager.IssueGatherCommand(selectedUnits, tree);
+                    CommandQueue.Enqueue(new GatherCommand(selectedUnits, tree));
                     return;
                 }
             }
@@ -314,10 +312,7 @@ namespace AoE.RTS.Selection
             if (!Physics.Raycast(ray, out hit, 1000f, GameLayers.GroundMask))
                 return;
 
-            BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
-            GatherManager.CancelForUnits(selectedUnits);
-            AttackManager.CancelForUnits(selectedUnits);
-            GroupMoveFormation.AssignMoveTargets(selectedUnits, hit.point, groupMoveSpacing);
+            CommandQueue.Enqueue(new MoveCommand(selectedUnits, hit.point, groupMoveSpacing));
         }
 
         bool TryIssueAttackCommand(Unit targetUnit)
@@ -335,9 +330,7 @@ namespace AoE.RTS.Selection
             if (attackCommandBuffer.Count == 0)
                 return false;
 
-            BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
-            GatherManager.CancelForUnits(selectedUnits);
-            AttackManager.IssueAttack(attackCommandBuffer, targetUnit);
+            CommandQueue.Enqueue(new AttackUnitCommand(selectedUnits, targetUnit));
             return true;
         }
 
@@ -359,9 +352,7 @@ namespace AoE.RTS.Selection
             if (attackCommandBuffer.Count == 0)
                 return false;
 
-            BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
-            GatherManager.CancelForUnits(selectedUnits);
-            AttackManager.IssueAttack(attackCommandBuffer, targetBuilding);
+            CommandQueue.Enqueue(new AttackBuildingCommand(selectedUnits, targetBuilding));
             return true;
         }
 

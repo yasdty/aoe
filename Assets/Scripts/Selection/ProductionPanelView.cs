@@ -1,4 +1,5 @@
 using AoE.RTS.Buildings;
+using AoE.RTS.Commands;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
@@ -34,7 +35,7 @@ namespace AoE.RTS.Selection
             bool populationFull = !PopulationManager.CanTrainUnit();
             GUI.enabled = !isProducing && !populationFull && !GameSessionManager.IsGameOver;
             if (GUILayout.Button("Create Villager (Q)"))
-                townCenter.TryQueueVillagerProduction();
+                CommandQueue.Enqueue(new TrainVillagerCommand(townCenter));
             GUI.enabled = true;
 
             if (populationFull && !isProducing)
@@ -63,7 +64,7 @@ namespace AoE.RTS.Selection
                 return;
 
             if (input.WasTrainVillagerPressedThisFrame())
-                townCenter.TryQueueVillagerProduction();
+                CommandQueue.Enqueue(new TrainVillagerCommand(townCenter));
         }
     }
 }
