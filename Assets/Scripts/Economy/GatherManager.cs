@@ -26,16 +26,15 @@ namespace AoE.RTS.Economy
         const float GatherRate = 2.5f;
         const float GatherReachDistance = 2.5f;
         const float DepositReachDistance = 5f;
+        const float GatherStandRadius = 2f;
+        const float DepositStandRadius = 3.5f;
 
         static GatherManager instance;
         readonly List<GatherJob> jobs = new List<GatherJob>();
 
-        TownCenter depositTarget;
-
         void Awake()
         {
             instance = this;
-            depositTarget = FindAnyObjectByType<TownCenter>();
         }
 
         void OnDestroy()
@@ -44,15 +43,29 @@ namespace AoE.RTS.Economy
                 instance = null;
         }
 
+        public static bool IsUnitGathering(Unit unit)
+        {
+            if (instance == null || unit == null)
+                return false;
+
+            for (int i = 0; i < instance.jobs.Count; i++)
+            {
+                if (instance.jobs[i].unit == unit)
+                    return true;
+            }
+
+            return false;
+        }
+
         public static void IssueGatherCommand(IReadOnlyList<Unit> units, TreeResource tree)
         {
-            if (instance == null || tree == null || tree.IsDepleted || instance.depositTarget == null)
+            if (instance == null || tree == null || tree.IsDepleted)
                 return;
 
             for (int i = 0; i < units.Count; i++)
             {
                 Unit unit = units[i];
-                if (unit == null)
+                if (unit == null || ProductionManager.GetTownCenterForTeam(unit.Team) == null)
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -63,7 +76,7 @@ namespace AoE.RTS.Economy
                     state = GatherState.MoveToTree,
                     carriedWood = 0f
                 });
-                unit.SetMoveTarget(tree.GetGatherPosition());
+                unit.SetMoveTarget(GetGatherPosition(tree, unit));
             }
         }
 
@@ -142,7 +155,7 @@ namespace AoE.RTS.Economy
                 return;
             }
 
-            Vector3 gatherPosition = job.tree.GetGatherPosition();
+            Vector3 gatherPosition = GetGatherPosition(job.tree, job.unit);
             if (job.unit.IsNear(gatherPosition, GatherReachDistance))
             {
                 job.unit.ClearMoveTarget();
@@ -176,7 +189,7 @@ namespace AoE.RTS.Economy
 
         void BeginMoveToDeposit(ref GatherJob job, int index)
         {
-            if (job.carriedWood <= 0f || depositTarget == null)
+            if (job.carriedWood <= 0f || ProductionManager.GetTownCenterForTeam(job.unit.Team) == null)
             {
                 job.unit.ClearMoveTarget();
                 jobs.RemoveAt(index);
@@ -184,16 +197,22 @@ namespace AoE.RTS.Economy
             }
 
             job.state = GatherState.MoveToDeposit;
-            job.unit.SetMoveTarget(GetDepositPosition());
+            job.unit.SetMoveTarget(GetDepositPosition(job.unit));
             jobs[index] = job;
         }
 
         void TickMoveToDeposit(ref GatherJob job, int index)
         {
-            Vector3 depositPosition = GetDepositPosition();
+            Vector3 depositPosition = GetDepositPosition(job.unit);
+            if (depositPosition == Vector3.zero)
+            {
+                jobs.RemoveAt(index);
+                return;
+            }
+
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
-                ResourceManager.AddWood(job.carriedWood);
+                ResourceManager.AddWood(job.unit.Team, job.carriedWood);
                 job.unit.ClearMoveTarget();
                 jobs.RemoveAt(index);
                 return;
@@ -203,14 +222,27 @@ namespace AoE.RTS.Economy
                 job.unit.SetMoveTarget(depositPosition);
         }
 
-        Vector3 GetDepositPosition()
+        static Vector3 GetGatherPosition(TreeResource tree, Unit unit)
         {
-            if (depositTarget == null)
+            if (tree == null)
                 return Vector3.zero;
 
-            Vector3 position = depositTarget.transform.position;
-            position.y = 1f;
-            return position;
+            Vector3 center = tree.GetGatherPosition();
+            return UnitPositionOffsets.ApplyRingOffset(center, unit, GatherStandRadius);
+        }
+
+        static Vector3 GetDepositPosition(Unit unit)
+        {
+            if (unit == null)
+                return Vector3.zero;
+
+            TownCenter townCenter = ProductionManager.GetTownCenterForTeam(unit.Team);
+            if (townCenter == null)
+                return Vector3.zero;
+
+            Vector3 center = townCenter.transform.position;
+            center.y = 1f;
+            return UnitPositionOffsets.ApplyRingOffset(center, unit, DepositStandRadius);
         }
     }
 }

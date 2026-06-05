@@ -48,6 +48,21 @@ namespace AoE.RTS.Buildings
             instance.activeJobs.RemoveAll(job => job.townCenter == townCenter);
         }
 
+        public static TownCenter GetTownCenterForTeam(UnitTeam team)
+        {
+            if (instance == null)
+                return null;
+
+            for (int i = 0; i < instance.townCenters.Count; i++)
+            {
+                TownCenter townCenter = instance.townCenters[i];
+                if (townCenter != null && townCenter.Team == team)
+                    return townCenter;
+            }
+
+            return null;
+        }
+
         public static bool TryQueueProduction(TownCenter townCenter, UnitData unitData, float trainSeconds)
         {
             if (instance == null || townCenter == null || unitData == null || trainSeconds <= 0f)
@@ -56,7 +71,7 @@ namespace AoE.RTS.Buildings
             if (IsProducing(townCenter))
                 return false;
 
-            if (!PopulationManager.CanTrainUnit())
+            if (!PopulationManager.CanTrainUnit(townCenter.Team))
                 return false;
 
             instance.activeJobs.Add(new ProductionJob
@@ -135,7 +150,10 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
-                UnitSpawner.Spawn(job.unitData, job.townCenter.GetVillagerSpawnPosition());
+                UnitSpawner.Spawn(
+                    job.unitData,
+                    job.townCenter.GetVillagerSpawnPosition(),
+                    job.townCenter.Team);
                 activeJobs.RemoveAt(i);
             }
         }

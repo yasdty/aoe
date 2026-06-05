@@ -46,23 +46,22 @@ namespace AoE.RTS.Units
 
         public static int UnitCount => instance != null ? instance.units.Count : 0;
 
-        public static int PlayerUnitCount
+        public static int PlayerUnitCount => GetUnitCountForTeam(UnitTeam.Player);
+
+        public static int GetUnitCountForTeam(UnitTeam team)
         {
-            get
+            if (instance == null)
+                return 0;
+
+            int count = 0;
+            for (int i = 0; i < instance.units.Count; i++)
             {
-                if (instance == null)
-                    return 0;
-
-                int count = 0;
-                for (int i = 0; i < instance.units.Count; i++)
-                {
-                    Unit unit = instance.units[i];
-                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
-                        count++;
-                }
-
-                return count;
+                Unit unit = instance.units[i];
+                if (unit != null && unit.IsAlive && unit.Team == team)
+                    count++;
             }
+
+            return count;
         }
 
         void Update()

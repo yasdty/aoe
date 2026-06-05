@@ -9,7 +9,10 @@ namespace AoE.RTS.Selection
         [SerializeField] SelectionManager selectionManager;
 
         const float PanelWidth = 260f;
-        const float LineHeight = 22f;
+        const float LabelHeight = 16f;
+        const float BarHeight = 10f;
+        const float RowGap = 4f;
+        const float RowHeight = LabelHeight + RowGap + BarHeight + RowGap;
         const float Margin = 12f;
         const float Padding = 8f;
 
@@ -38,7 +41,7 @@ namespace AoE.RTS.Selection
             if (aliveCount == 0)
                 return;
 
-            float panelHeight = Padding * 2f + aliveCount * LineHeight;
+            float panelHeight = Padding * 2f + aliveCount * RowHeight;
             float panelX = Screen.width * 0.5f - PanelWidth * 0.5f;
             float panelY = Screen.height - panelHeight - Margin - 96f;
             Rect panelRect = new Rect(panelX, panelY, PanelWidth, panelHeight);
@@ -55,10 +58,14 @@ namespace AoE.RTS.Selection
                 string label = unit.Data != null ? unit.Data.displayName : "Unit";
                 float hpRatio = unit.MaxHp > 0f ? unit.CurrentHp / unit.MaxHp : 0f;
 
-                Rect labelRect = new Rect(panelX + Padding, y, PanelWidth - Padding * 2f, LineHeight * 0.45f);
+                Rect labelRect = new Rect(panelX + Padding, y, PanelWidth - Padding * 2f, LabelHeight);
                 GUI.Label(labelRect, $"{label}  HP: {Mathf.CeilToInt(unit.CurrentHp)}/{Mathf.CeilToInt(unit.MaxHp)}");
 
-                Rect barRect = new Rect(panelX + Padding, y + LineHeight * 0.5f, PanelWidth - Padding * 2f, 8f);
+                Rect barRect = new Rect(
+                    panelX + Padding,
+                    y + LabelHeight + RowGap,
+                    PanelWidth - Padding * 2f,
+                    BarHeight);
                 GUI.color = new Color(0.2f, 0.2f, 0.2f, 0.85f);
                 GUI.DrawTexture(barRect, Texture2D.whiteTexture);
                 Rect fillRect = new Rect(barRect.x, barRect.y, barRect.width * hpRatio, barRect.height);
@@ -68,7 +75,7 @@ namespace AoE.RTS.Selection
                 GUI.DrawTexture(fillRect, Texture2D.whiteTexture);
                 GUI.color = Color.white;
 
-                y += LineHeight;
+                y += RowHeight;
             }
         }
     }

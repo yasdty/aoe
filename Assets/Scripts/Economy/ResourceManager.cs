@@ -1,3 +1,4 @@
+using AoE.RTS.Units;
 using UnityEngine;
 
 namespace AoE.RTS.Economy
@@ -6,9 +7,10 @@ namespace AoE.RTS.Economy
     {
         static ResourceManager instance;
 
-        float wood;
+        float playerWood;
+        float enemyWood;
 
-        public static float Wood => instance != null ? instance.wood : 0f;
+        public static float Wood => GetWood(UnitTeam.Player);
 
         void Awake()
         {
@@ -21,20 +23,53 @@ namespace AoE.RTS.Economy
                 instance = null;
         }
 
+        public static float GetWood(UnitTeam team)
+        {
+            if (instance == null)
+                return 0f;
+
+            return team == UnitTeam.Enemy ? instance.enemyWood : instance.playerWood;
+        }
+
         public static void AddWood(float amount)
+        {
+            AddWood(UnitTeam.Player, amount);
+        }
+
+        public static void AddWood(UnitTeam team, float amount)
         {
             if (instance == null || amount <= 0f)
                 return;
 
-            instance.wood += amount;
+            if (team == UnitTeam.Enemy)
+                instance.enemyWood += amount;
+            else
+                instance.playerWood += amount;
         }
 
         public static bool TrySpendWood(float amount)
         {
-            if (instance == null || amount <= 0f || instance.wood < amount)
+            return TrySpendWood(UnitTeam.Player, amount);
+        }
+
+        public static bool TrySpendWood(UnitTeam team, float amount)
+        {
+            if (instance == null || amount <= 0f)
                 return false;
 
-            instance.wood -= amount;
+            if (team == UnitTeam.Enemy)
+            {
+                if (instance.enemyWood < amount)
+                    return false;
+
+                instance.enemyWood -= amount;
+                return true;
+            }
+
+            if (instance.playerWood < amount)
+                return false;
+
+            instance.playerWood -= amount;
             return true;
         }
     }

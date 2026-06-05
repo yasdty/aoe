@@ -11,6 +11,8 @@ namespace AoE.RTS.Units
     [RequireComponent(typeof(Collider))]
     public class Unit : MonoBehaviour
     {
+        static int nextStandSlot;
+
         [SerializeField] UnitData data;
         [SerializeField] UnitTeam team = UnitTeam.Player;
 
@@ -20,6 +22,7 @@ namespace AoE.RTS.Units
         MaterialPropertyBlock propertyBlock;
         bool isSelected;
         bool isDead;
+        int standSlot;
 
         public float CurrentHp => currentHp;
         public float MaxHp => data != null ? data.maxHp : 100f;
@@ -33,6 +36,7 @@ namespace AoE.RTS.Units
         public float Armor => data != null ? data.armor : 0f;
         public float AttackRange => data != null ? data.attackRange : 1.5f;
         public float AttackCooldownSeconds => data != null ? data.attackCooldown : 1f;
+        public int StandSlot => standSlot;
 
         public UnitState State
         {
@@ -53,6 +57,8 @@ namespace AoE.RTS.Units
 
         void Awake()
         {
+            standSlot = nextStandSlot % UnitPositionOffsets.SlotCount;
+            nextStandSlot++;
             cachedRenderer = GetComponentInChildren<Renderer>();
             ApplyTeamFromData();
             currentHp = MaxHp;
@@ -69,6 +75,8 @@ namespace AoE.RTS.Units
         {
             if (!isDead)
                 UnitManager.Register(this);
+
+            UpdateVisual();
         }
 
         void OnDisable()
@@ -86,21 +94,21 @@ namespace AoE.RTS.Units
 
         void ApplyTeamFromData()
         {
-            if (data != null)
+            if (data == null)
             {
-                team = data.team;
-                if (data.displayName == "Enemy Dummy")
+                if (gameObject.name == "Enemy Dummy")
                     team = UnitTeam.Enemy;
                 return;
             }
 
-            if (gameObject.name == "Enemy Dummy")
+            if (data.displayName == "Enemy Dummy" || data.team == UnitTeam.Enemy && data.CanAttack)
                 team = UnitTeam.Enemy;
         }
 
         public void SetTeam(UnitTeam unitTeam)
         {
             team = unitTeam;
+            UpdateVisual();
         }
 
         public void TakeDamage(float amount)
@@ -193,9 +201,19 @@ namespace AoE.RTS.Units
             if (propertyBlock == null)
                 propertyBlock = new MaterialPropertyBlock();
 
-            Color color = isSelected
-                ? (data != null ? data.selectedColor : Color.green)
-                : (data != null ? data.defaultColor : Color.white);
+            Color color;
+            if (isSelected)
+            {
+                color = data != null ? data.selectedColor : Color.green;
+            }
+            else if (team == UnitTeam.Enemy)
+            {
+                color = new Color(0.45f, 0.55f, 0.85f);
+            }
+            else
+            {
+                color = data != null ? data.defaultColor : Color.white;
+            }
 
             if (IsAlive && AttackManager.IsUnitAttacking(this))
             {

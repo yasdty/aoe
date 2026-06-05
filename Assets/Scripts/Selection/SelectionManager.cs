@@ -159,7 +159,7 @@ namespace AoE.RTS.Selection
             if (Physics.Raycast(ray, out hit, 1000f, GameLayers.BuildingMask))
             {
                 TownCenter townCenter = hit.collider.GetComponentInParent<TownCenter>();
-                if (townCenter != null)
+                if (townCenter != null && townCenter.Team == UnitTeam.Player)
                 {
                     if (!additive)
                         SetTownCenterSelection(townCenter);

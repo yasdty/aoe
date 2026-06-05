@@ -1,0 +1,213 @@
+using AoE.RTS.AI;
+using AoE.RTS.Buildings;
+using AoE.RTS.Combat;
+using AoE.RTS.Economy;
+using AoE.RTS.Input;
+using AoE.RTS.Selection;
+using AoE.RTS.Units;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+
+namespace AoE.RTS.EditorTools
+{
+    public static class Phase9SceneBuilder
+    {
+        const string ScenePath = "Assets/Scenes/Phase9.unity";
+
+        static readonly Vector3 PlayerTownCenterPosition = Vector3.zero;
+        static readonly Vector3 CpuTownCenterPosition = new Vector3(0f, 0f, -35f);
+        static readonly Vector3 CameraFocus = new Vector3(0f, 0f, -17f);
+
+        static readonly Vector3[] TreePositions =
+        {
+            new Vector3(12f, 0f, 8f),
+            new Vector3(-14f, 0f, 10f),
+            new Vector3(18f, 0f, -6f),
+            new Vector3(-10f, 0f, -12f),
+            new Vector3(22f, 0f, 14f),
+            new Vector3(-20f, 0f, -8f),
+            new Vector3(8f, 0f, -18f),
+            new Vector3(-16f, 0f, 18f)
+        };
+
+        static readonly Vector3[] CpuVillagerPositions =
+        {
+            new Vector3(-5f, 1f, -30f),
+            new Vector3(5f, 1f, -30f),
+            new Vector3(0f, 1f, -40f)
+        };
+
+        [MenuItem("AoE/Setup Phase9 Scene", true)]
+        static bool ValidateSetupPhase9Scene() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Setup Phase9 Scene")]
+        public static void SetupPhase9Scene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            Phase1SceneBuilder.EnsureLayers();
+            UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
+            UnitData militiaData = Phase1SceneBuilder.EnsureMilitiaData();
+            BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
+            ResourceNodeData treeData = Phase1SceneBuilder.EnsureDefaultTreeData();
+            PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
+            PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
+            InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
+            if (inputActions == null)
+            {
+                Debug.LogError("Failed to create RTSInputActions. Setup aborted.");
+                return;
+            }
+
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            Phase1SceneBuilder.CreateLighting();
+            Phase1SceneBuilder.CreateGround();
+            GameObject playerTownCenter = Phase1SceneBuilder.CreateTownCenter(townCenterData, PlayerTownCenterPosition);
+            GameObject cpuTownCenter = CreateCpuTownCenter(townCenterData);
+            CreateTrees(treeData);
+            CreateCpuVillagers(villagerData);
+            GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
+            Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
+            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData);
+
+            Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
+            EditorSceneManager.SaveScene(scene, ScenePath);
+            UnityEditor.Selection.activeGameObject = playerTownCenter;
+
+            Debug.Log("Phase9 scene created at " + ScenePath);
+        }
+
+        static GameObject CreateCpuTownCenter(BuildingData townCenterData)
+        {
+            GameObject townCenterObject = Phase1SceneBuilder.CreateTownCenter(townCenterData, CpuTownCenterPosition);
+            TownCenter townCenter = townCenterObject.GetComponent<TownCenter>();
+            townCenter.SetTeam(UnitTeam.Enemy);
+            EditorUtility.SetDirty(townCenter);
+            return townCenterObject;
+        }
+
+        static void CreateCpuVillagers(UnitData villagerData)
+        {
+            for (int i = 0; i < CpuVillagerPositions.Length; i++)
+            {
+                GameObject unitObject = Phase1SceneBuilder.CreateUnit(
+                    villagerData,
+                    CpuVillagerPositions[i],
+                    UnitTeam.Enemy);
+                Unit unit = unitObject.GetComponent<Unit>();
+                if (unit != null)
+                    unit.SetTeam(UnitTeam.Enemy);
+            }
+        }
+
+        static void CreateTrees(ResourceNodeData treeData)
+        {
+            for (int i = 0; i < TreePositions.Length; i++)
+                Phase1SceneBuilder.CreateTree(treeData, TreePositions[i]);
+        }
+
+        static void CreateManagers(
+            InputActionAsset inputActions,
+            UnityEngine.Camera mainCamera,
+            PlacedBuildingData houseData,
+            PlacedBuildingData barracksData)
+        {
+            GameObject systems = new GameObject("Systems");
+
+            GameObject unitManagerObject = new GameObject("UnitManager");
+            unitManagerObject.transform.SetParent(systems.transform);
+            unitManagerObject.AddComponent<UnitManager>();
+
+            GameObject attackManagerObject = new GameObject("AttackManager");
+            attackManagerObject.transform.SetParent(systems.transform);
+            attackManagerObject.AddComponent<AttackManager>();
+
+            GameObject populationManagerObject = new GameObject("PopulationManager");
+            populationManagerObject.transform.SetParent(systems.transform);
+            populationManagerObject.AddComponent<PopulationManager>();
+
+            GameObject productionManagerObject = new GameObject("ProductionManager");
+            productionManagerObject.transform.SetParent(systems.transform);
+            productionManagerObject.AddComponent<ProductionManager>();
+
+            GameObject barracksProductionObject = new GameObject("BarracksProductionManager");
+            barracksProductionObject.transform.SetParent(systems.transform);
+            barracksProductionObject.AddComponent<BarracksProductionManager>();
+
+            GameObject resourceManagerObject = new GameObject("ResourceManager");
+            resourceManagerObject.transform.SetParent(systems.transform);
+            resourceManagerObject.AddComponent<ResourceManager>();
+
+            GameObject gatherManagerObject = new GameObject("GatherManager");
+            gatherManagerObject.transform.SetParent(systems.transform);
+            gatherManagerObject.AddComponent<GatherManager>();
+
+            GameObject placementManagerObject = new GameObject("BuildingPlacementManager");
+            placementManagerObject.transform.SetParent(systems.transform);
+            BuildingPlacementManager placementManager = placementManagerObject.AddComponent<BuildingPlacementManager>();
+
+            GameObject cpuAiObject = new GameObject("CpuEconomyAiManager");
+            cpuAiObject.transform.SetParent(systems.transform);
+            CpuEconomyAiManager cpuAi = cpuAiObject.AddComponent<CpuEconomyAiManager>();
+
+            GameObject selectionManagerObject = new GameObject("SelectionManager");
+            selectionManagerObject.transform.SetParent(systems.transform);
+            SelectionManager selectionManager = selectionManagerObject.AddComponent<SelectionManager>();
+            selectionManagerObject.AddComponent<SelectionBoxView>();
+            selectionManagerObject.AddComponent<ProductionPanelView>();
+            selectionManagerObject.AddComponent<BarracksPanelView>();
+            UnitHpBarView hpBarView = selectionManagerObject.AddComponent<UnitHpBarView>();
+            ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
+            selectionManagerObject.AddComponent<CpuHudView>();
+
+            RTSInputReader inputReader = mainCamera.GetComponent<RTSInputReader>();
+            SerializedObject serializedSelection = new SerializedObject(selectionManager);
+            serializedSelection.FindProperty("mainCamera").objectReferenceValue = mainCamera;
+            serializedSelection.FindProperty("input").objectReferenceValue = inputReader;
+            SerializedProperty boxView = serializedSelection.FindProperty("selectionBoxView");
+            boxView.objectReferenceValue = selectionManagerObject.GetComponent<SelectionBoxView>();
+            serializedSelection.ApplyModifiedPropertiesWithoutUndo();
+
+            ProductionPanelView productionPanel = selectionManagerObject.GetComponent<ProductionPanelView>();
+            SerializedObject serializedProductionPanel = new SerializedObject(productionPanel);
+            serializedProductionPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedProductionPanel.FindProperty("input").objectReferenceValue = inputReader;
+            serializedProductionPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            BarracksPanelView barracksPanel = selectionManagerObject.GetComponent<BarracksPanelView>();
+            SerializedObject serializedBarracksPanel = new SerializedObject(barracksPanel);
+            serializedBarracksPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedBarracksPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedHpBar = new SerializedObject(hpBarView);
+            serializedHpBar.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedHpBar.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedPlacement = new SerializedObject(placementManager);
+            serializedPlacement.FindProperty("mainCamera").objectReferenceValue = mainCamera;
+            serializedPlacement.FindProperty("input").objectReferenceValue = inputReader;
+            serializedPlacement.FindProperty("houseData").objectReferenceValue = houseData;
+            serializedPlacement.FindProperty("barracksData").objectReferenceValue = barracksData;
+            serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
+            serializedResourceHud.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedResourceHud.FindProperty("houseData").objectReferenceValue = houseData;
+            serializedResourceHud.FindProperty("barracksData").objectReferenceValue = barracksData;
+            serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedCpuAi = new SerializedObject(cpuAi);
+            serializedCpuAi.FindProperty("houseData").objectReferenceValue = houseData;
+            serializedCpuAi.ApplyModifiedPropertiesWithoutUndo();
+
+            EditorUtility.SetDirty(resourceHud);
+            EditorUtility.SetDirty(placementManager);
+            EditorUtility.SetDirty(cpuAi);
+        }
+    }
+}

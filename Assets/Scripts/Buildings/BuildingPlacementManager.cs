@@ -48,6 +48,35 @@ namespace AoE.RTS.Buildings
 
         public static bool IsPlacementModeActive => instance != null && instance.isPlacementModeActive;
 
+        public static bool IsUnitBuilding(Unit unit)
+        {
+            if (instance == null || unit == null)
+                return false;
+
+            for (int i = 0; i < instance.sites.Count; i++)
+            {
+                if (instance.sites[i].builder == unit)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static bool HasActiveConstructionForTeam(UnitTeam team)
+        {
+            if (instance == null)
+                return false;
+
+            for (int i = 0; i < instance.sites.Count; i++)
+            {
+                Unit builder = instance.sites[i].builder;
+                if (builder != null && builder.Team == team)
+                    return true;
+            }
+
+            return false;
+        }
+
         void Awake()
         {
             instance = this;
@@ -180,7 +209,7 @@ namespace AoE.RTS.Buildings
             GatherManager.CancelForUnits(instance.builderLookupBuffer);
             instance.RemoveIncompleteSitesForBuilder(builder);
 
-            Vector3 approach = instance.GetBuildApproachPosition(instance.ghostPosition, placementData);
+            Vector3 approach = instance.GetBuildApproachPosition(instance.ghostPosition, placementData, builder);
             builder.SetMoveTarget(approach);
 
             instance.sites.Add(new ConstructionSite
@@ -195,6 +224,73 @@ namespace AoE.RTS.Buildings
 
             CancelPlacementMode();
             return true;
+        }
+
+        public static bool TryStartTeamConstruction(PlacedBuildingData data, Vector3 position, Unit builder)
+        {
+            if (instance == null || data == null || builder == null || !builder.IsAlive)
+                return false;
+
+            position = instance.SnapToFootprint(position);
+            if (!instance.CanPlaceAt(position, data))
+                return false;
+
+            if (!ResourceManager.TrySpendWood(builder.Team, data.woodCost))
+                return false;
+
+            instance.builderLookupBuffer.Clear();
+            instance.builderLookupBuffer.Add(builder);
+            GatherManager.CancelForUnits(instance.builderLookupBuffer);
+            instance.RemoveIncompleteSitesForBuilder(builder);
+
+            Vector3 approach = instance.GetBuildApproachPosition(position, data, builder);
+            builder.SetMoveTarget(approach);
+
+            instance.sites.Add(new ConstructionSite
+            {
+                data = data,
+                builder = builder,
+                position = position,
+                remainingTime = data.buildTime,
+                builderArrived = false,
+                siteVisual = instance.CreateConstructionVisual(data, position)
+            });
+
+            return true;
+        }
+
+        public static bool TryFindPlacementNear(
+            Vector3 center,
+            float minRadius,
+            float maxRadius,
+            PlacedBuildingData data,
+            out Vector3 placementPosition)
+        {
+            placementPosition = center;
+            if (instance == null || data == null)
+                return false;
+
+            const int angleSteps = 16;
+            for (float radius = minRadius; radius <= maxRadius; radius += 2f)
+            {
+                for (int step = 0; step < angleSteps; step++)
+                {
+                    float angle = step * (Mathf.PI * 2f / angleSteps);
+                    Vector3 candidate = new Vector3(
+                        center.x + Mathf.Cos(angle) * radius,
+                        0f,
+                        center.z + Mathf.Sin(angle) * radius);
+
+                    candidate = instance.SnapToFootprint(candidate);
+                    if (instance.CanPlaceAt(candidate, data))
+                    {
+                        placementPosition = candidate;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         static Unit ResolveBuilder(IReadOnlyList<Unit> builders)
@@ -278,7 +374,7 @@ namespace AoE.RTS.Buildings
                     }
                     else if (!site.builder.HasMoveTarget)
                     {
-                        site.builder.SetMoveTarget(GetBuildApproachPosition(site.position, siteData));
+                        site.builder.SetMoveTarget(GetBuildApproachPosition(site.position, siteData, site.builder));
                     }
 
                     continue;
@@ -350,8 +446,8 @@ namespace AoE.RTS.Buildings
             }
 
             RuntimeBuildingFactory.CreateHouse(site.data, site.position);
-            if (site.data.housingProvided > 0)
-                PopulationManager.AddHousing(site.data.housingProvided);
+            if (site.data.housingProvided > 0 && site.builder != null)
+                PopulationManager.AddHousing(site.builder.Team, site.data.housingProvided);
         }
 
         Vector3 SnapToFootprint(Vector3 worldPoint)
@@ -359,10 +455,12 @@ namespace AoE.RTS.Buildings
             return new Vector3(worldPoint.x, 0f, worldPoint.z);
         }
 
-        Vector3 GetBuildApproachPosition(Vector3 sitePosition, PlacedBuildingData data)
+        Vector3 GetBuildApproachPosition(Vector3 sitePosition, PlacedBuildingData data, Unit builder)
         {
+            const float buildStandRadius = 2.5f;
             float offset = data != null ? data.footprintDepth * 0.5f + 2f : 4f;
-            return new Vector3(sitePosition.x, 1f, sitePosition.z + offset);
+            Vector3 approach = new Vector3(sitePosition.x, 1f, sitePosition.z + offset);
+            return UnitPositionOffsets.ApplyRingOffset(approach, builder, buildStandRadius);
         }
 
         bool HasBuilderArrived(Unit builder, Vector3 sitePosition, PlacedBuildingData data)
@@ -370,7 +468,7 @@ namespace AoE.RTS.Buildings
             if (builder == null || data == null)
                 return false;
 
-            Vector3 approach = GetBuildApproachPosition(sitePosition, data);
+            Vector3 approach = GetBuildApproachPosition(sitePosition, data, builder);
             if (builder.IsNear(approach, ApproachReachDistance))
                 return true;
 
