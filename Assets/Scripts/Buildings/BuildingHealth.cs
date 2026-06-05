@@ -52,7 +52,25 @@ namespace AoE.RTS.Buildings
         {
             bool countsAsTownCenter = isTownCenter || GetComponent<TownCenter>() != null;
             if (countsAsTownCenter)
+            {
                 GameSessionManager.NotifyTownCenterDestroyed(team);
+                Destroy(gameObject);
+                return;
+            }
+
+            Barracks barracks = GetComponent<Barracks>();
+            if (barracks != null)
+            {
+                BuildingPool.ReturnBarracks(barracks);
+                return;
+            }
+
+            House house = GetComponent<House>();
+            if (house != null)
+            {
+                BuildingPool.ReturnHouse(house);
+                return;
+            }
 
             Destroy(gameObject);
         }

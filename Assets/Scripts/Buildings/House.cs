@@ -1,4 +1,5 @@
 using AoE.RTS.Core;
+using AoE.RTS.Units;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -27,6 +28,18 @@ namespace AoE.RTS.Buildings
         public void SetData(PlacedBuildingData buildingData)
         {
             data = buildingData;
+            UpdateVisual();
+        }
+
+        public void PrepareForReuse(PlacedBuildingData buildingData, Vector3 groundPosition, UnitTeam unitTeam)
+        {
+            SetData(buildingData);
+            transform.position = RuntimeBuildingFactory.ResolveWorldPosition(buildingData, groundPosition);
+
+            BuildingHealth health = GetComponent<BuildingHealth>();
+            if (health != null && buildingData != null)
+                health.Configure(buildingData.maxHp, buildingData.armor, unitTeam, townCenter: false);
+
             UpdateVisual();
         }
 

@@ -96,7 +96,7 @@ namespace AoE.RTS.EditorTools
             CreateCpuVillagers(villagerData);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
             Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
-            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData);
+            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData, villagerData, militiaData);
 
             Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -138,10 +138,24 @@ namespace AoE.RTS.EditorTools
             InputActionAsset inputActions,
             UnityEngine.Camera mainCamera,
             PlacedBuildingData houseData,
-            PlacedBuildingData barracksData)
+            PlacedBuildingData barracksData,
+            UnitData villagerData,
+            UnitData militiaData)
         {
             GameObject systems = new GameObject("Systems");
             systems.AddComponent<GameSessionManager>();
+
+            GameObject unitPoolObject = new GameObject("UnitPool");
+            unitPoolObject.transform.SetParent(systems.transform);
+            UnitPool unitPool = unitPoolObject.AddComponent<UnitPool>();
+            SerializedObject serializedUnitPool = new SerializedObject(unitPool);
+            serializedUnitPool.FindProperty("prewarmVillagerData").objectReferenceValue = villagerData;
+            serializedUnitPool.FindProperty("prewarmMilitiaData").objectReferenceValue = militiaData;
+            serializedUnitPool.ApplyModifiedPropertiesWithoutUndo();
+
+            GameObject buildingPoolObject = new GameObject("BuildingPool");
+            buildingPoolObject.transform.SetParent(systems.transform);
+            buildingPoolObject.AddComponent<BuildingPool>();
 
             GameObject unitManagerObject = new GameObject("UnitManager");
             unitManagerObject.transform.SetParent(systems.transform);

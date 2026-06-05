@@ -10,14 +10,20 @@ namespace AoE.RTS.Buildings
 
         public static House CreateHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
+            return BuildingPool.RentHouse(data, position, team);
+        }
+
+        public static Barracks CreateBarracks(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return BuildingPool.RentBarracks(data, position, team);
+        }
+
+        public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
             if (data == null)
                 return null;
 
-            Vector3 worldPosition = new Vector3(
-                position.x,
-                data.buildingHeight * 0.5f + 0.05f,
-                position.z);
-
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
             GameObject houseObject = EntityVisualBuilder.CreateBuildingShell(
                 "House",
                 LayerMask.NameToLayer("Building"),
@@ -34,16 +40,12 @@ namespace AoE.RTS.Buildings
             return house;
         }
 
-        public static Barracks CreateBarracks(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        public static Barracks CreateFreshBarracks(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
                 return null;
 
-            Vector3 worldPosition = new Vector3(
-                position.x,
-                data.buildingHeight * 0.5f + 0.05f,
-                position.z);
-
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
             GameObject barracksObject = EntityVisualBuilder.CreateBuildingShell(
                 "Barracks",
                 LayerMask.NameToLayer("Building"),
@@ -57,7 +59,16 @@ namespace AoE.RTS.Buildings
 
             Barracks barracks = barracksObject.AddComponent<Barracks>();
             barracks.SetData(data);
+            barracks.SetTeam(team);
             return barracks;
+        }
+
+        public static Vector3 ResolveWorldPosition(PlacedBuildingData data, Vector3 position)
+        {
+            return new Vector3(
+                position.x,
+                data.buildingHeight * 0.5f + 0.05f,
+                position.z);
         }
 
         static void ConfigureBuildingHealth(GameObject buildingObject, float hp, float buildingArmor, UnitTeam team)

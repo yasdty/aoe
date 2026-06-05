@@ -121,6 +121,22 @@ namespace AoE.RTS.Units
                 Die();
         }
 
+        public void PrepareForSpawn(UnitData unitData, Vector3 position, UnitTeam unitTeam)
+        {
+            isDead = false;
+            isSelected = false;
+            moveTarget = null;
+
+            if (unitData != null)
+                data = unitData;
+
+            ApplyTeamFromData();
+            team = unitTeam;
+            currentHp = MaxHp;
+            transform.position = position;
+            UpdateVisual();
+        }
+
         public void Die()
         {
             if (isDead)
@@ -131,9 +147,11 @@ namespace AoE.RTS.Units
 
             GatherManager.CancelForUnit(this);
             BuildingPlacementManager.AbortConstructionForUnit(this);
+            AttackManager.CancelJobsForUnit(this);
             SelectionManager.HandleUnitDied(this);
+            UnitManager.Unregister(this);
 
-            Destroy(gameObject);
+            UnitPool.Return(this);
         }
 
         public void SetSelected(bool selected)

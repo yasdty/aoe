@@ -39,6 +39,9 @@ namespace AoE.RTS.Combat
             float deltaTime = Time.deltaTime;
             for (int i = activeJobs.Count - 1; i >= 0; i--)
             {
+                if (i >= activeJobs.Count)
+                    continue;
+
                 AttackJob job = activeJobs[i];
                 if (!IsValidCombatUnit(job.attacker))
                 {
@@ -153,6 +156,9 @@ namespace AoE.RTS.Combat
             float attackRange = attacker.AttackRange;
             if (!attacker.IsNear(targetPosition, attackRange))
             {
+                if (!JobStillActive(index, attacker))
+                    return false;
+
                 float standRadius = Mathf.Max(0.5f, attackRange * 0.85f);
                 Vector3 approachPosition = UnitPositionOffsets.ApplyRingOffset(
                     targetPosition,
@@ -171,6 +177,9 @@ namespace AoE.RTS.Combat
             cooldownRemaining -= deltaTime;
             if (cooldownRemaining > 0f)
             {
+                if (!JobStillActive(index, attacker))
+                    return false;
+
                 job.cooldownRemaining = cooldownRemaining;
                 job.attacker = attacker;
                 job.targetUnit = unitTarget;
@@ -185,7 +194,8 @@ namespace AoE.RTS.Combat
             else if (buildingTarget != null)
                 buildingTarget.TakeDamage(damage);
 
-            if (index >= activeJobs.Count || activeJobs[index].attacker != attacker)
+            // TakeDamage/Die may remove this job via CancelJobsForUnit while we are in Update.
+            if (!JobStillActive(index, attacker))
                 return false;
 
             if (!IsValidCombatUnit(attacker))
@@ -242,6 +252,11 @@ namespace AoE.RTS.Combat
         static bool IsValidCombatUnit(Unit unit)
         {
             return unit != null && unit.IsAlive;
+        }
+
+        bool JobStillActive(int index, Unit attacker)
+        {
+            return index < activeJobs.Count && activeJobs[index].attacker == attacker;
         }
 
         public static bool IsUnitAttacking(Unit unit)

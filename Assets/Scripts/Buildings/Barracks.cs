@@ -57,6 +57,21 @@ namespace AoE.RTS.Buildings
             UpdateVisual();
         }
 
+        public void PrepareForReuse(PlacedBuildingData buildingData, Vector3 groundPosition, UnitTeam unitTeam)
+        {
+            isSelected = false;
+            unitSpawnIndex = 0;
+            SetData(buildingData);
+            SetTeam(unitTeam);
+            transform.position = RuntimeBuildingFactory.ResolveWorldPosition(buildingData, groundPosition);
+
+            BuildingHealth health = GetComponent<BuildingHealth>();
+            if (health != null && buildingData != null)
+                health.Configure(buildingData.maxHp, buildingData.armor, unitTeam, townCenter: false);
+
+            UpdateVisual();
+        }
+
         public void SetSelected(bool selected)
         {
             isSelected = selected;
