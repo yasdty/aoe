@@ -167,7 +167,7 @@ namespace AoE.RTS.Selection
                 }
 
                 Barracks barracks = hit.collider.GetComponentInParent<Barracks>();
-                if (barracks != null)
+                if (barracks != null && barracks.Team == UnitTeam.Player)
                 {
                     if (!additive)
                         SetBarracksSelection(barracks);

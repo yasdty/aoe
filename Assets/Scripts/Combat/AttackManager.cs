@@ -56,9 +56,15 @@ namespace AoE.RTS.Combat
                 }
 
                 float attackRange = job.attacker.AttackRange;
-                if (!job.attacker.IsNear(job.target.transform.position, attackRange))
+                Vector3 targetPosition = job.target.transform.position;
+                if (!job.attacker.IsNear(targetPosition, attackRange))
                 {
-                    job.attacker.SetMoveTarget(job.target.transform.position);
+                    float standRadius = Mathf.Max(0.5f, attackRange * 0.85f);
+                    Vector3 approachPosition = UnitPositionOffsets.ApplyRingOffset(
+                        targetPosition,
+                        job.attacker,
+                        standRadius);
+                    job.attacker.SetMoveTarget(approachPosition);
                     activeJobs[i] = job;
                     continue;
                 }
@@ -98,7 +104,9 @@ namespace AoE.RTS.Combat
                 activeJobs[i] = job;
 
                 Debug.Log(
-                    $"{attacker.Data?.displayName ?? "Unit"} hit {target.Data?.displayName ?? "Unit"} for {damage:0} (HP {target.CurrentHp:0}/{target.MaxHp:0})");
+                    $"[{FormatTeam(attacker.Team)}] {attacker.Data?.displayName ?? "Unit"} "
+                    + $"→ [{FormatTeam(target.Team)}] {target.Data?.displayName ?? "Unit"}: "
+                    + $"{damage:0} dmg (HP {target.CurrentHp:0}/{target.MaxHp:0})");
             }
 
             RefreshAttackerVisuals();
@@ -211,6 +219,11 @@ namespace AoE.RTS.Combat
                 if (instance.activeJobs[i].attacker == attacker)
                     instance.activeJobs.RemoveAt(i);
             }
+        }
+
+        static string FormatTeam(UnitTeam team)
+        {
+            return team == UnitTeam.Player ? "Player" : "CPU";
         }
     }
 }

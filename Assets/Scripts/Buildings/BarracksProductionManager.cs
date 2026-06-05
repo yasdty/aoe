@@ -48,6 +48,26 @@ namespace AoE.RTS.Buildings
             instance.activeJobs.RemoveAll(job => job.barracks == barracks);
         }
 
+        public static Barracks GetBarracksForTeam(UnitTeam team)
+        {
+            if (instance == null)
+                return null;
+
+            for (int i = 0; i < instance.barracksList.Count; i++)
+            {
+                Barracks barracks = instance.barracksList[i];
+                if (barracks != null && barracks.Team == team)
+                    return barracks;
+            }
+
+            return null;
+        }
+
+        public static bool HasBarracksForTeam(UnitTeam team)
+        {
+            return GetBarracksForTeam(team) != null;
+        }
+
         public static bool TryQueueProduction(
             Barracks barracks,
             UnitData unitData,
@@ -60,10 +80,10 @@ namespace AoE.RTS.Buildings
             if (IsProducing(barracks))
                 return false;
 
-            if (!PopulationManager.CanTrainUnit())
+            if (!PopulationManager.CanTrainUnit(barracks.Team))
                 return false;
 
-            if (woodCost > 0f && !ResourceManager.TrySpendWood(woodCost))
+            if (woodCost > 0f && !ResourceManager.TrySpendWood(barracks.Team, woodCost))
                 return false;
 
             instance.activeJobs.Add(new ProductionJob
@@ -142,7 +162,10 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
-                UnitSpawner.Spawn(job.unitData, job.barracks.GetUnitSpawnPosition(), UnitTeam.Player);
+                UnitSpawner.Spawn(
+                    job.unitData,
+                    job.barracks.GetUnitSpawnPosition(),
+                    job.barracks.Team);
                 activeJobs.RemoveAt(i);
             }
         }

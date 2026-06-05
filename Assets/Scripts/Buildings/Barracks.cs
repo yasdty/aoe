@@ -1,4 +1,5 @@
 using AoE.RTS.Core;
+using AoE.RTS.Units;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -11,19 +12,21 @@ namespace AoE.RTS.Buildings
     public class Barracks : MonoBehaviour
     {
         [SerializeField] PlacedBuildingData data;
+        [SerializeField] UnitTeam team = UnitTeam.Player;
 
         Renderer cachedRenderer;
         MaterialPropertyBlock propertyBlock;
         bool isSelected;
+        int unitSpawnIndex;
 
         public PlacedBuildingData Data => data;
+        public UnitTeam Team => team;
         public bool IsSelected => isSelected;
 
         void Awake()
         {
             cachedRenderer = GetComponentInChildren<Renderer>();
             EnsureDataReference();
-            UpdateVisual();
         }
 
         void OnEnable()
@@ -45,6 +48,12 @@ namespace AoE.RTS.Buildings
         public void SetData(PlacedBuildingData buildingData)
         {
             data = buildingData;
+            UpdateVisual();
+        }
+
+        public void SetTeam(UnitTeam unitTeam)
+        {
+            team = unitTeam;
             UpdateVisual();
         }
 
@@ -75,6 +84,13 @@ namespace AoE.RTS.Buildings
             float halfExtent = GetHorizontalHalfExtentAlong(exitDirection);
             Vector3 spawn = transform.position + exitDirection * (halfExtent + clearance);
             spawn.y = unitGroundY;
+
+            const int ringSlots = 8;
+            const float ringRadius = 2.5f;
+            float angle = unitSpawnIndex * (Mathf.PI * 2f / ringSlots);
+            unitSpawnIndex = (unitSpawnIndex + 1) % ringSlots;
+            spawn += new Vector3(Mathf.Cos(angle) * ringRadius, 0f, Mathf.Sin(angle) * ringRadius);
+
             return spawn;
         }
 
@@ -118,7 +134,17 @@ namespace AoE.RTS.Buildings
 
             if (!isSelected)
             {
-                cachedRenderer.SetPropertyBlock(null);
+                if (propertyBlock == null)
+                    propertyBlock = new MaterialPropertyBlock();
+
+                Color baseColor = team == UnitTeam.Enemy
+                    ? new Color(0.55f, 0.35f, 0.45f)
+                    : (data != null ? data.defaultColor : new Color(0.55f, 0.35f, 0.32f));
+
+                cachedRenderer.GetPropertyBlock(propertyBlock);
+                propertyBlock.SetColor("_BaseColor", baseColor);
+                propertyBlock.SetColor("_Color", baseColor);
+                cachedRenderer.SetPropertyBlock(propertyBlock);
                 return;
             }
 

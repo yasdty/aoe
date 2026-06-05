@@ -13,9 +13,11 @@ using UnityEngine.SceneManagement;
 
 namespace AoE.RTS.EditorTools
 {
-    public static class Phase9SceneBuilder
+    public static class Phase10SceneBuilder
     {
-        const string ScenePath = "Assets/Scenes/Phase9.unity";
+        const string ScenePath = "Assets/Scenes/Phase10.unity";
+        const float DefaultAttackWaveIntervalSeconds = 30f;
+        const float DefaultBarracksBuildDelaySeconds = 60f;
 
         static readonly Vector3 PlayerTownCenterPosition = Vector3.zero;
         static readonly Vector3 CpuTownCenterPosition = new Vector3(0f, 0f, -35f);
@@ -60,11 +62,11 @@ namespace AoE.RTS.EditorTools
             new Vector3(0f, 1f, -40f)
         };
 
-        [MenuItem("AoE/Setup Phase9 Scene", true)]
-        static bool ValidateSetupPhase9Scene() => !EditorApplication.isPlaying;
+        [MenuItem("AoE/Setup Phase10 Scene", true)]
+        static bool ValidateSetupPhase10Scene() => !EditorApplication.isPlaying;
 
-        [MenuItem("AoE/Setup Phase9 Scene")]
-        public static void SetupPhase9Scene()
+        [MenuItem("AoE/Setup Phase10 Scene")]
+        public static void SetupPhase10Scene()
         {
             if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
                 return;
@@ -99,7 +101,7 @@ namespace AoE.RTS.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
             UnityEditor.Selection.activeGameObject = playerTownCenter;
 
-            Debug.Log("Phase9 scene created at " + ScenePath);
+            Debug.Log("Phase10 scene created at " + ScenePath);
         }
 
         static GameObject CreateCpuTownCenter(BuildingData townCenterData)
@@ -171,9 +173,13 @@ namespace AoE.RTS.EditorTools
             placementManagerObject.transform.SetParent(systems.transform);
             BuildingPlacementManager placementManager = placementManagerObject.AddComponent<BuildingPlacementManager>();
 
-            GameObject cpuAiObject = new GameObject("CpuEconomyAiManager");
-            cpuAiObject.transform.SetParent(systems.transform);
-            CpuEconomyAiManager cpuAi = cpuAiObject.AddComponent<CpuEconomyAiManager>();
+            GameObject cpuEconomyObject = new GameObject("CpuEconomyAiManager");
+            cpuEconomyObject.transform.SetParent(systems.transform);
+            CpuEconomyAiManager cpuEconomy = cpuEconomyObject.AddComponent<CpuEconomyAiManager>();
+
+            GameObject cpuMilitaryObject = new GameObject("CpuMilitaryAiManager");
+            cpuMilitaryObject.transform.SetParent(systems.transform);
+            CpuMilitaryAiManager cpuMilitary = cpuMilitaryObject.AddComponent<CpuMilitaryAiManager>();
 
             GameObject selectionManagerObject = new GameObject("SelectionManager");
             selectionManagerObject.transform.SetParent(systems.transform);
@@ -184,6 +190,7 @@ namespace AoE.RTS.EditorTools
             UnitHpBarView hpBarView = selectionManagerObject.AddComponent<UnitHpBarView>();
             ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
             selectionManagerObject.AddComponent<CpuHudView>();
+            selectionManagerObject.AddComponent<GameTimeHudView>();
 
             RTSInputReader inputReader = mainCamera.GetComponent<RTSInputReader>();
             SerializedObject serializedSelection = new SerializedObject(selectionManager);
@@ -221,13 +228,20 @@ namespace AoE.RTS.EditorTools
             serializedResourceHud.FindProperty("barracksData").objectReferenceValue = barracksData;
             serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
 
-            SerializedObject serializedCpuAi = new SerializedObject(cpuAi);
-            serializedCpuAi.FindProperty("houseData").objectReferenceValue = houseData;
-            serializedCpuAi.ApplyModifiedPropertiesWithoutUndo();
+            SerializedObject serializedCpuEconomy = new SerializedObject(cpuEconomy);
+            serializedCpuEconomy.FindProperty("houseData").objectReferenceValue = houseData;
+            serializedCpuEconomy.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedCpuMilitary = new SerializedObject(cpuMilitary);
+            serializedCpuMilitary.FindProperty("barracksData").objectReferenceValue = barracksData;
+            serializedCpuMilitary.FindProperty("barracksBuildDelaySeconds").floatValue = DefaultBarracksBuildDelaySeconds;
+            serializedCpuMilitary.FindProperty("attackWaveIntervalSeconds").floatValue = DefaultAttackWaveIntervalSeconds;
+            serializedCpuMilitary.ApplyModifiedPropertiesWithoutUndo();
 
             EditorUtility.SetDirty(resourceHud);
             EditorUtility.SetDirty(placementManager);
-            EditorUtility.SetDirty(cpuAi);
+            EditorUtility.SetDirty(cpuEconomy);
+            EditorUtility.SetDirty(cpuMilitary);
         }
     }
 }

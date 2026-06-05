@@ -77,6 +77,24 @@ namespace AoE.RTS.Buildings
             return false;
         }
 
+        public static bool HasActiveBarracksConstructionForTeam(UnitTeam team)
+        {
+            if (instance == null)
+                return false;
+
+            for (int i = 0; i < instance.sites.Count; i++)
+            {
+                ConstructionSite site = instance.sites[i];
+                if (site.builder == null || site.builder.Team != team)
+                    continue;
+
+                if (site.data != null && site.data.kind == PlacedBuildingKind.Barracks)
+                    return true;
+            }
+
+            return false;
+        }
+
         void Awake()
         {
             instance = this;
@@ -441,7 +459,9 @@ namespace AoE.RTS.Buildings
 
             if (site.data.kind == PlacedBuildingKind.Barracks)
             {
-                RuntimeBuildingFactory.CreateBarracks(site.data, site.position);
+                Barracks barracks = RuntimeBuildingFactory.CreateBarracks(site.data, site.position);
+                if (barracks != null && site.builder != null)
+                    barracks.SetTeam(site.builder.Team);
                 return;
             }
 
