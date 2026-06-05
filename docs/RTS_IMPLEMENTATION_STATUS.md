@@ -43,6 +43,7 @@
 | 8 | 戦闘成立（死亡、HP バー、攻撃ビジュアル） | `Phase8.unity` | ✅ 実装済み |
 | 9 | CPU 経済 AI（採集・House・Villager 増産） | `Phase9.unity` | ✅ 実装済み |
 | 10 | CPU 軍事 AI（Barracks・Militia・攻撃波）、簡易 RTS 完成 | `Phase10.unity` | ✅ 実装済み |
+| 10.5 | Visual Placeholder Upgrade（GLB 差し替え・ロジック不変） | `Phase10.unity` | ✅ 実装済み |
 
 **ゲームループ（Phase 10 完成形）:** 採集 → 建築 → 生産 → 戦闘
 

@@ -1,3 +1,4 @@
+using AoE.RTS.Visuals;
 using UnityEngine;
 
 namespace AoE.RTS.Buildings
@@ -11,17 +12,20 @@ namespace AoE.RTS.Buildings
             if (data == null)
                 return null;
 
-            GameObject houseObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            houseObject.name = "House";
-            houseObject.layer = LayerMask.NameToLayer("Building");
-            houseObject.transform.localScale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
-            houseObject.transform.position = new Vector3(
+            Vector3 worldPosition = new Vector3(
                 position.x,
                 data.buildingHeight * 0.5f + 0.05f,
                 position.z);
 
-            EnsureSharedMaterial();
-            houseObject.GetComponent<Renderer>().sharedMaterial = sharedLitMaterial;
+            GameObject houseObject = EntityVisualBuilder.CreateBuildingShell(
+                "House",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
+
+            ApplySharedMaterialIfMissingRendererTint(houseObject);
 
             House house = houseObject.AddComponent<House>();
             house.SetData(data);
@@ -33,21 +37,34 @@ namespace AoE.RTS.Buildings
             if (data == null)
                 return null;
 
-            GameObject barracksObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            barracksObject.name = "Barracks";
-            barracksObject.layer = LayerMask.NameToLayer("Building");
-            barracksObject.transform.localScale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
-            barracksObject.transform.position = new Vector3(
+            Vector3 worldPosition = new Vector3(
                 position.x,
                 data.buildingHeight * 0.5f + 0.05f,
                 position.z);
 
-            EnsureSharedMaterial();
-            barracksObject.GetComponent<Renderer>().sharedMaterial = sharedLitMaterial;
+            GameObject barracksObject = EntityVisualBuilder.CreateBuildingShell(
+                "Barracks",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.Barracks);
+
+            ApplySharedMaterialIfMissingRendererTint(barracksObject);
 
             Barracks barracks = barracksObject.AddComponent<Barracks>();
             barracks.SetData(data);
             return barracks;
+        }
+
+        static void ApplySharedMaterialIfMissingRendererTint(GameObject buildingObject)
+        {
+            Renderer renderer = buildingObject.GetComponentInChildren<Renderer>();
+            if (renderer == null)
+                return;
+
+            EnsureSharedMaterial();
+            renderer.sharedMaterial = sharedLitMaterial;
         }
 
         static void EnsureSharedMaterial()

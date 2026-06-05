@@ -3,6 +3,7 @@ using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Units;
+using AoE.RTS.Visuals;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -547,13 +548,10 @@ namespace AoE.RTS.Buildings
 
         void CreateGhost()
         {
-            ghostObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            ghostObject.name = "PlacementGhost";
+            ghostObject = new GameObject("PlacementGhost");
             ghostObject.layer = LayerMask.NameToLayer("Ignore Raycast");
-            Object.Destroy(ghostObject.GetComponent<Collider>());
             ghostObject.SetActive(false);
-            ghostRenderer = ghostObject.GetComponent<Renderer>();
-            ghostRenderer.sharedMaterial = RuntimeBuildingFactory.GetSharedLitMaterial();
+            ghostRenderer = null;
         }
 
         void UpdateGhostVisual(PlacedBuildingData data, Vector3 position, bool valid)
@@ -561,12 +559,21 @@ namespace AoE.RTS.Buildings
             if (ghostObject == null || data == null)
                 return;
 
-            ghostObject.transform.localScale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
+            for (int i = ghostObject.transform.childCount - 1; i >= 0; i--)
+                Destroy(ghostObject.transform.GetChild(i).gameObject);
+
+            Vector3 scale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
+            PlaceholderVisualKind kind = EntityVisualBuilder.GetBuildingVisualKind(data);
+            GameObject visual = EntityVisualBuilder.CreateGhostVisual(kind, scale);
+            visual.transform.SetParent(ghostObject.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+
             ghostObject.transform.position = new Vector3(
                 position.x,
                 data.buildingHeight * 0.5f + 0.05f,
                 position.z);
 
+            ghostRenderer = visual.GetComponentInChildren<Renderer>();
             if (ghostRenderer == null)
                 return;
 
@@ -582,27 +589,30 @@ namespace AoE.RTS.Buildings
 
         GameObject CreateConstructionVisual(PlacedBuildingData data, Vector3 position)
         {
-            GameObject siteObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            siteObject.name = "ConstructionSite";
-            siteObject.layer = LayerMask.NameToLayer("Building");
-            siteObject.transform.localScale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
-            siteObject.transform.position = new Vector3(
+            GameObject siteRoot = new GameObject("ConstructionSite");
+            siteRoot.layer = LayerMask.NameToLayer("Building");
+            siteRoot.transform.position = new Vector3(
                 position.x,
                 data.buildingHeight * 0.5f + 0.05f,
                 position.z);
 
-            Collider siteCollider = siteObject.GetComponent<Collider>();
-            if (siteCollider != null)
-                Destroy(siteCollider);
+            Vector3 scale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
+            PlaceholderVisualKind kind = EntityVisualBuilder.GetBuildingVisualKind(data);
+            GameObject visual = EntityVisualBuilder.CreateGhostVisual(kind, Vector3.one);
+            visual.transform.SetParent(siteRoot.transform, false);
+            visual.transform.localScale = scale;
 
-            Renderer renderer = siteObject.GetComponent<Renderer>();
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-            renderer.GetPropertyBlock(block);
-            block.SetColor("_BaseColor", data.constructionColor);
-            block.SetColor("_Color", data.constructionColor);
-            renderer.SetPropertyBlock(block);
+            Renderer renderer = visual.GetComponentInChildren<Renderer>();
+            if (renderer != null)
+            {
+                MaterialPropertyBlock block = new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(block);
+                block.SetColor("_BaseColor", data.constructionColor);
+                block.SetColor("_Color", data.constructionColor);
+                renderer.SetPropertyBlock(block);
+            }
 
-            return siteObject;
+            return siteRoot;
         }
 
         static void DestroySiteVisual(GameObject visual)

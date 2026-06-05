@@ -15,6 +15,7 @@
 | 8 | 戦闘（死亡、HP 表示） | `Phase8.unity` | ✅ 完了 |
 | 9 | CPU AI（経済） | `Phase9.unity` | ✅ 完了 |
 | 10 | CPU 攻撃波、簡易 RTS 完成 | `Phase10.unity` | ✅ 完了 |
+| 10.5 | Visual Placeholder Upgrade（GLB 差し替え） | `Phase10.unity` | ✅ 完了 |
 
 ---
 
@@ -267,7 +268,37 @@ House 破壊時の cap 減少、建築 Wood 返金・建築再開
 
 ---
 
-## AI 開発の進め方
+## Phase 10.5 — Visual Placeholder Upgrade
+
+**目的:** Capsule / Cube / Cylinder を GLB モデルに差し替え、見た目のみ改善する（ロジック不変）。
+
+**状態:** ✅ 完了
+
+### 実装内容
+
+- **GLB 生成** — `py Tools/generate_placeholder_glbs.py`
+- **Prefab 化** — `AoE → Setup Phase10.5 Visual Prefabs`（Editor API）
+- **EntityVisualBuilder** — ルート（Collider + ロジック）+ `Visual` 子（GLB）
+- **対象** — Villager, Militia, TownCenter, House, Barracks, Tree
+- **フォールバック** — Prefab 未生成時は従来 Primitive を子として表示
+
+### 制約（遵守）
+
+- Animator / Animation / VFX なし
+- ゲームロジック変更なし（Collider サイズ・既存コンポーネント API 維持）
+
+### セットアップ
+
+1. `py Tools/generate_placeholder_glbs.py`
+2. **AoE → Setup Phase10.5 Scene**（Visual Prefabs + Phase10 シーン再生成）
+
+---
+
+## Post-PoC ロードマップ（Phase 11〜）
+
+PoC 完了後は **AoE 機能追加よりエンジン基盤** を優先。詳細は開発計画（Victory/Pool/Benchmark/SpatialHash/FixedTick/CommandQueue）を参照。
+
+---
 
 1. [CONSTITUTION.md](../CONSTITUTION.md) を読ませる
 2. 既存ソース（`Assets/Scripts/`）を読ませる

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9404e44183590b7459f6fb434729a48d, type: 3}
+  m_Name: PlaceholderVisualCatalog
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Visuals.PlaceholderVisualCatalog
+  villagerPrefab: {fileID: 5359459407513708915, guid: 5fa5dcde87b0ab2439345a3c499cef1a, type: 3}
+  militiaPrefab: {fileID: 7551148789879977847, guid: d3e9c910066b3ff439250baf3bd404a7, type: 3}
+  townCenterPrefab: {fileID: 3715830324951679522, guid: a2588545301e0a74f9067f4b56f36759, type: 3}
+  housePrefab: {fileID: 6214189233383289846, guid: 2fd0be67d03cdf647a9f2af99f2ed6fb, type: 3}
+  barracksPrefab: {fileID: 184894039036518149, guid: fc5a01b4f3853194a9c607fd6001d40c, type: 3}
+  treePrefab: {fileID: 5938776147671994682, guid: d9848facda4f87141a815c2b7fbf8b19, type: 3}

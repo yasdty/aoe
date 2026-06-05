@@ -5,6 +5,7 @@ using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Selection;
 using AoE.RTS.Units;
+using AoE.RTS.Visuals;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -363,23 +364,20 @@ namespace AoE.RTS.EditorTools
         {
             const float buildingHeight = 4f;
             const float buildingWidth = 8f;
+            const float groundClearance = 0.05f;
 
-            GameObject townCenterObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            townCenterObject.name = "TownCenter";
-            townCenterObject.layer = LayerMask.NameToLayer("Building");
-            townCenterObject.transform.localScale = new Vector3(buildingWidth, buildingHeight, buildingWidth);
-            float groundClearance = 0.05f;
-            townCenterObject.transform.position = new Vector3(
+            Vector3 worldPosition = new Vector3(
                 position.x,
                 buildingHeight * 0.5f + groundClearance,
                 position.z);
 
-            Color baseColor = buildingData != null
-                ? buildingData.defaultColor
-                : new Color(0.75f, 0.65f, 0.45f);
-
-            Renderer renderer = townCenterObject.GetComponent<Renderer>();
-            renderer.sharedMaterial = SceneMaterialFactory.CreateLitMaterial(baseColor);
+            GameObject townCenterObject = EntityVisualBuilder.CreateBuildingShell(
+                "TownCenter",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(buildingWidth, buildingHeight, buildingWidth),
+                Vector3.zero,
+                PlaceholderVisualKind.TownCenter);
 
             TownCenter townCenter = townCenterObject.AddComponent<TownCenter>();
             SerializedObject serializedTownCenter = new SerializedObject(townCenter);
@@ -415,23 +413,19 @@ namespace AoE.RTS.EditorTools
         {
             const float treeHeight = 4f;
             const float treeRadius = 0.6f;
+            const float groundClearance = 0.05f;
 
-            GameObject treeObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            treeObject.name = "Tree";
-            treeObject.layer = LayerMask.NameToLayer("Resource");
-            treeObject.transform.localScale = new Vector3(treeRadius * 2f, treeHeight * 0.5f, treeRadius * 2f);
-            float groundClearance = 0.05f;
-            treeObject.transform.position = new Vector3(
+            Vector3 worldPosition = new Vector3(
                 position.x,
                 treeHeight * 0.5f + groundClearance,
                 position.z);
 
-            Color baseColor = treeData != null
-                ? treeData.defaultColor
-                : new Color(0.2f, 0.5f, 0.22f);
-
-            Renderer renderer = treeObject.GetComponent<Renderer>();
-            renderer.sharedMaterial = SceneMaterialFactory.CreateLitMaterial(baseColor);
+            GameObject treeObject = EntityVisualBuilder.CreateTreeShell(
+                "Tree",
+                worldPosition,
+                treeHeight,
+                treeRadius,
+                PlaceholderVisualKind.Tree);
 
             TreeResource treeResource = treeObject.AddComponent<TreeResource>();
             SerializedObject serializedTree = new SerializedObject(treeResource);
@@ -445,21 +439,18 @@ namespace AoE.RTS.EditorTools
 
         public static GameObject CreateHouse(PlacedBuildingData houseData, Vector3 position)
         {
-            GameObject houseObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            houseObject.name = "House";
-            houseObject.layer = LayerMask.NameToLayer("Building");
-            houseObject.transform.localScale = new Vector3(
-                houseData.footprintWidth,
-                houseData.buildingHeight,
-                houseData.footprintDepth);
-            houseObject.transform.position = new Vector3(
+            Vector3 worldPosition = new Vector3(
                 position.x,
                 houseData.buildingHeight * 0.5f + 0.05f,
                 position.z);
 
-            Renderer renderer = houseObject.GetComponent<Renderer>();
-            renderer.sharedMaterial = SceneMaterialFactory.CreateLitMaterial(
-                houseData != null ? houseData.defaultColor : new Color(0.65f, 0.45f, 0.3f));
+            GameObject houseObject = EntityVisualBuilder.CreateBuildingShell(
+                "House",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(houseData.footprintWidth, houseData.buildingHeight, houseData.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
 
             House house = houseObject.AddComponent<House>();
             SerializedObject serializedHouse = new SerializedObject(house);
@@ -495,10 +486,9 @@ namespace AoE.RTS.EditorTools
 
         public static GameObject CreateUnit(UnitData unitData, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
-            GameObject unitObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            unitObject.name = unitData != null ? unitData.displayName : "Unit";
-            unitObject.layer = LayerMask.NameToLayer("Unit");
-            unitObject.transform.position = position;
+            string unitName = unitData != null ? unitData.displayName : "Unit";
+            PlaceholderVisualKind visualKind = EntityVisualBuilder.GetUnitVisualKind(unitData);
+            GameObject unitObject = EntityVisualBuilder.CreateUnitShell(unitName, position, visualKind);
 
             Unit unit = unitObject.AddComponent<Unit>();
             if (unitData != null)
