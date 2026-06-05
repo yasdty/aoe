@@ -127,20 +127,20 @@ namespace AoE.RTS.Visuals
             return fallback;
         }
 
-        public static GameObject CreateGhostVisual(PlaceholderVisualKind kind, Vector3 localScale)
+        public static GameObject CreateGhostVisual(PlaceholderVisualKind kind, Vector3 fallbackScale)
         {
             GameObject prefab = LoadVisualPrefab(kind);
             if (prefab == null)
             {
                 GameObject fallback = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                fallback.transform.localScale = localScale;
+                fallback.transform.localScale = fallbackScale;
                 RemoveCollider(fallback);
                 return fallback;
             }
 
             GameObject ghost = Object.Instantiate(prefab);
             ghost.name = "GhostVisual";
-            ghost.transform.localScale = localScale;
+            ghost.transform.localScale = Vector3.one;
             DisableColliders(ghost);
             return ghost;
         }

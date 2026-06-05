@@ -29,3 +29,5 @@ MonoBehaviour:
   ghostInvalidColor: {r: 0.9, g: 0.3, b: 0.3, a: 1}
   constructionColor: {r: 0.42, g: 0.4, b: 0.38, a: 1}
   selectedColor: {r: 0.95, g: 0.55, b: 0.35, a: 1}
+  maxHp: 200
+  armor: 0

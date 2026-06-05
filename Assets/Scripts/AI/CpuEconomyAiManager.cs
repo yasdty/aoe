@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -36,6 +37,9 @@ namespace AoE.RTS.AI
 
         void Update()
         {
+            if (GameSessionManager.IsGameOver)
+                return;
+
             evaluateTimer -= Time.deltaTime;
             if (evaluateTimer > 0f)
                 return;

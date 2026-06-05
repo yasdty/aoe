@@ -119,18 +119,24 @@ namespace AoE.RTS.Buildings
 
         void Update()
         {
+            if (GameSessionManager.IsGameOver)
+                return;
+
             if (isPlacementModeActive)
                 UpdatePlacementMode();
         }
 
         void LateUpdate()
         {
+            if (GameSessionManager.IsGameOver)
+                return;
+
             TickConstructionSites(Time.deltaTime);
         }
 
         public static void EnterHousePlacementMode(IReadOnlyList<Unit> builders)
         {
-            if (instance == null)
+            if (instance == null || GameSessionManager.IsGameOver)
                 return;
 
             instance.houseData = PlacedBuildingDataResolver.ResolveHouse(ref instance.houseData);
@@ -144,7 +150,7 @@ namespace AoE.RTS.Buildings
                 for (int i = 0; i < builders.Count; i++)
                 {
                     Unit unit = builders[i];
-                    if (unit != null)
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
                         instance.stashedBuilders.Add(unit);
                 }
             }
@@ -162,7 +168,7 @@ namespace AoE.RTS.Buildings
 
         public static void EnterBarracksPlacementMode(IReadOnlyList<Unit> builders)
         {
-            if (instance == null)
+            if (instance == null || GameSessionManager.IsGameOver)
                 return;
 
             instance.barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref instance.barracksData);
@@ -175,7 +181,7 @@ namespace AoE.RTS.Buildings
                 for (int i = 0; i < builders.Count; i++)
                 {
                     Unit unit = builders[i];
-                    if (unit != null)
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
                         instance.stashedBuilders.Add(unit);
                 }
             }
@@ -314,22 +320,30 @@ namespace AoE.RTS.Buildings
 
         static Unit ResolveBuilder(IReadOnlyList<Unit> builders)
         {
-            if (instance.stashedBuilders.Count > 0)
-                return instance.stashedBuilders[0];
+            Unit builder = PickPlayerBuilder(instance.stashedBuilders);
+            if (builder != null)
+                return builder;
 
-            if (builders != null)
+            builder = PickPlayerBuilder(builders);
+            if (builder != null)
+                return builder;
+
+            return null;
+        }
+
+        static Unit PickPlayerBuilder(IReadOnlyList<Unit> units)
+        {
+            if (units == null)
+                return null;
+
+            for (int i = 0; i < units.Count; i++)
             {
-                for (int i = 0; i < builders.Count; i++)
-                {
-                    if (builders[i] != null)
-                        return builders[i];
-                }
+                Unit unit = units[i];
+                if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
+                    return unit;
             }
 
-            List<Unit> buffer = instance.builderLookupBuffer;
-            buffer.Clear();
-            UnitManager.CopyUnitsTo(buffer);
-            return buffer.Count > 0 ? buffer[0] : null;
+            return null;
         }
 
         void UpdatePlacementMode()
@@ -460,13 +474,15 @@ namespace AoE.RTS.Buildings
 
             if (site.data.kind == PlacedBuildingKind.Barracks)
             {
-                Barracks barracks = RuntimeBuildingFactory.CreateBarracks(site.data, site.position);
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                Barracks barracks = RuntimeBuildingFactory.CreateBarracks(site.data, site.position, team);
                 if (barracks != null && site.builder != null)
                     barracks.SetTeam(site.builder.Team);
                 return;
             }
 
-            RuntimeBuildingFactory.CreateHouse(site.data, site.position);
+            UnitTeam houseTeam = site.builder != null ? site.builder.Team : UnitTeam.Player;
+            RuntimeBuildingFactory.CreateHouse(site.data, site.position, houseTeam);
             if (site.data.housingProvided > 0 && site.builder != null)
                 PopulationManager.AddHousing(site.builder.Team, site.data.housingProvided);
         }
@@ -562,9 +578,9 @@ namespace AoE.RTS.Buildings
             for (int i = ghostObject.transform.childCount - 1; i >= 0; i--)
                 Destroy(ghostObject.transform.GetChild(i).gameObject);
 
-            Vector3 scale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
+            Vector3 fallbackScale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
             PlaceholderVisualKind kind = EntityVisualBuilder.GetBuildingVisualKind(data);
-            GameObject visual = EntityVisualBuilder.CreateGhostVisual(kind, scale);
+            GameObject visual = EntityVisualBuilder.CreateGhostVisual(kind, fallbackScale);
             visual.transform.SetParent(ghostObject.transform, false);
             visual.transform.localPosition = Vector3.zero;
 
@@ -596,11 +612,12 @@ namespace AoE.RTS.Buildings
                 data.buildingHeight * 0.5f + 0.05f,
                 position.z);
 
-            Vector3 scale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
+            Vector3 fallbackScale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
             PlaceholderVisualKind kind = EntityVisualBuilder.GetBuildingVisualKind(data);
-            GameObject visual = EntityVisualBuilder.CreateGhostVisual(kind, Vector3.one);
+            GameObject visual = EntityVisualBuilder.CreateGhostVisual(kind, fallbackScale);
             visual.transform.SetParent(siteRoot.transform, false);
-            visual.transform.localScale = scale;
+            visual.transform.localScale = Vector3.one;
+            visual.transform.localPosition = Vector3.zero;
 
             Renderer renderer = visual.GetComponentInChildren<Renderer>();
             if (renderer != null)

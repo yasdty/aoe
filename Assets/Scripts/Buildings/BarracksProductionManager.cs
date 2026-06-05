@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -142,7 +143,7 @@ namespace AoE.RTS.Buildings
 
         void Update()
         {
-            if (activeJobs.Count == 0)
+            if (GameSessionManager.IsGameOver || activeJobs.Count == 0)
                 return;
 
             float deltaTime = Time.deltaTime;

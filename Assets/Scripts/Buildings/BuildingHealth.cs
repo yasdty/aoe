@@ -1,0 +1,100 @@
+using AoE.RTS.Core;
+using AoE.RTS.Units;
+using UnityEngine;
+
+namespace AoE.RTS.Buildings
+{
+    [DisallowMultipleComponent]
+    public class BuildingHealth : MonoBehaviour
+    {
+        [SerializeField] float maxHp = 400f;
+        [SerializeField] float armor;
+        [SerializeField] UnitTeam team = UnitTeam.Player;
+        [SerializeField] bool isTownCenter;
+
+        float currentHp;
+        bool isConfigured;
+
+        public float MaxHp => maxHp;
+        public float CurrentHp => currentHp;
+        public float Armor => armor;
+        public UnitTeam Team => team;
+        public bool IsTownCenter => isTownCenter;
+        public bool IsAlive => currentHp > 0f;
+
+        public void Configure(float hp, float buildingArmor, UnitTeam buildingTeam, bool townCenter)
+        {
+            maxHp = Mathf.Max(1f, hp);
+            armor = Mathf.Max(0f, buildingArmor);
+            team = buildingTeam;
+            isTownCenter = townCenter;
+            currentHp = maxHp;
+            isConfigured = true;
+        }
+
+        void Awake()
+        {
+            if (!isConfigured)
+                currentHp = maxHp;
+        }
+
+        public void TakeDamage(float amount)
+        {
+            if (!IsAlive || amount <= 0f)
+                return;
+
+            currentHp = Mathf.Max(0f, currentHp - amount);
+            if (currentHp <= 0f)
+                Die();
+        }
+
+        void Die()
+        {
+            bool countsAsTownCenter = isTownCenter || GetComponent<TownCenter>() != null;
+            if (countsAsTownCenter)
+                GameSessionManager.NotifyTownCenterDestroyed(team);
+
+            Destroy(gameObject);
+        }
+
+        public Vector3 GetMeleeStandPosition(Vector3 attackerPosition, float standOff = 0.75f)
+        {
+            Vector3 center = transform.position;
+            Vector3 direction = attackerPosition - center;
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.0001f)
+                direction = Vector3.forward;
+            direction.Normalize();
+
+            float halfExtent = GetHorizontalHalfExtent(direction);
+            Vector3 edge = center + direction * halfExtent;
+            edge.y = attackerPosition.y;
+            return edge + direction * standOff;
+        }
+
+        float GetHorizontalHalfExtent(Vector3 worldDirection)
+        {
+            BoxCollider box = GetComponent<BoxCollider>();
+            if (box != null)
+            {
+                Vector3 localDirection = transform.InverseTransformDirection(worldDirection);
+                localDirection.y = 0f;
+                if (localDirection.sqrMagnitude < 0.0001f)
+                    localDirection = Vector3.forward;
+                localDirection.Normalize();
+
+                Vector3 halfSize = Vector3.Scale(box.size * 0.5f, transform.lossyScale);
+                return Mathf.Abs(localDirection.x) * halfSize.x + Mathf.Abs(localDirection.z) * halfSize.z;
+            }
+
+            Collider collider = GetComponent<Collider>();
+            if (collider != null)
+            {
+                Bounds bounds = collider.bounds;
+                return Mathf.Max(bounds.extents.x, bounds.extents.z);
+            }
+
+            return 2f;
+        }
+    }
+}

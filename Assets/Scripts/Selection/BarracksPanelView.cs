@@ -1,4 +1,5 @@
 using AoE.RTS.Buildings;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using UnityEngine;
 
@@ -31,7 +32,7 @@ namespace AoE.RTS.Selection
             bool isProducing = BarracksProductionManager.IsProducing(barracks);
             bool populationFull = !PopulationManager.CanTrainUnit();
             bool canAfford = ResourceManager.Wood >= data.trainWoodCost;
-            GUI.enabled = !isProducing && !populationFull && canAfford;
+            GUI.enabled = !isProducing && !populationFull && canAfford && !GameSessionManager.IsGameOver;
             if (GUILayout.Button($"Create Militia ({data.trainWoodCost} Wood)"))
                 barracks.TryQueueMilitiaProduction();
             GUI.enabled = true;

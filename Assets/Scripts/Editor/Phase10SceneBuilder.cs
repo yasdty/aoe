@@ -1,6 +1,7 @@
 using AoE.RTS.AI;
 using AoE.RTS.Buildings;
 using AoE.RTS.Combat;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Selection;
@@ -140,6 +141,7 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData barracksData)
         {
             GameObject systems = new GameObject("Systems");
+            systems.AddComponent<GameSessionManager>();
 
             GameObject unitManagerObject = new GameObject("UnitManager");
             unitManagerObject.transform.SetParent(systems.transform);
@@ -191,6 +193,7 @@ namespace AoE.RTS.EditorTools
             ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
             selectionManagerObject.AddComponent<CpuHudView>();
             selectionManagerObject.AddComponent<GameTimeHudView>();
+            selectionManagerObject.AddComponent<VictoryDefeatHudView>();
 
             RTSInputReader inputReader = mainCamera.GetComponent<RTSInputReader>();
             SerializedObject serializedSelection = new SerializedObject(selectionManager);

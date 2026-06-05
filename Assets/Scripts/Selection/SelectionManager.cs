@@ -54,6 +54,9 @@ namespace AoE.RTS.Selection
 
         void Update()
         {
+            if (GameSessionManager.IsGameOver)
+                return;
+
             if (input != null && GameUiInput.IsPointerOverHud(input.PointerScreenPosition))
             {
                 if (BuildingPlacementManager.IsPlacementModeActive && input.WasCommandPressedThisFrame())
@@ -244,6 +247,13 @@ namespace AoE.RTS.Selection
                     return;
             }
 
+            if (Physics.Raycast(ray, out hit, 1000f, GameLayers.BuildingMask))
+            {
+                BuildingHealth targetBuilding = hit.collider.GetComponentInParent<BuildingHealth>();
+                if (targetBuilding != null && TryIssueAttackBuildingCommand(targetBuilding))
+                    return;
+            }
+
             if (!Physics.Raycast(ray, out hit, 1000f, GameLayers.GroundMask))
                 return;
 
@@ -271,6 +281,30 @@ namespace AoE.RTS.Selection
             BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
             GatherManager.CancelForUnits(selectedUnits);
             AttackManager.IssueAttack(attackCommandBuffer, targetUnit);
+            return true;
+        }
+
+        bool TryIssueAttackBuildingCommand(BuildingHealth targetBuilding)
+        {
+            if (targetBuilding == null || !targetBuilding.IsAlive)
+                return false;
+
+            attackCommandBuffer.Clear();
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit == null || !unit.CanAttack || unit.Team == targetBuilding.Team)
+                    continue;
+
+                attackCommandBuffer.Add(unit);
+            }
+
+            if (attackCommandBuffer.Count == 0)
+                return false;
+
+            BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
+            GatherManager.CancelForUnits(selectedUnits);
+            AttackManager.IssueAttack(attackCommandBuffer, targetBuilding);
             return true;
         }
 

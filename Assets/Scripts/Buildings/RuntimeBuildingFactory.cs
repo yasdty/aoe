@@ -1,3 +1,4 @@
+using AoE.RTS.Units;
 using AoE.RTS.Visuals;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace AoE.RTS.Buildings
     {
         static Material sharedLitMaterial;
 
-        public static House CreateHouse(PlacedBuildingData data, Vector3 position)
+        public static House CreateHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
                 return null;
@@ -26,13 +27,14 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.House);
 
             ApplySharedMaterialIfMissingRendererTint(houseObject);
+            ConfigureBuildingHealth(houseObject, data.maxHp, data.armor, team);
 
             House house = houseObject.AddComponent<House>();
             house.SetData(data);
             return house;
         }
 
-        public static Barracks CreateBarracks(PlacedBuildingData data, Vector3 position)
+        public static Barracks CreateBarracks(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
                 return null;
@@ -51,10 +53,17 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.Barracks);
 
             ApplySharedMaterialIfMissingRendererTint(barracksObject);
+            ConfigureBuildingHealth(barracksObject, data.maxHp, data.armor, team);
 
             Barracks barracks = barracksObject.AddComponent<Barracks>();
             barracks.SetData(data);
             return barracks;
+        }
+
+        static void ConfigureBuildingHealth(GameObject buildingObject, float hp, float buildingArmor, UnitTeam team)
+        {
+            BuildingHealth health = buildingObject.AddComponent<BuildingHealth>();
+            health.Configure(hp, buildingArmor, team, townCenter: false);
         }
 
         static void ApplySharedMaterialIfMissingRendererTint(GameObject buildingObject)

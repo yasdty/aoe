@@ -13,5 +13,7 @@ namespace AoE.RTS.Buildings
         public Color selectedColor = new Color(0.95f, 0.85f, 0.35f);
         public float spawnForwardOffset = 8f;
         public float spawnClearance = 4f;
+        public float maxHp = 400f;
+        public float armor;
     }
 }

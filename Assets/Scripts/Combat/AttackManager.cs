@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AoE.RTS.Buildings;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -10,7 +11,8 @@ namespace AoE.RTS.Combat
         struct AttackJob
         {
             public Unit attacker;
-            public Unit target;
+            public Unit targetUnit;
+            public BuildingHealth targetBuilding;
             public float cooldownRemaining;
         }
 
@@ -38,7 +40,7 @@ namespace AoE.RTS.Combat
             for (int i = activeJobs.Count - 1; i >= 0; i--)
             {
                 AttackJob job = activeJobs[i];
-                if (!IsValidCombatUnit(job.attacker) || !IsValidCombatUnit(job.target))
+                if (!IsValidCombatUnit(job.attacker))
                 {
                     Unit staleAttacker = job.attacker;
                     activeJobs.RemoveAt(i);
@@ -47,69 +49,184 @@ namespace AoE.RTS.Combat
                     continue;
                 }
 
-                if (job.attacker.Team == job.target.Team)
+                if (job.targetUnit != null)
                 {
-                    Unit staleAttacker = job.attacker;
-                    activeJobs.RemoveAt(i);
-                    staleAttacker.NotifyStateChanged();
-                    continue;
+                    if (!ProcessUnitTargetJob(ref job, i, deltaTime))
+                        continue;
                 }
-
-                float attackRange = job.attacker.AttackRange;
-                Vector3 targetPosition = job.target.transform.position;
-                if (!job.attacker.IsNear(targetPosition, attackRange))
+                else if (job.targetBuilding != null)
                 {
-                    float standRadius = Mathf.Max(0.5f, attackRange * 0.85f);
-                    Vector3 approachPosition = UnitPositionOffsets.ApplyRingOffset(
-                        targetPosition,
-                        job.attacker,
-                        standRadius);
-                    job.attacker.SetMoveTarget(approachPosition);
-                    activeJobs[i] = job;
-                    continue;
+                    if (!ProcessBuildingTargetJob(ref job, i, deltaTime))
+                        continue;
                 }
-
-                job.attacker.ClearMoveTarget();
-                job.cooldownRemaining -= deltaTime;
-                if (job.cooldownRemaining > 0f)
-                {
-                    activeJobs[i] = job;
-                    continue;
-                }
-
-                float damage = Mathf.Max(1f, job.attacker.AttackPower - job.target.Armor);
-                Unit attacker = job.attacker;
-                Unit target = job.target;
-                target.TakeDamage(damage);
-
-                if (i >= activeJobs.Count || activeJobs[i].attacker != attacker)
-                    continue;
-
-                if (!IsValidCombatUnit(attacker))
+                else
                 {
                     activeJobs.RemoveAt(i);
-                    continue;
+                    job.attacker.NotifyStateChanged();
                 }
-
-                if (!IsValidCombatUnit(target))
-                {
-                    activeJobs.RemoveAt(i);
-                    attacker.NotifyStateChanged();
-                    continue;
-                }
-
-                job.cooldownRemaining = attacker.AttackCooldownSeconds;
-                job.attacker = attacker;
-                job.target = target;
-                activeJobs[i] = job;
-
-                Debug.Log(
-                    $"[{FormatTeam(attacker.Team)}] {attacker.Data?.displayName ?? "Unit"} "
-                    + $"→ [{FormatTeam(target.Team)}] {target.Data?.displayName ?? "Unit"}: "
-                    + $"{damage:0} dmg (HP {target.CurrentHp:0}/{target.MaxHp:0})");
             }
 
             RefreshAttackerVisuals();
+        }
+
+        bool ProcessUnitTargetJob(ref AttackJob job, int index, float deltaTime)
+        {
+            if (!IsValidCombatUnit(job.targetUnit))
+            {
+                Unit staleAttacker = job.attacker;
+                activeJobs.RemoveAt(index);
+                if (staleAttacker != null)
+                    staleAttacker.NotifyStateChanged();
+                return false;
+            }
+
+            if (job.attacker.Team == job.targetUnit.Team)
+            {
+                Unit staleAttacker = job.attacker;
+                activeJobs.RemoveAt(index);
+                staleAttacker.NotifyStateChanged();
+                return false;
+            }
+
+            return ProcessAttackCycle(
+                job.attacker,
+                job.targetUnit.transform.position,
+                job.targetUnit.Armor,
+                job.targetUnit.Team,
+                job.targetUnit.Data?.displayName ?? "Unit",
+                job.cooldownRemaining,
+                deltaTime,
+                ref job,
+                index,
+                unitTarget: job.targetUnit);
+        }
+
+        bool ProcessBuildingTargetJob(ref AttackJob job, int index, float deltaTime)
+        {
+            BuildingHealth building = job.targetBuilding;
+            if (building == null || !building.IsAlive)
+            {
+                Unit staleAttacker = job.attacker;
+                activeJobs.RemoveAt(index);
+                if (staleAttacker != null)
+                    staleAttacker.NotifyStateChanged();
+                return false;
+            }
+
+            if (job.attacker.Team == building.Team)
+            {
+                Unit staleAttacker = job.attacker;
+                activeJobs.RemoveAt(index);
+                staleAttacker.NotifyStateChanged();
+                return false;
+            }
+
+            string buildingName = building.IsTownCenter ? "Town Center" : "Building";
+            Vector3 standPosition = building.GetMeleeStandPosition(job.attacker.transform.position);
+            return ProcessAttackCycle(
+                job.attacker,
+                standPosition,
+                building.Armor,
+                building.Team,
+                buildingName,
+                job.cooldownRemaining,
+                deltaTime,
+                ref job,
+                index,
+                unitTarget: null,
+                buildingTarget: building);
+        }
+
+        bool ProcessAttackCycle(
+            Unit attacker,
+            Vector3 targetPosition,
+            float targetArmor,
+            UnitTeam targetTeam,
+            string targetName,
+            float cooldownRemaining,
+            float deltaTime,
+            ref AttackJob job,
+            int index,
+            Unit unitTarget,
+            BuildingHealth buildingTarget = null)
+        {
+            float attackRange = attacker.AttackRange;
+            if (!attacker.IsNear(targetPosition, attackRange))
+            {
+                float standRadius = Mathf.Max(0.5f, attackRange * 0.85f);
+                Vector3 approachPosition = UnitPositionOffsets.ApplyRingOffset(
+                    targetPosition,
+                    attacker,
+                    standRadius);
+                attacker.SetMoveTarget(approachPosition);
+                job.cooldownRemaining = cooldownRemaining;
+                job.attacker = attacker;
+                job.targetUnit = unitTarget;
+                job.targetBuilding = buildingTarget;
+                activeJobs[index] = job;
+                return true;
+            }
+
+            attacker.ClearMoveTarget();
+            cooldownRemaining -= deltaTime;
+            if (cooldownRemaining > 0f)
+            {
+                job.cooldownRemaining = cooldownRemaining;
+                job.attacker = attacker;
+                job.targetUnit = unitTarget;
+                job.targetBuilding = buildingTarget;
+                activeJobs[index] = job;
+                return true;
+            }
+
+            float damage = Mathf.Max(1f, attacker.AttackPower - targetArmor);
+            if (unitTarget != null)
+                unitTarget.TakeDamage(damage);
+            else if (buildingTarget != null)
+                buildingTarget.TakeDamage(damage);
+
+            if (index >= activeJobs.Count || activeJobs[index].attacker != attacker)
+                return false;
+
+            if (!IsValidCombatUnit(attacker))
+            {
+                activeJobs.RemoveAt(index);
+                return false;
+            }
+
+            bool targetStillAlive = unitTarget != null
+                ? IsValidCombatUnit(unitTarget)
+                : buildingTarget != null && buildingTarget.IsAlive;
+
+            if (!targetStillAlive)
+            {
+                activeJobs.RemoveAt(index);
+                attacker.NotifyStateChanged();
+                return false;
+            }
+
+            job.cooldownRemaining = attacker.AttackCooldownSeconds;
+            job.attacker = attacker;
+            job.targetUnit = unitTarget;
+            job.targetBuilding = buildingTarget;
+            activeJobs[index] = job;
+
+            if (unitTarget != null)
+            {
+                Debug.Log(
+                    $"[{FormatTeam(attacker.Team)}] {attacker.Data?.displayName ?? "Unit"} "
+                    + $"→ [{FormatTeam(targetTeam)}] {targetName}: "
+                    + $"{damage:0} dmg (HP {unitTarget.CurrentHp:0}/{unitTarget.MaxHp:0})");
+            }
+            else if (buildingTarget != null)
+            {
+                Debug.Log(
+                    $"[{FormatTeam(attacker.Team)}] {attacker.Data?.displayName ?? "Unit"} "
+                    + $"→ [{FormatTeam(targetTeam)}] {targetName}: "
+                    + $"{damage:0} dmg (HP {buildingTarget.CurrentHp:0}/{buildingTarget.MaxHp:0})");
+            }
+
+            return true;
         }
 
         void RefreshAttackerVisuals()
@@ -162,7 +279,36 @@ namespace AoE.RTS.Combat
                 instance.activeJobs.Add(new AttackJob
                 {
                     attacker = attacker,
-                    target = target,
+                    targetUnit = target,
+                    targetBuilding = null,
+                    cooldownRemaining = 0f
+                });
+            }
+        }
+
+        public static void IssueAttack(IReadOnlyList<Unit> attackers, BuildingHealth targetBuilding)
+        {
+            if (instance == null || targetBuilding == null || attackers == null || !targetBuilding.IsAlive)
+                return;
+
+            for (int i = 0; i < attackers.Count; i++)
+            {
+                Unit attacker = attackers[i];
+                if (!IsValidCombatUnit(attacker) || !attacker.CanAttack)
+                    continue;
+
+                if (attacker.Team == targetBuilding.Team)
+                    continue;
+
+                gatherCancelBuffer.Clear();
+                gatherCancelBuffer.Add(attacker);
+                GatherManager.CancelForUnits(gatherCancelBuffer);
+                RemoveJobsForAttacker(attacker);
+                instance.activeJobs.Add(new AttackJob
+                {
+                    attacker = attacker,
+                    targetUnit = null,
+                    targetBuilding = targetBuilding,
                     cooldownRemaining = 0f
                 });
             }
@@ -176,7 +322,7 @@ namespace AoE.RTS.Combat
             for (int i = instance.activeJobs.Count - 1; i >= 0; i--)
             {
                 AttackJob job = instance.activeJobs[i];
-                if (job.attacker == unit || job.target == unit)
+                if (job.attacker == unit || job.targetUnit == unit)
                 {
                     Unit staleAttacker = job.attacker;
                     instance.activeJobs.RemoveAt(i);

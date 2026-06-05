@@ -18,3 +18,6 @@ MonoBehaviour:
   defaultColor: {r: 0.75, g: 0.65, b: 0.45, a: 1}
   selectedColor: {r: 0.95, g: 0.85, b: 0.35, a: 1}
   spawnForwardOffset: 4
+  spawnClearance: 4
+  maxHp: 400
+  armor: 0

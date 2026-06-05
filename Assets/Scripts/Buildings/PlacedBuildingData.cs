@@ -29,5 +29,7 @@ namespace AoE.RTS.Buildings
         public Color ghostInvalidColor = new Color(0.9f, 0.3f, 0.3f);
         public Color constructionColor = new Color(0.42f, 0.4f, 0.38f);
         public Color selectedColor = new Color(0.95f, 0.85f, 0.35f);
+        public float maxHp = 150f;
+        public float armor;
     }
 }

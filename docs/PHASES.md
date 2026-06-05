@@ -294,9 +294,11 @@ House 破壊時の cap 減少、建築 Wood 返金・建築再開
 
 ---
 
-## Post-PoC ロードマップ（Phase 11〜）
+## Post-PoC / Foundation ロードマップ（Phase 11〜）
 
-PoC 完了後は **AoE 機能追加よりエンジン基盤** を優先。詳細は開発計画（Victory/Pool/Benchmark/SpatialHash/FixedTick/CommandQueue）を参照。
+PoC 完了後は **AoE 機能追加より RTS Engine 基盤** を優先。
+
+**詳細・プロンプト:** [FOUNDATION_PHASES.md](FOUNDATION_PHASES.md)（Phase 11〜16。本ファイルとは別管理）
 
 ---
 

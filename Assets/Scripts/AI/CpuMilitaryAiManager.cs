@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Combat;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -57,6 +58,9 @@ namespace AoE.RTS.AI
 
         void Update()
         {
+            if (GameSessionManager.IsGameOver)
+                return;
+
             float deltaTime = Time.deltaTime;
             waveTimer -= deltaTime;
             if (waveTimer <= 0f)
@@ -164,10 +168,21 @@ namespace AoE.RTS.AI
             }
 
             TownCenter playerTownCenter = ProductionManager.GetTownCenterForTeam(PlayerTeam);
-            if (playerTownCenter == null)
-                return;
+            if (playerTownCenter != null)
+            {
+                BuildingHealth playerTownCenterHealth = playerTownCenter.GetComponent<BuildingHealth>();
+                if (playerTownCenterHealth != null && playerTownCenterHealth.IsAlive)
+                {
+                    AttackManager.IssueAttack(militiaAttackBuffer, playerTownCenterHealth);
+                    Debug.Log(
+                        $"CPU attack wave at {FormatTime(Time.timeSinceLevelLoad)}: {militiaAttackBuffer.Count} Militia → Town Center");
+                    return;
+                }
+            }
 
-            Vector3 advanceTarget = playerTownCenter.transform.position;
+            Vector3 advanceTarget = playerTownCenter != null
+                ? playerTownCenter.transform.position
+                : militiaAttackBuffer[0].transform.position;
             advanceTarget.y = 1f;
             for (int i = 0; i < militiaAttackBuffer.Count; i++)
             {

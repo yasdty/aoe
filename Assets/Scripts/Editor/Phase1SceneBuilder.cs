@@ -188,6 +188,12 @@ namespace AoE.RTS.EditorTools
                     EditorUtility.SetDirty(existing);
                 }
 
+                if (existing.maxHp != 400f)
+                {
+                    existing.maxHp = 400f;
+                    EditorUtility.SetDirty(existing);
+                }
+
                 AssetDatabase.SaveAssets();
                 return existing;
             }
@@ -198,6 +204,7 @@ namespace AoE.RTS.EditorTools
             data.villagerUnitData = villagerData;
             data.spawnForwardOffset = 8f;
             data.spawnClearance = 4f;
+            data.maxHp = 400f;
             AssetDatabase.CreateAsset(data, TownCenterDataPath);
             AssetDatabase.SaveAssets();
             return data;
@@ -226,6 +233,12 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
+                if (existing.maxHp != 150f)
+                {
+                    existing.maxHp = 150f;
+                    dirty = true;
+                }
+
                 if (existing.kind != PlacedBuildingKind.House)
                 {
                     existing.kind = PlacedBuildingKind.House;
@@ -247,6 +260,7 @@ namespace AoE.RTS.EditorTools
             data.woodCost = 25f;
             data.buildTime = 3f;
             data.housingProvided = 5;
+            data.maxHp = 150f;
             AssetDatabase.CreateAsset(data, DefaultHouseDataPath);
             AssetDatabase.SaveAssets();
             return data;
@@ -331,6 +345,12 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
+                if (existing.maxHp != 200f)
+                {
+                    existing.maxHp = 200f;
+                    dirty = true;
+                }
+
                 if (dirty)
                 {
                     EditorUtility.SetDirty(existing);
@@ -355,6 +375,7 @@ namespace AoE.RTS.EditorTools
             data.spawnClearance = 4f;
             data.defaultColor = new Color(0.55f, 0.35f, 0.32f);
             data.selectedColor = new Color(0.95f, 0.55f, 0.35f);
+            data.maxHp = 200f;
             AssetDatabase.CreateAsset(data, DefaultBarracksDataPath);
             AssetDatabase.SaveAssets();
             return data;

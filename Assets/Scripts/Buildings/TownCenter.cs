@@ -26,6 +26,18 @@ namespace AoE.RTS.Buildings
         {
             cachedRenderer = GetComponentInChildren<Renderer>();
             EnsureDataReference();
+            EnsureBuildingHealth();
+        }
+
+        void EnsureBuildingHealth()
+        {
+            BuildingHealth health = GetComponent<BuildingHealth>();
+            if (health == null)
+                health = gameObject.AddComponent<BuildingHealth>();
+
+            float hp = data != null ? data.maxHp : 400f;
+            float buildingArmor = data != null ? data.armor : 0f;
+            health.Configure(hp, buildingArmor, team, townCenter: true);
         }
 
         void OnEnable()
@@ -47,12 +59,16 @@ namespace AoE.RTS.Buildings
         public void SetData(BuildingData buildingData)
         {
             data = buildingData;
+            EnsureBuildingHealth();
             UpdateVisual();
         }
 
         public void SetTeam(UnitTeam unitTeam)
         {
             team = unitTeam;
+            BuildingHealth health = GetComponent<BuildingHealth>();
+            if (health != null && data != null)
+                health.Configure(data.maxHp, data.armor, team, townCenter: true);
             UpdateVisual();
         }
 

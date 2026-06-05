@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -64,10 +65,11 @@ namespace AoE.RTS.Selection
             y += PopLineHeight + ButtonGap;
 
             bool inPlacementMode = BuildingPlacementManager.IsPlacementModeActive;
+            bool gameOver = GameSessionManager.IsGameOver;
 
             Rect houseButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
             bool canAffordHouse = ResourceManager.Wood >= house.woodCost;
-            GUI.enabled = canAffordHouse && !inPlacementMode;
+            GUI.enabled = canAffordHouse && !inPlacementMode && !gameOver;
             if (GUI.Button(houseButtonRect, $"Build House ({house.woodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
@@ -79,7 +81,7 @@ namespace AoE.RTS.Selection
 
             Rect barracksButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
             bool canAffordBarracks = ResourceManager.Wood >= barracks.woodCost;
-            GUI.enabled = canAffordBarracks && !inPlacementMode;
+            GUI.enabled = canAffordBarracks && !inPlacementMode && !gameOver;
             if (GUI.Button(barracksButtonRect, $"Build Barracks ({barracks.woodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
