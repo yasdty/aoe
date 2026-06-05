@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AoE.RTS.Buildings
 {
-    public class BarracksProductionManager : MonoBehaviour
+    public class BarracksProductionManager : MonoBehaviour, ISimulationTickable
     {
         struct ProductionJob
         {
@@ -29,6 +29,42 @@ namespace AoE.RTS.Buildings
         {
             if (instance == this)
                 instance = null;
+
+            SimulationTick.Unregister(this);
+        }
+
+        void Start()
+        {
+            SimulationTick.Register(this);
+        }
+
+        public void TickSimulation(float fixedDeltaTime)
+        {
+            if (activeJobs.Count == 0)
+                return;
+
+            for (int i = activeJobs.Count - 1; i >= 0; i--)
+            {
+                ProductionJob job = activeJobs[i];
+                if (job.barracks == null)
+                {
+                    activeJobs.RemoveAt(i);
+                    continue;
+                }
+
+                job.remainingSeconds -= fixedDeltaTime;
+                if (job.remainingSeconds > 0f)
+                {
+                    activeJobs[i] = job;
+                    continue;
+                }
+
+                UnitSpawner.Spawn(
+                    job.unitData,
+                    job.barracks.GetUnitSpawnPosition(),
+                    job.barracks.Team);
+                activeJobs.RemoveAt(i);
+            }
         }
 
         public static void Register(Barracks barracks)
@@ -139,36 +175,6 @@ namespace AoE.RTS.Buildings
             }
 
             return 0f;
-        }
-
-        void Update()
-        {
-            if (GameSessionManager.IsGameOver || activeJobs.Count == 0)
-                return;
-
-            float deltaTime = Time.deltaTime;
-            for (int i = activeJobs.Count - 1; i >= 0; i--)
-            {
-                ProductionJob job = activeJobs[i];
-                if (job.barracks == null)
-                {
-                    activeJobs.RemoveAt(i);
-                    continue;
-                }
-
-                job.remainingSeconds -= deltaTime;
-                if (job.remainingSeconds > 0f)
-                {
-                    activeJobs[i] = job;
-                    continue;
-                }
-
-                UnitSpawner.Spawn(
-                    job.unitData,
-                    job.barracks.GetUnitSpawnPosition(),
-                    job.barracks.Team);
-                activeJobs.RemoveAt(i);
-            }
         }
     }
 }

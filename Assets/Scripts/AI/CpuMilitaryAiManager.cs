@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace AoE.RTS.AI
 {
-    public class CpuMilitaryAiManager : MonoBehaviour
+    public class CpuMilitaryAiManager : MonoBehaviour, ISimulationTickable
     {
         const float EvaluateInterval = 2f;
         const int TargetMilitiaCount = 8;
@@ -48,6 +48,8 @@ namespace AoE.RTS.AI
         {
             if (instance == this)
                 instance = null;
+
+            SimulationTick.Unregister(this);
         }
 
         void Start()
@@ -55,22 +57,19 @@ namespace AoE.RTS.AI
             RefreshCpuTownCenter();
             evaluateTimer = 1f;
             waveTimer = attackWaveIntervalSeconds;
+            SimulationTick.Register(this);
         }
 
-        void Update()
+        public void TickSimulation(float fixedDeltaTime)
         {
-            if (GameSessionManager.IsGameOver)
-                return;
-
-            float deltaTime = Time.deltaTime;
-            waveTimer -= deltaTime;
+            waveTimer -= fixedDeltaTime;
             if (waveTimer <= 0f)
             {
                 waveTimer = attackWaveIntervalSeconds;
                 LaunchAttackWave();
             }
 
-            evaluateTimer -= deltaTime;
+            evaluateTimer -= fixedDeltaTime;
             if (evaluateTimer > 0f)
                 return;
 

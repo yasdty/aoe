@@ -1,5 +1,6 @@
 using AoE.RTS.Benchmark;
 using AoE.RTS.Combat;
+using AoE.RTS.Core;
 using AoE.RTS.Spatial;
 using AoE.RTS.Units;
 using UnityEditor;
@@ -33,6 +34,10 @@ namespace AoE.RTS.EditorTools
             GameObject cameraObject = CreateBenchmarkCamera();
 
             GameObject systems = new GameObject("Systems");
+
+            GameObject simulationTickObject = new GameObject("SimulationTick");
+            simulationTickObject.transform.SetParent(systems.transform);
+            simulationTickObject.AddComponent<SimulationTick>();
 
             GameObject unitManagerObject = new GameObject("UnitManager");
             unitManagerObject.transform.SetParent(systems.transform);

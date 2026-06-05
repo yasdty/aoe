@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
+using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
 
 namespace AoE.RTS.Economy
 {
-    public class GatherManager : MonoBehaviour
+    public class GatherManager : MonoBehaviour, ISimulationTickable
     {
         enum GatherState
         {
@@ -41,6 +42,49 @@ namespace AoE.RTS.Economy
         {
             if (instance == this)
                 instance = null;
+
+            SimulationTick.Unregister(this);
+        }
+
+        void Start()
+        {
+            SimulationTick.Register(this);
+        }
+
+        public void TickSimulation(float fixedDeltaTime)
+        {
+            if (jobs.Count == 0)
+                return;
+
+            for (int i = jobs.Count - 1; i >= 0; i--)
+            {
+                GatherJob job = jobs[i];
+                if (job.unit == null || !job.unit.IsAlive)
+                {
+                    jobs.RemoveAt(i);
+                    continue;
+                }
+
+                if (job.tree == null || job.tree.IsDepleted && job.carriedWood <= 0f)
+                {
+                    job.unit.ClearMoveTarget();
+                    jobs.RemoveAt(i);
+                    continue;
+                }
+
+                switch (job.state)
+                {
+                    case GatherState.MoveToTree:
+                        TickMoveToTree(ref job, i);
+                        break;
+                    case GatherState.Gather:
+                        TickGather(ref job, i, fixedDeltaTime);
+                        break;
+                    case GatherState.MoveToDeposit:
+                        TickMoveToDeposit(ref job, i);
+                        break;
+                }
+            }
         }
 
         public static bool IsUnitGathering(Unit unit)
@@ -107,43 +151,6 @@ namespace AoE.RTS.Economy
             {
                 if (jobs[i].unit == unit)
                     jobs.RemoveAt(i);
-            }
-        }
-
-        void LateUpdate()
-        {
-            if (jobs.Count == 0)
-                return;
-
-            float deltaTime = Time.deltaTime;
-            for (int i = jobs.Count - 1; i >= 0; i--)
-            {
-                GatherJob job = jobs[i];
-                if (job.unit == null || !job.unit.IsAlive)
-                {
-                    jobs.RemoveAt(i);
-                    continue;
-                }
-
-                if (job.tree == null || job.tree.IsDepleted && job.carriedWood <= 0f)
-                {
-                    job.unit.ClearMoveTarget();
-                    jobs.RemoveAt(i);
-                    continue;
-                }
-
-                switch (job.state)
-                {
-                    case GatherState.MoveToTree:
-                        TickMoveToTree(ref job, i);
-                        break;
-                    case GatherState.Gather:
-                        TickGather(ref job, i, deltaTime);
-                        break;
-                    case GatherState.MoveToDeposit:
-                        TickMoveToDeposit(ref job, i);
-                        break;
-                }
             }
         }
 

@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 
 namespace AoE.RTS.Buildings
 {
-    public class BuildingPlacementManager : MonoBehaviour
+    public class BuildingPlacementManager : MonoBehaviour, ISimulationTickable
     {
         struct ConstructionSite
         {
@@ -113,6 +113,8 @@ namespace AoE.RTS.Buildings
             if (instance == this)
                 instance = null;
 
+            SimulationTick.Unregister(this);
+
             if (ghostObject != null)
                 Destroy(ghostObject);
         }
@@ -126,12 +128,14 @@ namespace AoE.RTS.Buildings
                 UpdatePlacementMode();
         }
 
-        void LateUpdate()
+        void Start()
         {
-            if (GameSessionManager.IsGameOver)
-                return;
+            SimulationTick.Register(this);
+        }
 
-            TickConstructionSites(Time.deltaTime);
+        public void TickSimulation(float fixedDeltaTime)
+        {
+            TickConstructionSites(fixedDeltaTime);
         }
 
         public static void EnterHousePlacementMode(IReadOnlyList<Unit> builders)

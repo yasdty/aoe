@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using AoE.RTS.Core;
 using AoE.RTS.Spatial;
 using UnityEngine;
 
 namespace AoE.RTS.Units
 {
-    public class UnitManager : MonoBehaviour
+    public class UnitManager : MonoBehaviour, ISimulationTickable
     {
         static UnitManager instance;
         readonly List<Unit> units = new List<Unit>();
@@ -16,10 +17,30 @@ namespace AoE.RTS.Units
             instance = this;
         }
 
+        void Start()
+        {
+            SimulationTick.Register(this);
+        }
+
         void OnDestroy()
         {
             if (instance == this)
                 instance = null;
+
+            SimulationTick.Unregister(this);
+        }
+
+        public void TickSimulation(float fixedDeltaTime)
+        {
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || !unit.IsAlive)
+                    continue;
+
+                unit.TickMovement(fixedDeltaTime);
+                UnitSpatialIndex.UpdatePosition(unit, unit.transform.position);
+            }
         }
 
         public static void Register(Unit unit)
@@ -69,20 +90,6 @@ namespace AoE.RTS.Units
             }
 
             return count;
-        }
-
-        void Update()
-        {
-            float deltaTime = Time.deltaTime;
-            for (int i = 0; i < units.Count; i++)
-            {
-                Unit unit = units[i];
-                if (unit == null || !unit.IsAlive)
-                    continue;
-
-                unit.TickMovement(deltaTime);
-                UnitSpatialIndex.UpdatePosition(unit, unit.transform.position);
-            }
         }
     }
 }

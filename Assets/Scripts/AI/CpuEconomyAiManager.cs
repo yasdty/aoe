@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace AoE.RTS.AI
 {
-    public class CpuEconomyAiManager : MonoBehaviour
+    public class CpuEconomyAiManager : MonoBehaviour, ISimulationTickable
     {
         const float EvaluateInterval = 2f;
         const int TargetVillagerCount = 6;
@@ -32,14 +32,17 @@ namespace AoE.RTS.AI
         {
             RefreshCpuTownCenter();
             evaluateTimer = 0.5f;
+            SimulationTick.Register(this);
         }
 
-        void Update()
+        void OnDestroy()
         {
-            if (GameSessionManager.IsGameOver)
-                return;
+            SimulationTick.Unregister(this);
+        }
 
-            evaluateTimer -= Time.deltaTime;
+        public void TickSimulation(float fixedDeltaTime)
+        {
+            evaluateTimer -= fixedDeltaTime;
             if (evaluateTimer > 0f)
                 return;
 

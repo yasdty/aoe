@@ -146,6 +146,10 @@ namespace AoE.RTS.EditorTools
             GameObject systems = new GameObject("Systems");
             systems.AddComponent<GameSessionManager>();
 
+            GameObject simulationTickObject = new GameObject("SimulationTick");
+            simulationTickObject.transform.SetParent(systems.transform);
+            simulationTickObject.AddComponent<SimulationTick>();
+
             GameObject unitPoolObject = new GameObject("UnitPool");
             unitPoolObject.transform.SetParent(systems.transform);
             UnitPool unitPool = unitPoolObject.AddComponent<UnitPool>();

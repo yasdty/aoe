@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
 
 namespace AoE.RTS.Combat
 {
-    public class AttackManager : MonoBehaviour
+    public class AttackManager : MonoBehaviour, ISimulationTickable
     {
         struct AttackJob
         {
@@ -29,14 +30,20 @@ namespace AoE.RTS.Combat
         {
             if (instance == this)
                 instance = null;
+
+            SimulationTick.Unregister(this);
         }
 
-        void Update()
+        void Start()
+        {
+            SimulationTick.Register(this);
+        }
+
+        public void TickSimulation(float fixedDeltaTime)
         {
             if (activeJobs.Count == 0)
                 return;
 
-            float deltaTime = Time.deltaTime;
             for (int i = activeJobs.Count - 1; i >= 0; i--)
             {
                 if (i >= activeJobs.Count)
@@ -54,12 +61,12 @@ namespace AoE.RTS.Combat
 
                 if (job.targetUnit != null)
                 {
-                    if (!ProcessUnitTargetJob(ref job, i, deltaTime))
+                    if (!ProcessUnitTargetJob(ref job, i, fixedDeltaTime))
                         continue;
                 }
                 else if (job.targetBuilding != null)
                 {
-                    if (!ProcessBuildingTargetJob(ref job, i, deltaTime))
+                    if (!ProcessBuildingTargetJob(ref job, i, fixedDeltaTime))
                         continue;
                 }
                 else
