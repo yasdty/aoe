@@ -5,6 +5,7 @@ using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Selection;
+using AoE.RTS.Spatial;
 using AoE.RTS.Units;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -160,6 +161,14 @@ namespace AoE.RTS.EditorTools
             GameObject unitManagerObject = new GameObject("UnitManager");
             unitManagerObject.transform.SetParent(systems.transform);
             unitManagerObject.AddComponent<UnitManager>();
+
+            GameObject unitSpatialIndexObject = new GameObject("UnitSpatialIndex");
+            unitSpatialIndexObject.transform.SetParent(systems.transform);
+            unitSpatialIndexObject.AddComponent<UnitSpatialIndex>();
+
+            GameObject treeSpatialIndexObject = new GameObject("TreeSpatialIndex");
+            treeSpatialIndexObject.transform.SetParent(systems.transform);
+            treeSpatialIndexObject.AddComponent<TreeSpatialIndex>();
 
             GameObject attackManagerObject = new GameObject("AttackManager");
             attackManagerObject.transform.SetParent(systems.transform);

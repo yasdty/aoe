@@ -1,6 +1,6 @@
 # Phase 13 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜12 完了（PoC + Foundation Phase 11〜12）  
 > **ロードマップ:** [FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md)  
 > **使い方:** `@CONSTITUTION.md` と `@docs/RTS_IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。

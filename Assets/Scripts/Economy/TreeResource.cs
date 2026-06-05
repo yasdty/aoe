@@ -1,4 +1,5 @@
 using AoE.RTS.Core;
+using AoE.RTS.Spatial;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -28,7 +29,18 @@ namespace AoE.RTS.Economy
 
         void OnEnable()
         {
+            TreeSpatialIndex.Register(this);
             UpdateVisual();
+        }
+
+        void OnDisable()
+        {
+            TreeSpatialIndex.Unregister(this);
+        }
+
+        void Start()
+        {
+            TreeSpatialIndex.Register(this);
         }
 
         public void SetData(ResourceNodeData nodeData)
@@ -53,6 +65,9 @@ namespace AoE.RTS.Economy
             float taken = Mathf.Min(amount, remainingWood);
             remainingWood -= taken;
             UpdateVisual();
+            if (IsDepleted)
+                TreeSpatialIndex.Unregister(this);
+
             return taken;
         }
 

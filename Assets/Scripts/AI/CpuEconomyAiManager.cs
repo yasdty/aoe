@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
+using AoE.RTS.Spatial;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -19,7 +20,6 @@ namespace AoE.RTS.AI
 
         float evaluateTimer;
         TownCenter cpuTownCenter;
-        TreeResource[] cachedTrees;
         readonly List<Unit> unitBuffer = new List<Unit>(16);
         readonly List<Unit> gatherCommandBuffer = new List<Unit>(1);
 
@@ -30,7 +30,6 @@ namespace AoE.RTS.AI
 
         void Start()
         {
-            RefreshTrees();
             RefreshCpuTownCenter();
             evaluateTimer = 0.5f;
         }
@@ -62,11 +61,6 @@ namespace AoE.RTS.AI
             cpuTownCenter = ProductionManager.GetTownCenterForTeam(CpuTeam);
         }
 
-        void RefreshTrees()
-        {
-            cachedTrees = FindObjectsByType<TreeResource>();
-        }
-
         void AssignIdleVillagersToTrees()
         {
             if (ShouldReserveBuilderForHouse())
@@ -80,7 +74,7 @@ namespace AoE.RTS.AI
                 if (!IsCpuVillager(unit) || !IsIdleForEconomy(unit))
                     continue;
 
-                TreeResource tree = FindRankedAvailableTree(unit.transform.position, gatherSlot);
+                TreeResource tree = TreeSpatialIndex.FindRankedAvailable(unit.transform.position, gatherSlot);
                 gatherSlot++;
                 if (tree == null)
                     continue;
@@ -191,113 +185,22 @@ namespace AoE.RTS.AI
             if (cpuTownCenter == null)
                 return null;
 
-            Vector3 center = cpuTownCenter.transform.position;
-            Unit best = null;
-            float bestDistanceSq = float.MaxValue;
-
-            UnitManager.CopyUnitsTo(unitBuffer);
-            for (int i = 0; i < unitBuffer.Count; i++)
-            {
-                Unit unit = unitBuffer[i];
-                if (!IsCpuVillager(unit))
-                    continue;
-
-                if (BuildingPlacementManager.IsUnitBuilding(unit))
-                    continue;
-
-                if (requireIdle && !IsIdleForEconomy(unit))
-                    continue;
-
-                Vector3 delta = unit.transform.position - center;
-                delta.y = 0f;
-                float distanceSq = delta.sqrMagnitude;
-                if (distanceSq >= bestDistanceSq)
-                    continue;
-
-                bestDistanceSq = distanceSq;
-                best = unit;
-            }
-
-            return best;
-        }
-
-        TreeResource FindRankedAvailableTree(Vector3 fromPosition, int rank)
-        {
-            if (cachedTrees == null || cachedTrees.Length == 0)
-            {
-                RefreshTrees();
-                if (cachedTrees == null || cachedTrees.Length == 0)
-                    return null;
-            }
-
-            TreeResource best = null;
-            float bestDistanceSq = float.MaxValue;
-
-            for (int i = 0; i < cachedTrees.Length; i++)
-            {
-                TreeResource tree = cachedTrees[i];
-                if (tree == null || tree.IsDepleted)
-                    continue;
-
-                Vector3 delta = tree.transform.position - fromPosition;
-                delta.y = 0f;
-                float distanceSq = delta.sqrMagnitude;
-
-                int betterCount = 0;
-                for (int j = 0; j < cachedTrees.Length; j++)
+            return UnitSpatialIndex.FindNearestUnit(
+                cpuTownCenter.transform.position,
+                CpuTeam,
+                unit =>
                 {
-                    TreeResource other = cachedTrees[j];
-                    if (other == null || other.IsDepleted || other == tree)
-                        continue;
+                    if (!IsCpuVillager(unit))
+                        return false;
 
-                    Vector3 otherDelta = other.transform.position - fromPosition;
-                    otherDelta.y = 0f;
-                    if (otherDelta.sqrMagnitude < distanceSq)
-                        betterCount++;
-                }
+                    if (BuildingPlacementManager.IsUnitBuilding(unit))
+                        return false;
 
-                if (betterCount != rank)
-                    continue;
+                    if (requireIdle && !IsIdleForEconomy(unit))
+                        return false;
 
-                if (distanceSq >= bestDistanceSq)
-                    continue;
-
-                bestDistanceSq = distanceSq;
-                best = tree;
-            }
-
-            return best ?? FindNearestAvailableTree(fromPosition);
-        }
-
-        TreeResource FindNearestAvailableTree(Vector3 fromPosition)
-        {
-            if (cachedTrees == null || cachedTrees.Length == 0)
-            {
-                RefreshTrees();
-                if (cachedTrees == null || cachedTrees.Length == 0)
-                    return null;
-            }
-
-            TreeResource best = null;
-            float bestDistanceSq = float.MaxValue;
-
-            for (int i = 0; i < cachedTrees.Length; i++)
-            {
-                TreeResource tree = cachedTrees[i];
-                if (tree == null || tree.IsDepleted)
-                    continue;
-
-                Vector3 delta = tree.transform.position - fromPosition;
-                delta.y = 0f;
-                float distanceSq = delta.sqrMagnitude;
-                if (distanceSq >= bestDistanceSq)
-                    continue;
-
-                bestDistanceSq = distanceSq;
-                best = tree;
-            }
-
-            return best;
+                    return true;
+                });
         }
     }
 }

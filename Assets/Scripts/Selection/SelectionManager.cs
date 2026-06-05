@@ -4,6 +4,7 @@ using AoE.RTS.Combat;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
+using AoE.RTS.Spatial;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -185,9 +186,16 @@ namespace AoE.RTS.Selection
         void ApplyBoxSelection(Vector2 screenStart, Vector2 screenEnd, bool additive)
         {
             selectionBuffer.Clear();
-            UnitManager.CopyUnitsTo(selectionBuffer);
-
             Rect selectionRect = ScreenRectFromPoints(screenStart, screenEnd);
+
+            if (TryQueryUnitsInScreenBounds(selectionRect))
+            {
+                // Candidates already in selectionBuffer.
+            }
+            else
+            {
+                UnitManager.CopyUnitsTo(selectionBuffer);
+            }
 
             if (!additive)
             {
@@ -219,6 +227,55 @@ namespace AoE.RTS.Selection
                 selectedUnits.Add(unit);
                 unit.SetSelected(true);
             }
+        }
+
+        bool TryQueryUnitsInScreenBounds(Rect selectionRect)
+        {
+            if (mainCamera == null)
+                return false;
+
+            if (!TryGetGroundBoundsFromScreenRect(selectionRect, out float minX, out float maxX, out float minZ, out float maxZ))
+                return false;
+
+            UnitSpatialIndex.QueryInWorldBounds(minX, maxX, minZ, maxZ, selectionBuffer, IsPlayerUnit);
+            return true;
+        }
+
+        bool TryGetGroundBoundsFromScreenRect(Rect selectionRect, out float minX, out float maxX, out float minZ, out float maxZ)
+        {
+            minX = float.MaxValue;
+            maxX = float.MinValue;
+            minZ = float.MaxValue;
+            maxZ = float.MinValue;
+            bool found = false;
+
+            Vector2[] corners =
+            {
+                new Vector2(selectionRect.xMin, selectionRect.yMin),
+                new Vector2(selectionRect.xMax, selectionRect.yMin),
+                new Vector2(selectionRect.xMin, selectionRect.yMax),
+                new Vector2(selectionRect.xMax, selectionRect.yMax)
+            };
+
+            for (int i = 0; i < corners.Length; i++)
+            {
+                Ray ray = mainCamera.ScreenPointToRay(corners[i]);
+                if (Mathf.Abs(ray.direction.y) < 0.0001f)
+                    continue;
+
+                float t = -ray.origin.y / ray.direction.y;
+                if (t < 0f)
+                    continue;
+
+                Vector3 point = ray.GetPoint(t);
+                minX = Mathf.Min(minX, point.x);
+                maxX = Mathf.Max(maxX, point.x);
+                minZ = Mathf.Min(minZ, point.z);
+                maxZ = Mathf.Max(maxZ, point.z);
+                found = true;
+            }
+
+            return found;
         }
 
         void HandleMoveCommand()

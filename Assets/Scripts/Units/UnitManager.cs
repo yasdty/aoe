@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AoE.RTS.Spatial;
 using UnityEngine;
 
 namespace AoE.RTS.Units
@@ -28,10 +29,16 @@ namespace AoE.RTS.Units
 
             if (!instance.units.Contains(unit))
                 instance.units.Add(unit);
+
+            UnitSpatialIndex.Register(unit);
         }
 
         public static void Unregister(Unit unit)
         {
+            if (unit == null)
+                return;
+
+            UnitSpatialIndex.Unregister(unit);
             instance?.units.Remove(unit);
         }
 
@@ -74,6 +81,7 @@ namespace AoE.RTS.Units
                     continue;
 
                 unit.TickMovement(deltaTime);
+                UnitSpatialIndex.UpdatePosition(unit, unit.transform.position);
             }
         }
     }

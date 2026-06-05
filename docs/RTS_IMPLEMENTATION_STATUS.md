@@ -460,7 +460,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **シーン参照 `{fileID: 0}`** | SceneBuilder / 手動生成混在 | 配置データの不安定さ | Setup メニュー統一 or 参照の完全シリアライズ |
 | **Phase10.unity 生成経路が二重** | Unity バッチ不可時に Python 生成 | シーンと SceneBuilder の乖離 | CI / Editor からの単一生成 |
 | **CPU AI の `FindObjectsByType`** | 木リストキャッシュ簡易実装 | 木追加・削除時の同期 | 登録型 ResourceRegistry |
-| **リスト線形探索** | 小規模 MVP | 200 ユニット時の CPU 負荷 | チーム別インデックス・Spatial Hash |
+| **リスト線形探索** | ~~小規模 MVP~~ | Phase 14 で **Spatial Hash** 導入済み（Unit / Tree 最近傍・矩形選択候補） | 完了 |
 | **GPU Instancing 未活用** | Capsule + MaterialPropertyBlock | 描画コール増 | 同一メッシュの Instancing |
 | **攻撃・採集のフレーム依存** | Manager Update 分散 | リプレイ再現不可 | Command Queue 化 |
 
@@ -575,7 +575,7 @@ Phase 11 以降の候補（優先度順）。
 
 > **目的:** 現在の性能状態と、今後ベンチマークを取るべき規模を AI が判断できるようにする。
 >
-> **現状:** リポジトリ内に FPS 計測結果・ベンチマークシーン・Profiler ログは **存在しない**。以下は計測待ち（TBD）のテンプレート。
+> **現状:** Phase 13 で **Benchmark シーン・計測 HUD** を追加済み。FPS 数値は **Editor で `Benchmark.unity` を Play して取得**（リポジトリ内の固定値は未記載）。
 
 ### Test Environment
 
@@ -586,24 +586,19 @@ Phase 11 以降の候補（優先度順）。
 | **RAM** | TBD（目標スペック: MacBook Air **16 GB** — [CONSTITUTION.md](../CONSTITUTION.md)） |
 | **GPU** | TBD |
 | **OS** | TBD |
-| **Test Scene** | TBD（推奨: `Phase10.unity` または専用 Benchmark シーン） |
+| **Test Scene** | **`Assets/Scenes/Benchmark.unity`**（`AoE → Setup Benchmark Scene`） |
 | **Render Pipeline** | URP（プロジェクト標準） |
 | **VSync** | TBD |
 | **Quality Settings** | TBD |
 
-### Test Method（推奨手順 — 未実施）
+### Test Method（Phase 13 — Benchmark シーン）
 
-以下は **ドキュメント・憲法から導出した推奨方法**。実測値ではない。
-
-1. **シーン:** `Phase10.unity` をベースに、指定 Unit 数まで Villager / Militia をスポーン（Editor スクリプトまたは Phase SceneBuilder 拡張）
-2. **カメラ:** 俯瞰固定（`RTSCameraController` 初期視点相当）
-3. **負荷パターン（各 Unit Count で計測）:**
-   - **Idle:** 全ユニット静止
-   - **Move:** 全ユニットにランダム移動命令（`UnitManager.TickMovement` 負荷）
-   - **Combat:** 半数が Attack ジョブ（`AttackManager` 負荷）
-   - **Mixed:** Phase 10 相当（Gather + CPU AI + 攻撃波）— **実プレイに最も近い**
-4. **計測:** Unity Profiler（CPU / GC Alloc）+ 画面上 FPS（最低 60 秒平均）
-5. **合格目安（憲法目標から逆算）:** 4 チーム × 200 ユニット = **800 ユニット** で playable FPS（目標値 **TBD**、要定義）
+1. **セットアップ:** `AoE → Setup Benchmark Scene`（Edit モード）
+2. **シーン:** `Benchmark.unity` を Play
+3. **負荷:** 左上 HUD の **50 / 100 / 200 / 500 / 800** ボタンで Villager を Idle 一括スポーン
+4. **計測:** 画面上 **FPS / Frame ms / GC KB per frame**（30 フレーム移動平均 + `ProfilerRecorder`）
+5. **Clear:** Pool 返却後、別プリセットで再計測
+6. **Mixed（実プレイ）:** `Phase10.unity` — 従来どおり手動プレイ + Profiler
 
 ### FPS Table
 

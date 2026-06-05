@@ -3,6 +3,7 @@ using AoE.RTS.Buildings;
 using AoE.RTS.Combat;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
+using AoE.RTS.Spatial;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -158,7 +159,7 @@ namespace AoE.RTS.AI
                 ? cpuTownCenter.transform.position
                 : militiaAttackBuffer[0].transform.position;
 
-            Unit target = FindNearestPlayerUnit(rallyPoint);
+            Unit target = UnitSpatialIndex.FindNearestUnit(rallyPoint, PlayerTeam);
             if (target != null)
             {
                 AttackManager.IssueAttack(militiaAttackBuffer, target);
@@ -213,61 +214,15 @@ namespace AoE.RTS.AI
             return militiaAttackBuffer.Count;
         }
 
-        Unit FindNearestPlayerUnit(Vector3 fromPosition)
-        {
-            Unit best = null;
-            float bestDistanceSq = float.MaxValue;
-
-            UnitManager.CopyUnitsTo(unitBuffer);
-            for (int i = 0; i < unitBuffer.Count; i++)
-            {
-                Unit unit = unitBuffer[i];
-                if (unit == null || !unit.IsAlive || unit.Team != PlayerTeam)
-                    continue;
-
-                Vector3 delta = unit.transform.position - fromPosition;
-                delta.y = 0f;
-                float distanceSq = delta.sqrMagnitude;
-                if (distanceSq >= bestDistanceSq)
-                    continue;
-
-                bestDistanceSq = distanceSq;
-                best = unit;
-            }
-
-            return best;
-        }
-
         Unit FindBuilderVillager()
         {
             if (cpuTownCenter == null)
                 return null;
 
-            Vector3 center = cpuTownCenter.transform.position;
-            Unit best = null;
-            float bestDistanceSq = float.MaxValue;
-
-            UnitManager.CopyUnitsTo(unitBuffer);
-            for (int i = 0; i < unitBuffer.Count; i++)
-            {
-                Unit unit = unitBuffer[i];
-                if (!IsCpuVillager(unit))
-                    continue;
-
-                if (BuildingPlacementManager.IsUnitBuilding(unit))
-                    continue;
-
-                Vector3 delta = unit.transform.position - center;
-                delta.y = 0f;
-                float distanceSq = delta.sqrMagnitude;
-                if (distanceSq >= bestDistanceSq)
-                    continue;
-
-                bestDistanceSq = distanceSq;
-                best = unit;
-            }
-
-            return best;
+            return UnitSpatialIndex.FindNearestUnit(
+                cpuTownCenter.transform.position,
+                CpuTeam,
+                unit => IsCpuVillager(unit) && !BuildingPlacementManager.IsUnitBuilding(unit));
         }
 
         static bool IsCpuVillager(Unit unit)
