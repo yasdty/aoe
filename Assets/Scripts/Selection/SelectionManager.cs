@@ -289,6 +289,20 @@ namespace AoE.RTS.Selection
 
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, GameLayers.ResourceMask))
             {
+                DeerResource deer = hit.collider.GetComponentInParent<DeerResource>();
+                if (deer != null && !deer.IsDepleted)
+                {
+                    CommandQueue.Enqueue(new HuntFoodCommand(selectedUnits, deer));
+                    return;
+                }
+
+                SheepResource sheep = hit.collider.GetComponentInParent<SheepResource>();
+                if (sheep != null && !sheep.IsDepleted)
+                {
+                    CommandQueue.Enqueue(new HuntFoodCommand(selectedUnits, sheep));
+                    return;
+                }
+
                 BerryBushResource bush = hit.collider.GetComponentInParent<BerryBushResource>();
                 if (bush != null && !bush.IsDepleted)
                 {

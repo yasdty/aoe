@@ -21,6 +21,8 @@ namespace AoE.RTS.EditorTools
         const string TownCenterDataPath = "Assets/Data/BuildingData/TownCenterData.asset";
         const string DefaultTreeDataPath = GameAssetPaths.DefaultTreeData;
         const string DefaultBerryBushDataPath = GameAssetPaths.DefaultBerryBushData;
+        const string DefaultDeerDataPath = GameAssetPaths.DefaultDeerData;
+        const string DefaultSheepDataPath = GameAssetPaths.DefaultSheepData;
         const string DefaultGoldMineDataPath = GameAssetPaths.DefaultGoldMineData;
         const string DefaultStoneMineDataPath = GameAssetPaths.DefaultStoneMineData;
         const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
@@ -696,6 +698,130 @@ namespace AoE.RTS.EditorTools
             EditorUtility.SetDirty(bushObject);
 
             return bushObject;
+        }
+
+        public static FoodNodeData EnsureDefaultDeerData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/ResourceData"))
+                AssetDatabase.CreateFolder("Assets/Data", "ResourceData");
+
+            FoodNodeData existing = AssetDatabase.LoadAssetAtPath<FoodNodeData>(DefaultDeerDataPath);
+            if (existing != null)
+                return existing;
+
+            FoodNodeData data = ScriptableObject.CreateInstance<FoodNodeData>();
+            data.displayName = "Deer";
+            data.initialFood = 140f;
+            data.defaultColor = new Color(0.55f, 0.38f, 0.22f);
+            AssetDatabase.CreateAsset(data, DefaultDeerDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static FoodNodeData EnsureDefaultSheepData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/ResourceData"))
+                AssetDatabase.CreateFolder("Assets/Data", "ResourceData");
+
+            FoodNodeData existing = AssetDatabase.LoadAssetAtPath<FoodNodeData>(DefaultSheepDataPath);
+            if (existing != null)
+                return existing;
+
+            FoodNodeData data = ScriptableObject.CreateInstance<FoodNodeData>();
+            data.displayName = "Sheep";
+            data.initialFood = 100f;
+            data.defaultColor = new Color(0.88f, 0.88f, 0.85f);
+            AssetDatabase.CreateAsset(data, DefaultSheepDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static GameObject CreateDeer(FoodNodeData deerData, Vector3 position)
+        {
+            const float height = 2f;
+            const float radius = 0.6f;
+            const float groundClearance = 0.05f;
+
+            Vector3 worldPosition = new Vector3(
+                position.x,
+                height * 0.5f + groundClearance,
+                position.z);
+
+            GameObject deerObject = new GameObject("Deer");
+            deerObject.layer = LayerMask.NameToLayer(GameLayers.ResourceLayerName);
+            deerObject.transform.position = worldPosition;
+
+            CapsuleCollider collider = deerObject.AddComponent<CapsuleCollider>();
+            collider.height = height;
+            collider.radius = radius;
+
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            visual.name = "Visual";
+            visual.transform.SetParent(deerObject.transform, false);
+            visual.transform.localScale = new Vector3(radius * 2f, height * 0.5f, radius * 2f);
+            Object.DestroyImmediate(visual.GetComponent<Collider>());
+
+            Renderer renderer = visual.GetComponent<Renderer>();
+            if (renderer != null && deerData != null)
+            {
+                Material material = SceneMaterialFactory.CreateLitMaterial(deerData.defaultColor);
+                renderer.sharedMaterial = material;
+            }
+
+            DeerResource deer = deerObject.AddComponent<DeerResource>();
+            SerializedObject serializedDeer = new SerializedObject(deer);
+            serializedDeer.FindProperty("data").objectReferenceValue = deerData;
+            serializedDeer.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(deer);
+            EditorUtility.SetDirty(deerObject);
+
+            return deerObject;
+        }
+
+        public static GameObject CreateSheep(FoodNodeData sheepData, Vector3 position)
+        {
+            const float height = 1.4f;
+            const float radius = 0.45f;
+            const float groundClearance = 0.05f;
+
+            Vector3 worldPosition = new Vector3(
+                position.x,
+                height * 0.5f + groundClearance,
+                position.z);
+
+            GameObject sheepObject = new GameObject("Sheep");
+            sheepObject.layer = LayerMask.NameToLayer(GameLayers.ResourceLayerName);
+            sheepObject.transform.position = worldPosition;
+
+            CapsuleCollider collider = sheepObject.AddComponent<CapsuleCollider>();
+            collider.height = height;
+            collider.radius = radius;
+
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            visual.name = "Visual";
+            visual.transform.SetParent(sheepObject.transform, false);
+            visual.transform.localScale = new Vector3(radius * 2f, height * 0.5f, radius * 2f);
+            Object.DestroyImmediate(visual.GetComponent<Collider>());
+
+            Renderer renderer = visual.GetComponent<Renderer>();
+            if (renderer != null && sheepData != null)
+            {
+                Material material = SceneMaterialFactory.CreateLitMaterial(sheepData.defaultColor);
+                renderer.sharedMaterial = material;
+            }
+
+            SheepResource sheep = sheepObject.AddComponent<SheepResource>();
+            SerializedObject serializedSheep = new SerializedObject(sheep);
+            serializedSheep.FindProperty("data").objectReferenceValue = sheepData;
+            serializedSheep.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(sheep);
+            EditorUtility.SetDirty(sheepObject);
+
+            return sheepObject;
         }
 
         public static MineralNodeData EnsureDefaultGoldMineData()

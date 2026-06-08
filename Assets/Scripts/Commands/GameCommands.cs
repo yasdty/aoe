@@ -134,6 +134,38 @@ namespace AoE.RTS.Commands
         }
     }
 
+    public sealed class HuntFoodCommand : IGameCommand
+    {
+        readonly List<Unit> units;
+        readonly IHuntableFoodResource animal;
+
+        public string DebugName => "HuntFood";
+
+        public HuntFoodCommand(IReadOnlyList<Unit> units, DeerResource deer)
+        {
+            this.units = GameCommandLists.CopyUnits(units);
+            animal = deer;
+        }
+
+        public HuntFoodCommand(IReadOnlyList<Unit> units, SheepResource sheep)
+        {
+            this.units = GameCommandLists.CopyUnits(units);
+            animal = sheep;
+        }
+
+        public void Execute()
+        {
+            if (units.Count == 0 || animal == null || animal.IsDepleted)
+                return;
+
+            BuildingPlacementManager.AbortConstructionForUnits(units);
+            AttackManager.CancelForUnits(units);
+            GatherManager.CancelForUnits(units);
+            MineralGatherManager.CancelForUnits(units);
+            FoodGatherManager.IssueHuntCommand(units, animal);
+        }
+    }
+
     public sealed class GatherGoldCommand : IGameCommand
     {
         readonly List<Unit> units;

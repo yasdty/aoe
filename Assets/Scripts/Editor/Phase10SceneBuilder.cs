@@ -79,6 +79,30 @@ namespace AoE.RTS.EditorTools
             new Vector3(0f, 0f, -38f)
         };
 
+        static readonly Vector3[] PlayerDeerPositions =
+        {
+            new Vector3(7f, 0f, 8f),
+            new Vector3(-6f, 0f, 7f),
+            new Vector3(5f, 0f, 5f)
+        };
+
+        static readonly Vector3[] PlayerSheepPositions =
+        {
+            new Vector3(-2f, 0f, 10f),
+            new Vector3(9f, 0f, 3f)
+        };
+
+        static readonly Vector3[] CpuDeerPositions =
+        {
+            new Vector3(-4f, 0f, -26f),
+            new Vector3(4f, 0f, -34f)
+        };
+
+        static readonly Vector3[] CpuSheepPositions =
+        {
+            new Vector3(0f, 0f, -42f)
+        };
+
         static readonly Vector3[] PlayerGoldMinePositions =
         {
             new Vector3(16f, 0f, 12f)
@@ -114,6 +138,8 @@ namespace AoE.RTS.EditorTools
             BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
             ResourceNodeData treeData = Phase1SceneBuilder.EnsureDefaultTreeData();
             FoodNodeData berryBushData = Phase1SceneBuilder.EnsureDefaultBerryBushData();
+            FoodNodeData deerData = Phase1SceneBuilder.EnsureDefaultDeerData();
+            FoodNodeData sheepData = Phase1SceneBuilder.EnsureDefaultSheepData();
             MineralNodeData goldMineData = Phase1SceneBuilder.EnsureDefaultGoldMineData();
             MineralNodeData stoneMineData = Phase1SceneBuilder.EnsureDefaultStoneMineData();
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
@@ -136,6 +162,7 @@ namespace AoE.RTS.EditorTools
             GameObject cpuTownCenter = CreateCpuTownCenter(townCenterData);
             CreateTrees(treeData);
             CreateBerryBushes(berryBushData);
+            CreateHuntableAnimals(deerData, sheepData);
             CreateMineralMines(goldMineData, stoneMineData);
             CreateCpuVillagers(villagerData);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
@@ -147,6 +174,41 @@ namespace AoE.RTS.EditorTools
             UnityEditor.Selection.activeGameObject = playerTownCenter;
 
             Debug.Log("Phase10 scene created at " + ScenePath);
+        }
+
+        [MenuItem("AoE/Add Huntable Animals (Phase10)", true)]
+        static bool ValidateAddHuntableAnimals() => !EditorApplication.isPlaying;
+
+        /// <summary>
+        /// 既存 Phase10 シーンに Deer / Sheep を追加（フル Setup 不要）。
+        /// Phase 24 以降、古い Phase10.unity を使っている場合に実行する。
+        /// </summary>
+        [MenuItem("AoE/Add Huntable Animals (Phase10)")]
+        public static void AddHuntableAnimalsToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            Phase1SceneBuilder.EnsureLayers();
+            FoodNodeData deerData = Phase1SceneBuilder.EnsureDefaultDeerData();
+            FoodNodeData sheepData = Phase1SceneBuilder.EnsureDefaultSheepData();
+
+            RemoveExistingHuntableAnimals();
+            CreateHuntableAnimals(deerData, sheepData);
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added Deer/Sheep to the open scene. Save the scene (Ctrl+S) if needed.");
+        }
+
+        static void RemoveExistingHuntableAnimals()
+        {
+            DeerResource[] deer = Object.FindObjectsByType<DeerResource>(FindObjectsSortMode.None);
+            for (int i = 0; i < deer.Length; i++)
+                Object.DestroyImmediate(deer[i].gameObject);
+
+            SheepResource[] sheep = Object.FindObjectsByType<SheepResource>(FindObjectsSortMode.None);
+            for (int i = 0; i < sheep.Length; i++)
+                Object.DestroyImmediate(sheep[i].gameObject);
         }
 
         static GameObject CreateCpuTownCenter(BuildingData townCenterData)
@@ -179,6 +241,21 @@ namespace AoE.RTS.EditorTools
 
             for (int i = 0; i < CpuBerryBushPositions.Length; i++)
                 Phase1SceneBuilder.CreateBerryBush(bushData, CpuBerryBushPositions[i]);
+        }
+
+        static void CreateHuntableAnimals(FoodNodeData deerData, FoodNodeData sheepData)
+        {
+            for (int i = 0; i < PlayerDeerPositions.Length; i++)
+                Phase1SceneBuilder.CreateDeer(deerData, PlayerDeerPositions[i]);
+
+            for (int i = 0; i < PlayerSheepPositions.Length; i++)
+                Phase1SceneBuilder.CreateSheep(sheepData, PlayerSheepPositions[i]);
+
+            for (int i = 0; i < CpuDeerPositions.Length; i++)
+                Phase1SceneBuilder.CreateDeer(deerData, CpuDeerPositions[i]);
+
+            for (int i = 0; i < CpuSheepPositions.Length; i++)
+                Phase1SceneBuilder.CreateSheep(sheepData, CpuSheepPositions[i]);
         }
 
         static void CreateMineralMines(MineralNodeData goldMineData, MineralNodeData stoneMineData)

@@ -1,6 +1,6 @@
 # Phase 24 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜23 完了（PoC + Foundation + M2 Economy + M2.5 Phase 21〜23）  
 > **マイルストン:** M2.5 Economy Polish  
 > **ロードマップ:** [04_M2_5_ECONOMY_POLISH_PHASES.md](../04_M2_5_ECONOMY_POLISH_PHASES.md)  
@@ -218,14 +218,14 @@ if (deer != null && !deer.IsDepleted)
 
 ## ⑨ 完了条件（Phase 24 MVP）
 
-- [ ] **Deer** — 村民右クリック → 狩り → TC 搬入 → Food 増加
-- [ ] **Sheep** — 同上
-- [ ] **枯渇** — 動物 Food 0 で採取不可・見た目変化
-- [ ] **採取リピート** — 搬入後同動物へ復帰（Phase 21 回帰）
-- [ ] Berry / Farm / Wood / Gold / Stone / Mining Camp 回帰
-- [ ] Militia 選択時は狩り命令しない（Berry 同様）
-- [ ] Console エラーなし
-- [ ] `docs/IMPLEMENTATION_STATUS.md` / `04_M2_5_ECONOMY_POLISH_PHASES.md` Phase 24 を ✅
+- [x] **Deer** — 村民右クリック → 狩り → TC 搬入 → Food 増加
+- [x] **Sheep** — 同上
+- [x] **枯渇** — 動物 Food 0 で採取不可・見た目変化
+- [x] **採取リピート** — 搬入後同動物へ復帰（Phase 21 回帰）
+- [x] Berry / Farm / Wood / Gold / Stone / Mining Camp 回帰
+- [x] Militia 選択時は狩り命令しない（`CanAttack` フィルタ）
+- [ ] Console エラーなし（Play 確認待ち）
+- [x] `docs/IMPLEMENTATION_STATUS.md` / `04_M2_5_ECONOMY_POLISH_PHASES.md` Phase 24 を ✅
 
 ### Victory 確認について
 

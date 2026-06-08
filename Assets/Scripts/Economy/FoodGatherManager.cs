@@ -22,6 +22,13 @@ namespace AoE.RTS.Economy
             MoveToDeposit
         }
 
+        enum HuntGatherState
+        {
+            MoveToAnimal,
+            Hunt,
+            MoveToDeposit
+        }
+
         struct FoodGatherJob
         {
             public Unit unit;
@@ -38,6 +45,14 @@ namespace AoE.RTS.Economy
             public float carriedFood;
         }
 
+        struct HuntGatherJob
+        {
+            public Unit unit;
+            public MonoBehaviour animalBehaviour;
+            public HuntGatherState state;
+            public float carriedFood;
+        }
+
         const float CarryCapacity = 10f;
         const float GatherRate = 2.5f;
         const float GatherReachDistance = 2.5f;
@@ -48,6 +63,7 @@ namespace AoE.RTS.Economy
         static FoodGatherManager instance;
         readonly List<FoodGatherJob> jobs = new List<FoodGatherJob>();
         readonly List<FarmGatherJob> farmJobs = new List<FarmGatherJob>();
+        readonly List<HuntGatherJob> huntJobs = new List<HuntGatherJob>();
 
         void Awake()
         {
@@ -71,6 +87,7 @@ namespace AoE.RTS.Economy
         {
             TickBerryJobs(fixedDeltaTime);
             TickFarmJobs(fixedDeltaTime);
+            TickHuntJobs(fixedDeltaTime);
         }
 
         void TickBerryJobs(float fixedDeltaTime)
@@ -218,6 +235,35 @@ namespace AoE.RTS.Economy
             }
         }
 
+        public static void IssueHuntCommand(IReadOnlyList<Unit> units, IHuntableFoodResource animal)
+        {
+            if (instance == null || animal == null || animal.IsDepleted)
+                return;
+
+            if (animal is not MonoBehaviour animalBehaviour)
+                return;
+
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || unit.CanAttack)
+                    continue;
+
+                if (ProductionManager.GetTownCenterForTeam(unit.Team) == null)
+                    continue;
+
+                instance.RemoveJobForUnit(unit);
+                instance.huntJobs.Add(new HuntGatherJob
+                {
+                    unit = unit,
+                    animalBehaviour = animalBehaviour,
+                    state = HuntGatherState.MoveToAnimal,
+                    carriedFood = 0f
+                });
+                unit.SetMoveTarget(GetHuntGatherPosition(animal, unit));
+            }
+        }
+
         public static void CancelForUnits(IReadOnlyList<Unit> units)
         {
             if (instance == null || units == null)
@@ -251,6 +297,12 @@ namespace AoE.RTS.Economy
             {
                 if (farmJobs[i].unit == unit)
                     farmJobs.RemoveAt(i);
+            }
+
+            for (int i = huntJobs.Count - 1; i >= 0; i--)
+            {
+                if (huntJobs[i].unit == unit)
+                    huntJobs.RemoveAt(i);
             }
         }
 
@@ -519,6 +571,173 @@ namespace AoE.RTS.Economy
             Vector3 center = townCenter.transform.position;
             center.y = 1f;
             return UnitPositionOffsets.ApplyRingOffset(center, unit, DepositStandRadius);
+        }
+
+        void TickHuntJobs(float fixedDeltaTime)
+        {
+            if (huntJobs.Count == 0)
+                return;
+
+            for (int i = huntJobs.Count - 1; i >= 0; i--)
+            {
+                HuntGatherJob job = huntJobs[i];
+                if (job.unit == null || !job.unit.IsAlive)
+                {
+                    huntJobs.RemoveAt(i);
+                    continue;
+                }
+
+                IHuntableFoodResource animal = job.animalBehaviour as IHuntableFoodResource;
+                if (!IsHuntTargetValid(animal) && job.carriedFood <= 0f)
+                {
+                    job.unit.ClearMoveTarget();
+                    huntJobs.RemoveAt(i);
+                    continue;
+                }
+
+                switch (job.state)
+                {
+                    case HuntGatherState.MoveToAnimal:
+                        TickMoveToAnimal(ref job, i);
+                        break;
+                    case HuntGatherState.Hunt:
+                        TickHunt(ref job, i, fixedDeltaTime);
+                        break;
+                    case HuntGatherState.MoveToDeposit:
+                        TickHuntMoveToDeposit(ref job, i);
+                        break;
+                }
+            }
+        }
+
+        static bool IsHuntTargetValid(IHuntableFoodResource animal)
+        {
+            return animal != null
+                && animal is MonoBehaviour behaviour
+                && behaviour.gameObject.activeInHierarchy
+                && !animal.IsDepleted;
+        }
+
+        void FinishHuntJobWithoutTarget(ref HuntGatherJob job, int index)
+        {
+            if (job.carriedFood > 0f && ProductionManager.GetTownCenterForTeam(job.unit.Team) != null)
+            {
+                BeginHuntMoveToDeposit(ref job, index);
+                return;
+            }
+
+            job.unit.ClearMoveTarget();
+            if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
+                huntJobs.RemoveAt(index);
+        }
+
+        void TickMoveToAnimal(ref HuntGatherJob job, int index)
+        {
+            IHuntableFoodResource animal = job.animalBehaviour as IHuntableFoodResource;
+            if (!IsHuntTargetValid(animal))
+            {
+                FinishHuntJobWithoutTarget(ref job, index);
+                return;
+            }
+
+            Vector3 gatherPosition = GetHuntGatherPosition(animal, job.unit);
+            if (job.unit.IsNear(gatherPosition, GatherReachDistance))
+            {
+                job.unit.ClearMoveTarget();
+                job.state = HuntGatherState.Hunt;
+                if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
+                    huntJobs[index] = job;
+                return;
+            }
+
+            if (!job.unit.HasMoveTarget)
+                job.unit.SetMoveTarget(gatherPosition);
+        }
+
+        void TickHunt(ref HuntGatherJob job, int index, float deltaTime)
+        {
+            IHuntableFoodResource animal = job.animalBehaviour as IHuntableFoodResource;
+            if (!IsHuntTargetValid(animal))
+            {
+                FinishHuntJobWithoutTarget(ref job, index);
+                return;
+            }
+
+            float request = GatherRate * deltaTime;
+            float room = CarryCapacity - job.carriedFood;
+            float taken = animal.TakeFood(Mathf.Min(request, room));
+            job.carriedFood += taken;
+
+            if (!IsHuntTargetValid(animal))
+            {
+                FinishHuntJobWithoutTarget(ref job, index);
+                return;
+            }
+
+            if (job.carriedFood >= CarryCapacity || animal.IsDepleted)
+                BeginHuntMoveToDeposit(ref job, index);
+            else if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
+                huntJobs[index] = job;
+        }
+
+        void BeginHuntMoveToDeposit(ref HuntGatherJob job, int index)
+        {
+            if (job.carriedFood <= 0f || ProductionManager.GetTownCenterForTeam(job.unit.Team) == null)
+            {
+                job.unit.ClearMoveTarget();
+                if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
+                    huntJobs.RemoveAt(index);
+                return;
+            }
+
+            job.state = HuntGatherState.MoveToDeposit;
+            job.unit.SetMoveTarget(GetDepositPosition(job.unit));
+            if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
+                huntJobs[index] = job;
+        }
+
+        void TickHuntMoveToDeposit(ref HuntGatherJob job, int index)
+        {
+            Vector3 depositPosition = GetDepositPosition(job.unit);
+            if (depositPosition == Vector3.zero)
+            {
+                if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
+                    huntJobs.RemoveAt(index);
+                return;
+            }
+
+            if (job.unit.IsNear(depositPosition, DepositReachDistance))
+            {
+                ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                job.carriedFood = 0f;
+
+                IHuntableFoodResource animal = job.animalBehaviour as IHuntableFoodResource;
+                if (IsHuntTargetValid(animal))
+                {
+                    job.state = HuntGatherState.MoveToAnimal;
+                    job.unit.SetMoveTarget(GetHuntGatherPosition(animal, job.unit));
+                    if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
+                        huntJobs[index] = job;
+                    return;
+                }
+
+                job.unit.ClearMoveTarget();
+                if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
+                    huntJobs.RemoveAt(index);
+                return;
+            }
+
+            if (!job.unit.HasMoveTarget)
+                job.unit.SetMoveTarget(depositPosition);
+        }
+
+        static Vector3 GetHuntGatherPosition(IHuntableFoodResource animal, Unit unit)
+        {
+            if (animal == null)
+                return Vector3.zero;
+
+            Vector3 center = animal.GetGatherPosition();
+            return UnitPositionOffsets.ApplyRingOffset(center, unit, GatherStandRadius);
         }
     }
 }
