@@ -52,11 +52,13 @@
 
 ---
 
-## Phase 20（未着手）
+## Phase 20 — Gold + Stone ⬜
 
-| Phase | 概要 |
-|-------|------|
-| 20 Gold + Stone | 採掘ノード + 搬入 |
+**目的:** Gold Mine / Stone Mine から採掘し TC に搬入。**M2 Economy 完了 Phase**（4 資源完成）。
+
+**実装予定:** `MineralGatherManager` / `GoldMineResource` / `StoneMineResource` / HUD Gold+Stone
+
+**プロンプト:** [prompts/phase20-prompt.md](prompts/phase20-prompt.md)
 
 ---
 
