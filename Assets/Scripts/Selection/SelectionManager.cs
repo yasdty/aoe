@@ -370,6 +370,9 @@ namespace AoE.RTS.Selection
             if (gatherFarmBuffer.Count == 0)
                 return false;
 
+            if (!FoodGatherManager.HasAssignableFarmGatherers(gatherFarmBuffer, farm))
+                return false;
+
             CommandQueue.Enqueue(new GatherFarmFoodCommand(selectedUnits, farm));
             return true;
         }

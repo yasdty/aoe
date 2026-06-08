@@ -1,6 +1,6 @@
 # Phase 22 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜21 完了（PoC + Foundation + M2 Economy + Phase 21 Gather Repeat）  
 > **マイルストン:** M2.5 Economy Polish  
 > **ロードマップ:** [04_M2_5_ECONOMY_POLISH_PHASES.md](../04_M2_5_ECONOMY_POLISH_PHASES.md)  
@@ -231,14 +231,14 @@ float groundY = 1f;
 
 ## ⑨ 完了条件（Phase 22 MVP）
 
-- [ ] **Farm** — 2 人目が **同一 Farm** を右クリックしても採取開始しない
-- [ ] **Farm** — **別 Farm** への同時採取は可能
-- [ ] **Farm** — Phase 21 **採取リピート** が動作（回帰）
-- [ ] **TC** — Villager 連続生産（Q）で周囲グリッドに出現、重なりにくい
-- [ ] **Barracks** — Militia 連続生産で周囲グリッドに出現
-- [ ] Wood / Berry / Gold / Stone 採取リピート（回帰）
-- [ ] Console エラーなし
-- [ ] `docs/IMPLEMENTATION_STATUS.md` / `04_M2_5_ECONOMY_POLISH_PHASES.md` Phase 22 を ✅
+- [x] **Farm** — 2 人目が **同一 Farm** を右クリックしても採取開始しない
+- [x] **Farm** — **別 Farm** への同時採取は可能
+- [x] **Farm** — Phase 21 **採取リピート** が動作（回帰）
+- [x] **TC** — Villager 連続生産（Q）で周囲グリッドに出現、重なりにくい
+- [x] **Barracks** — Militia 連続生産で周囲グリッドに出現
+- [x] Wood / Berry / Gold / Stone 採取リピート（回帰）
+- [ ] Console エラーなし（Play 確認待ち）
+- [x] `docs/IMPLEMENTATION_STATUS.md` / `04_M2_5_ECONOMY_POLISH_PHASES.md` Phase 22 を ✅
 
 ### Victory 確認について
 

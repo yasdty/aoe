@@ -123,6 +123,9 @@ namespace AoE.RTS.Economy
                 if (ProductionManager.GetTownCenterForTeam(unit.Team) == null)
                     continue;
 
+                if (IsFarmOccupiedByOther(farm, unit))
+                    continue;
+
                 instance.RemoveJobForUnit(unit);
                 instance.farmJobs.Add(new FarmGatherJob
                 {
@@ -133,6 +136,45 @@ namespace AoE.RTS.Economy
                 });
                 unit.SetMoveTarget(GetFarmGatherPosition(farm, unit));
             }
+        }
+
+        public static bool HasAssignableFarmGatherers(IReadOnlyList<Unit> units, Farm farm)
+        {
+            if (instance == null || farm == null || farm.IsDepleted)
+                return false;
+
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || unit.CanAttack || unit.Team != farm.Team)
+                    continue;
+
+                if (ProductionManager.GetTownCenterForTeam(unit.Team) == null)
+                    continue;
+
+                if (!IsFarmOccupiedByOther(farm, unit))
+                    return true;
+            }
+
+            return false;
+        }
+
+        static bool IsFarmOccupiedByOther(Farm farm, Unit requestingUnit)
+        {
+            for (int i = 0; i < instance.farmJobs.Count; i++)
+            {
+                FarmGatherJob job = instance.farmJobs[i];
+                if (job.farm != farm)
+                    continue;
+
+                Unit worker = job.unit;
+                if (worker == null || worker == requestingUnit || !worker.IsAlive)
+                    continue;
+
+                return true;
+            }
+
+            return false;
         }
 
         public static void CancelJobsForFarm(Farm farm)

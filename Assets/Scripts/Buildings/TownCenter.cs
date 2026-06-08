@@ -95,19 +95,19 @@ namespace AoE.RTS.Buildings
         public Vector3 GetVillagerSpawnPosition()
         {
             const float villagerGroundY = 1f;
-            float clearance = data != null ? data.spawnClearance : 4f;
+            float clearance = data != null ? data.spawnClearance : 1.5f;
 
             Vector3 exitDirection = ResolveSpawnDirection();
-            float halfExtent = GetHorizontalHalfExtentAlong(exitDirection);
-            Vector3 spawn = transform.position + exitDirection * (halfExtent + clearance);
-            spawn.y = villagerGroundY;
+            float halfExtent = BuildingSpawnFormation.GetHorizontalHalfExtentAlong(transform, exitDirection);
+            Vector3 spawn = BuildingSpawnFormation.GetGridSlotPosition(
+                transform.position,
+                exitDirection,
+                halfExtent,
+                villagerSpawnIndex,
+                clearance: clearance,
+                groundY: villagerGroundY);
 
-            const int ringSlots = 8;
-            const float ringRadius = 2.5f;
-            float angle = villagerSpawnIndex * (Mathf.PI * 2f / ringSlots);
-            villagerSpawnIndex = (villagerSpawnIndex + 1) % ringSlots;
-            spawn += new Vector3(Mathf.Cos(angle) * ringRadius, 0f, Mathf.Sin(angle) * ringRadius);
-
+            villagerSpawnIndex = (villagerSpawnIndex + 1) % BuildingSpawnFormation.MaxSlots;
             return spawn;
         }
 
@@ -128,18 +128,6 @@ namespace AoE.RTS.Buildings
                 return forward.normalized;
 
             return Vector3.forward;
-        }
-
-        float GetHorizontalHalfExtentAlong(Vector3 worldDirection)
-        {
-            Vector3 localDirection = transform.InverseTransformDirection(worldDirection);
-            localDirection.y = 0f;
-            if (localDirection.sqrMagnitude < 0.0001f)
-                localDirection = Vector3.forward;
-            localDirection.Normalize();
-
-            Vector3 halfSize = transform.lossyScale * 0.5f;
-            return Mathf.Abs(localDirection.x) * halfSize.x + Mathf.Abs(localDirection.z) * halfSize.z;
         }
 
         void UpdateVisual()

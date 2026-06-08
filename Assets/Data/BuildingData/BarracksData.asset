@@ -23,7 +23,7 @@ MonoBehaviour:
   trainUnitData: {fileID: 11400000, guid: e378a51c4fe34f946836fa556efaeb16, type: 2}
   trainTime: 3
   trainWoodCost: 20
-  spawnClearance: 4
+  spawnClearance: 1.5
   defaultColor: {r: 0.55, g: 0.35, b: 0.32, a: 1}
   ghostValidColor: {r: 0.4, g: 0.85, b: 0.45, a: 1}
   ghostInvalidColor: {r: 0.9, g: 0.3, b: 0.3, a: 1}
