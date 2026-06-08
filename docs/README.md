@@ -5,10 +5,13 @@
 | # | ファイル | Phase | 内容 |
 |---|----------|-------|------|
 | — | [../CONSTITUTION.md](../CONSTITUTION.md) | — | プロジェクト憲法（技術制約・AI ルール） |
-| — | [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) | 1〜16 | **実装状況の正本**（機能一覧・技術負債・依存関係）。**Phase 完了ごとに更新** |
+| — | [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) | 1〜20 | **実装状況の正本**（機能一覧・技術負債・依存関係）。**Phase 完了ごとに更新** |
 | 01 | [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) | 1〜10.5 | **Milestone 0 — PoC** ロードマップ |
 | 02 | [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) | 11〜16 | **Milestone 1 — Foundation** ロードマップ ✅ 完了 |
 | 03 | [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) | 17〜20 | **Milestone 2 — Economy** ✅ 完了 |
+| 04 | [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) | 21〜28 | **Milestone 2.5 — Economy Polish** ⬜ 次 |
+| 05 | [05_M3_MILITARY_PHASES.md](05_M3_MILITARY_PHASES.md) | 29〜34 | **Milestone 3 — Military** ⬜ 未着手 |
+| 06 | [06_M4_GAMEPLAY_PHASES.md](06_M4_GAMEPLAY_PHASES.md) | 35〜39 | **Milestone 4 — AoE Gameplay** ⬜ 未着手 |
 | — | [prompts/](prompts/) | — | 各 Phase の Agent 実行プロンプト |
 
 ---
@@ -26,7 +29,7 @@
 
 - **命名規則:** `{順番}_M{マイルストン番号}_{名称}_PHASES.md`
 - **例:** `01_M0_POC_PHASES.md` = 最初に読む PoC ロードマップ（Phase 1〜10.5）
-- **17 以降:** マイルストンごとに `03_M2_...`, `04_M3_...` を追加
+- **17 以降:** マイルストンごとに `03_M2_...`, `04_M2_5_...`, `05_M3_...`, `06_M4_...` を追加
 
 ### `prompts/phaseN-prompt.md`
 
@@ -41,8 +44,9 @@
 | M0 PoC | `01_M0_POC_PHASES.md` | 1〜10.5 | ✅ 完了 |
 | M1 Foundation | `02_M1_FOUNDATION_PHASES.md` | 11〜16 | ✅ 完了 |
 | M2 Economy | `03_M2_ECONOMY_PHASES.md` | 17〜20 | ✅ 完了 |
-| M3 Military | `04_M3_MILITARY_PHASES.md` | 21〜26 | ⬜ 未着手 |
-| M4 AoE Gameplay | `05_M4_GAMEPLAY_PHASES.md` | 27〜31 | ⬜ 未着手 |
+| M2.5 Economy Polish | `04_M2_5_ECONOMY_POLISH_PHASES.md` | 21〜28 | ⬜ **次** |
+| M3 Military | `05_M3_MILITARY_PHASES.md` | 29〜34 | ⬜ 未着手 |
+| M4 AoE Gameplay | `06_M4_GAMEPLAY_PHASES.md` | 35〜39 | ⬜ 未着手 |
 
 ---
 

@@ -18,6 +18,8 @@
 
 **M2 完了条件:** Wood / Food / Gold / Stone の 4 資源がゲーム内で機能する。 ✅ **達成**
 
+**次:** [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md)（Phase 21〜28 — AoE2 経済ループ完成）
+
 ---
 
 ## Phase 17 — Food ✅

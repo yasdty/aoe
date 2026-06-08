@@ -2,10 +2,10 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 20 完了（Gold + Stone）。**Milestone 2 Economy 完了。**
+> **最終更新:** Phase 20 完了（Gold + Stone）。**M2 Economy 完了。次: M2.5 Phase 21（Gather Repeat）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
-> **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md)
+> **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) / [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) / [05_M3_MILITARY_PHASES.md](05_M3_MILITARY_PHASES.md)
 >
 > **更新ルール:** 各 Phase 完了時に本ファイルを更新する（[docs/README.md](README.md) チェックリスト参照）。
 
@@ -55,12 +55,30 @@
 | 18 | Farm（建築 + 継続 Food 採集） | `Phase10.unity` | ✅ 実装済み |
 | 19 | Lumber Camp（Wood Drop-off） | `Phase10.unity` | ✅ 実装済み |
 | 20 | Gold + Stone（採掘 + TC 搬入） | `Phase10.unity` | ✅ 実装済み |
+| 21 | Gather Repeat（搬入後採取継続） | `Phase10.unity` | ⬜ 未着手 |
+| 22 | Farm 1 人制限 + Spawn グリッド | `Phase10.unity` | ⬜ 未着手 |
+| 23 | Mining Camp（Gold/Stone Drop-off） | `Phase10.unity` | ⬜ 未着手 |
+| 24 | Hunting（Deer / Sheep） | `Phase10.unity` | ⬜ 未着手 |
+| 25 | Boar（反撃狩り） | `Phase10.unity` | ⬜ 未着手 |
+| 26 | Mill（Food Drop-off） | `Phase10.unity` | ⬜ 未着手 |
+| 27 | Militia Basic Aggro | `Phase10.unity` | ⬜ 未着手 |
+| 28 | CPU 4 Resources | `Phase10.unity` | ⬜ 未着手 |
+| 29 | Archer（遠距離） | `Phase10.unity` | ⬜ 未着手（M3） |
+| 30 | Spearman | `Phase10.unity` | ⬜ 未着手（M3） |
+| 31 | Cavalry | `Phase10.unity` | ⬜ 未着手（M3） |
+| 32 | Counter System | `Phase10.unity` | ⬜ 未着手（M3） |
+| 33 | Stance & Aggro | `Phase10.unity` | ⬜ 未着手（M3） |
+| 34 | Formation | `Phase10.unity` | ⬜ 未着手（M3） |
 
 **ゲームループ:** 採集 → 建築 → 生産 → 戦闘 → **勝敗判定**
 
 **Foundation Milestone 1:** ✅ 完了（Phase 11〜16）
 
 **Milestone 2 Economy:** ✅ 完了（Phase 17〜20 — Wood / Food / Gold / Stone）
+
+**Milestone 2.5 Economy Polish:** ⬜ 未着手（Phase 21〜28 — 採取ループ・Drop-off 拠点・狩り・CPU 4 資源）
+
+**Milestone 3 Military:** ⬜ 未着手（Phase 29〜34）
 
 ---
 
@@ -99,6 +117,7 @@
 | CPU ユニット・建築の選択不可 | ✅ | `UnitTeam.Enemy` フィルタ |
 | 選択時色変更 | ✅ | MaterialPropertyBlock |
 | グループ移動グリッド整列 | ✅ | `GroupMoveFormation`（√n グリッド） |
+| 建物スポーン周囲グリッド | ❌ | **Phase 22（M2.5）** — 現状 TC/Barracks は出口リング 8 スロット |
 | フォーメーション / 隊列維持 | ❌ | 移動先でグリッド配置のみ |
 | ホットキーグループ（Ctrl+数字） | ❌ | |
 
@@ -121,11 +140,17 @@
 | Food 資源 | ✅ | Berry Bush / Farm → `FoodGatherManager` → TC 搬入 |
 | Gold / Stone | ✅ | Gold/Stone Mine → `MineralGatherManager` → TC 搬入 |
 | 木（Tree）採集 | ✅ | `GatherManager` + `GatherCommand` → 最寄り Drop-off（TC / Lumber Camp） |
+| 採取リピート（搬入後継続） | ❌ | **Phase 21（M2.5）** |
 | Berry Bush 採集 | ✅ | `FoodGatherManager` + `GatherFoodCommand` |
 | Farm 採集 | ✅ | `FoodGatherManager` + `GatherFarmFoodCommand` |
+| Farm 1 村民制限 | ❌ | **Phase 22（M2.5）** — 現状複数村民可 |
+| 狩り（Deer / Sheep / Boar） | ❌ | **Phase 24〜25（M2.5）** |
 | Gold 採集 | ✅ | `MineralGatherManager` + `GatherGoldCommand` |
 | Stone 採集 | ✅ | `MineralGatherManager` + `GatherStoneCommand` |
 | TownCenter への搬入 | ✅ | チーム別 TC |
+| Lumber Camp Drop-off | ✅ | Wood |
+| Mining Camp Drop-off | ❌ | **Phase 23（M2.5）** — Gold/Stone は TC のみ |
+| Mill Drop-off | ❌ | **Phase 26（M2.5）** — Food は TC のみ |
 | 資源ノード枯渇 | ✅ | 色変化・採集不可 |
 | 共有木の競合採集 | ✅ | Phase 9/10（先に切った側が取得） |
 | Lumber Camp | ✅ | 100 Wood / 6 秒 / Wood Drop-off 拠点 |
@@ -142,6 +167,8 @@
 | Barracks | ✅ | 50 Wood / 5 秒 |
 | Farm | ✅ | 60 Wood / 8 秒 / HP 100 / Pop +0 |
 | Lumber Camp | ✅ | 100 Wood / 6 秒 / HP 400 / Pop +0 |
+| Mining Camp | ❌ | **Phase 23（M2.5）** |
+| Mill | ❌ | **Phase 26（M2.5）** |
 | 配置ゴーストプレビュー | ✅ | 有効/無効色 |
 | Villager による建築 | ✅ | 現場移動 → 建築タイマー |
 | 建築中断（移動命令） | ✅ | Wood 返金なし |
@@ -163,7 +190,7 @@
 | 攻撃中色変化 | ✅ | オレンジ系ティント |
 | 建築 HP / TC 破壊 | ✅ | `BuildingHealth`（Phase 11） |
 | 遠距離攻撃（弓・投石） | ❌ | |
-| 自動反撃 / 警戒 AI | ❌ | 自軍 Militia は手動右クリックのみ |
+| 自動反撃 / 警戒 AI | ❌ | 自軍 Militia は手動右クリックのみ。**Phase 27 簡易 Aggro → Phase 33 スタンス** |
 | スプラッシュ・貫通 | ❌ | |
 | ユニットアップグレード | ❌ | |
 | 勝敗判定 UI | ✅ | `VictoryDefeatHudView`（VICTORY / DEFEAT、R で再読み込み） |
@@ -174,6 +201,7 @@
 |------|------|------|
 | CPU 経済 AI | ✅ | `CpuEconomyAiManager`（2 秒評価間隔） |
 | CPU Villager 木採集自動割当 | ✅ | |
+| CPU 4 資源経済 | ❌ | **Phase 28（M2.5）** — Berry/Farm/Gold/Stone 未対応 |
 | CPU House 建築 | ✅ | Wood 余裕・Pop 逼迫時 |
 | CPU Villager 増産 | ✅ | 目標 6 体 |
 | CPU 軍事 AI | ✅ | `CpuMilitaryAiManager` |
@@ -604,7 +632,9 @@ Phase 11 以降の候補（優先度順）。
 | P0 | Fixed Tick + Command Queue 基盤 | ✅ Phase 15〜16 |
 | P0 | Object Pooling | ✅ Phase 12 |
 | P1 | Food 資源 + 農場 | ✅ Phase 17〜18（M2） |
-| P1 | 弓兵（遠距離戦闘） | ⬜ Phase 21（M3） |
+| P1 | 採取リピート + Drop-off 拠点 + 狩り | ⬜ Phase 21〜26（M2.5） |
+| P1 | CPU 4 資源経済 | ⬜ Phase 28（M2.5） |
+| P1 | 弓兵（遠距離戦闘） | ⬜ Phase 29（M3） |
 | P1 | 本格 HUD 移行 | ⬜ |
 | P1 | Benchmark 数値記録 | △ シーンあり / FPS 表 TBD |
 | P2 | テクノロジー / 時代昇格 | AoE2 コア体験 |
@@ -920,9 +950,9 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 1 資源・3 建築・1 兵種・1 CPU の **垂直スライス** |
 | 何が一番足りない？ | 多資源・時代・兵種・本格 UI |
-| 次に何を作るべき？ | **M3 Military Phase 21** — [docs/README.md](README.md) |
+| 次に何を作るべき？ | **M2.5 Phase 21 Gather Repeat** — [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) |
 | プレイ用シーンは？ | **`Phase10.unity`** |
-| 自軍は自動反撃？ | **しない**（Militia 右クリックのみ） |
+| 自軍は自動反撃？ | **しない**（Phase 27 で簡易 Militia Aggro 予定） |
 | 性能ベンチマークは？ | **未計測（TBD）** — §Performance Benchmark 参照 |
 | 変更の影響範囲は？ | §Core Dependency Graph 参照 |
 | AoE2 全体の完成度は？ | **約 10%** — §AoE2 Completion Analysis 参照 |
