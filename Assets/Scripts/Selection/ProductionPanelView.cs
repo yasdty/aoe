@@ -3,6 +3,7 @@ using AoE.RTS.Commands;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
+using AoE.RTS.Units;
 using UnityEngine;
 
 namespace AoE.RTS.Selection
@@ -13,7 +14,7 @@ namespace AoE.RTS.Selection
         [SerializeField] RTSInputReader input;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 72f;
+        const float PanelHeight = 88f;
         const float Margin = 12f;
 
         void OnGUI()
@@ -33,13 +34,17 @@ namespace AoE.RTS.Selection
 
             bool isProducing = ProductionManager.IsProducing(townCenter);
             bool populationFull = !PopulationManager.CanTrainUnit();
-            GUI.enabled = !isProducing && !populationFull && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button("Create Villager (Q)"))
+            float foodCost = townCenter.Data != null ? townCenter.Data.villagerFoodCost : 0f;
+            bool canAffordFood = ResourceManager.GetFood(UnitTeam.Player) >= foodCost;
+            GUI.enabled = !isProducing && !populationFull && canAffordFood && !GameSessionManager.IsGameOver;
+            if (GUILayout.Button($"Create Villager (Q) ({foodCost} Food)"))
                 CommandQueue.Enqueue(new TrainVillagerCommand(townCenter));
             GUI.enabled = true;
 
             if (populationFull && !isProducing)
                 GUILayout.Label("Population full");
+            else if (!canAffordFood && !isProducing)
+                GUILayout.Label("Need more Food");
 
             if (isProducing)
             {

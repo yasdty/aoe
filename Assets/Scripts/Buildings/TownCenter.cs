@@ -83,7 +83,11 @@ namespace AoE.RTS.Buildings
             if (data == null || data.villagerUnitData == null)
                 return false;
 
-            return ProductionManager.TryQueueProduction(this, data.villagerUnitData, data.villagerTrainTime);
+            return ProductionManager.TryQueueProduction(
+                this,
+                data.villagerUnitData,
+                data.villagerTrainTime,
+                data.villagerFoodCost);
         }
 
         int villagerSpawnIndex;

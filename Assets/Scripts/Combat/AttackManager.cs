@@ -297,6 +297,7 @@ namespace AoE.RTS.Combat
                 gatherCancelBuffer.Clear();
                 gatherCancelBuffer.Add(attacker);
                 GatherManager.CancelForUnits(gatherCancelBuffer);
+                FoodGatherManager.CancelForUnits(gatherCancelBuffer);
                 RemoveJobsForAttacker(attacker);
                 instance.activeJobs.Add(new AttackJob
                 {
@@ -325,6 +326,7 @@ namespace AoE.RTS.Combat
                 gatherCancelBuffer.Clear();
                 gatherCancelBuffer.Add(attacker);
                 GatherManager.CancelForUnits(gatherCancelBuffer);
+                FoodGatherManager.CancelForUnits(gatherCancelBuffer);
                 RemoveJobsForAttacker(attacker);
                 instance.activeJobs.Add(new AttackJob
                 {

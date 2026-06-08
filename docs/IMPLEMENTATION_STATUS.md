@@ -2,10 +2,10 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 16 完了（Foundation Milestone 1 完了）。検証シーンは `Phase10.unity` + `Benchmark.unity`。
+> **最終更新:** Phase 17 完了（Food 資源）。Foundation Milestone 1 完了。M2 Economy 開始。
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
-> **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md)（Phase 1〜10.5）/ [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md)（Phase 11〜16）
+> **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md)
 >
 > **更新ルール:** 各 Phase 完了時に本ファイルを更新する（[docs/README.md](README.md) チェックリスト参照）。
 
@@ -51,6 +51,7 @@
 | 14 | Spatial Hash（Unit / Tree 索引） | `Phase10.unity` | ✅ 実装済み |
 | 15 | Fixed Tick（20 TPS Simulation） | `Phase10.unity` | ✅ 実装済み |
 | 16 | Command Queue（プレイヤー操作） | `Phase10.unity` | ✅ 実装済み |
+| 17 | Food（Berry Bush 採集 + Villager コスト） | `Phase10.unity` | ✅ 実装済み |
 
 **ゲームループ:** 採集 → 建築 → 生産 → 戦闘 → **勝敗判定**
 
@@ -76,7 +77,7 @@
 |------|------|------|
 | New Input System | ✅ | `RTSInputActions`（Editor API 生成） |
 | 左クリック選択 | ✅ | Unit / TownCenter / Barracks |
-| 右クリック命令 | ✅ | `CommandQueue` 経由（Phase 16）→ 各 Manager |
+| 右クリック命令 | ✅ | 木 / Berry / 移動 / 攻撃（CommandQueue 経由） |
 | ドラッグ矩形選択 | ✅ | Phase 2 以降 |
 | Shift 追加選択 | ✅ | |
 | Q キー Villager 生産 | ✅ | TownCenter 選択時 |
@@ -112,8 +113,10 @@
 | 機能 | 状態 | 備考 |
 |------|------|------|
 | Wood 資源 | ✅ | チーム別 `ResourceManager` |
-| Food / Gold / Stone | ❌ | |
-| 木（Tree）採集 | ✅ | Move → Gather → Carry → Deposit |
+| Food 資源 | ✅ | Berry Bush → `FoodGatherManager` → TC 搬入 |
+| Gold / Stone | ❌ | Phase 20 予定 |
+| 木（Tree）採集 | ✅ | `GatherManager` + `GatherCommand` |
+| Berry Bush 採集 | ✅ | `FoodGatherManager` + `GatherFoodCommand` |
 | TownCenter への搬入 | ✅ | チーム別 TC |
 | 資源ノード枯渇 | ✅ | 色変化・採集不可 |
 | 共有木の競合採集 | ✅ | Phase 9/10（先に切った側が取得） |
@@ -175,6 +178,7 @@
 | 機能 | 状態 | 備考 |
 |------|------|------|
 | Wood / Pop 表示 | ✅ | `ResourceHudView` |
+| Food 表示 | ✅ | `ResourceHudView` / `CpuHudView` |
 | CPU Wood / Pop | ✅ | `CpuHudView`（Phase 9/10） |
 | ゲーム時間・波カウントダウン | ✅ | `GameTimeHudView`（Phase 10） |
 | TC / Barracks 生産パネル | ✅ | OnGUI ボタン |
@@ -189,7 +193,7 @@
 | Benchmark シーン | ✅ | `Benchmark.unity`、50〜800 体、FPS / GC HUD |
 | Spatial Hash | ✅ | `UnitSpatialIndex` / `TreeSpatialIndex` |
 | Fixed Tick | ✅ | `SimulationTick` 20 TPS、`ISimulationTickable` |
-| Command Queue | ✅ | プレイヤー操作 7 種。`CommandLog` 記録 |
+| Command Queue | ✅ | プレイヤー操作 8 種（GatherFood 含む）。`CommandLog` 記録 |
 | CPU AI Command 化 | ❌ | CPU は Manager 直接呼び出し（将来 Phase） |
 | Replay 再生 | ❌ | CommandLog のみ。ファイル保存・再生なし |
 | Entity ID | ❌ | GameObject 参照のまま |

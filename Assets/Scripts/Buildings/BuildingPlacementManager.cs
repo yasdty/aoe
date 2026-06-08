@@ -236,6 +236,7 @@ namespace AoE.RTS.Buildings
             instance.builderLookupBuffer.Clear();
             instance.builderLookupBuffer.Add(builder);
             GatherManager.CancelForUnits(instance.builderLookupBuffer);
+            FoodGatherManager.CancelForUnits(instance.builderLookupBuffer);
             instance.RemoveIncompleteSitesForBuilder(builder);
 
             Vector3 approach = instance.GetBuildApproachPosition(instance.ghostPosition, placementData, builder);
@@ -270,6 +271,7 @@ namespace AoE.RTS.Buildings
             instance.builderLookupBuffer.Clear();
             instance.builderLookupBuffer.Add(builder);
             GatherManager.CancelForUnits(instance.builderLookupBuffer);
+            FoodGatherManager.CancelForUnits(instance.builderLookupBuffer);
             instance.RemoveIncompleteSitesForBuilder(builder);
 
             Vector3 approach = instance.GetBuildApproachPosition(position, data, builder);

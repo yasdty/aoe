@@ -65,6 +65,20 @@ namespace AoE.RTS.EditorTools
             new Vector3(0f, 1f, -40f)
         };
 
+        static readonly Vector3[] PlayerBerryBushPositions =
+        {
+            new Vector3(10f, 0f, 6f),
+            new Vector3(-8f, 0f, 8f),
+            new Vector3(6f, 0f, -6f)
+        };
+
+        static readonly Vector3[] CpuBerryBushPositions =
+        {
+            new Vector3(-6f, 0f, -28f),
+            new Vector3(6f, 0f, -32f),
+            new Vector3(0f, 0f, -38f)
+        };
+
         [MenuItem("AoE/Setup Phase10 Scene", true)]
         static bool ValidateSetupPhase10Scene() => !EditorApplication.isPlaying;
 
@@ -79,6 +93,7 @@ namespace AoE.RTS.EditorTools
             UnitData militiaData = Phase1SceneBuilder.EnsureMilitiaData();
             BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
             ResourceNodeData treeData = Phase1SceneBuilder.EnsureDefaultTreeData();
+            FoodNodeData berryBushData = Phase1SceneBuilder.EnsureDefaultBerryBushData();
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
             PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
@@ -95,6 +110,7 @@ namespace AoE.RTS.EditorTools
             GameObject playerTownCenter = Phase1SceneBuilder.CreateTownCenter(townCenterData, PlayerTownCenterPosition);
             GameObject cpuTownCenter = CreateCpuTownCenter(townCenterData);
             CreateTrees(treeData);
+            CreateBerryBushes(berryBushData);
             CreateCpuVillagers(villagerData);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
             Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
@@ -128,6 +144,15 @@ namespace AoE.RTS.EditorTools
                 if (unit != null)
                     unit.SetTeam(UnitTeam.Enemy);
             }
+        }
+
+        static void CreateBerryBushes(FoodNodeData bushData)
+        {
+            for (int i = 0; i < PlayerBerryBushPositions.Length; i++)
+                Phase1SceneBuilder.CreateBerryBush(bushData, PlayerBerryBushPositions[i]);
+
+            for (int i = 0; i < CpuBerryBushPositions.Length; i++)
+                Phase1SceneBuilder.CreateBerryBush(bushData, CpuBerryBushPositions[i]);
         }
 
         static void CreateTrees(ResourceNodeData treeData)
@@ -179,6 +204,10 @@ namespace AoE.RTS.EditorTools
             treeSpatialIndexObject.transform.SetParent(systems.transform);
             treeSpatialIndexObject.AddComponent<TreeSpatialIndex>();
 
+            GameObject berrySpatialIndexObject = new GameObject("BerryBushSpatialIndex");
+            berrySpatialIndexObject.transform.SetParent(systems.transform);
+            berrySpatialIndexObject.AddComponent<BerryBushSpatialIndex>();
+
             GameObject attackManagerObject = new GameObject("AttackManager");
             attackManagerObject.transform.SetParent(systems.transform);
             attackManagerObject.AddComponent<AttackManager>();
@@ -202,6 +231,10 @@ namespace AoE.RTS.EditorTools
             GameObject gatherManagerObject = new GameObject("GatherManager");
             gatherManagerObject.transform.SetParent(systems.transform);
             gatherManagerObject.AddComponent<GatherManager>();
+
+            GameObject foodGatherManagerObject = new GameObject("FoodGatherManager");
+            foodGatherManagerObject.transform.SetParent(systems.transform);
+            foodGatherManagerObject.AddComponent<FoodGatherManager>();
 
             GameObject placementManagerObject = new GameObject("BuildingPlacementManager");
             placementManagerObject.transform.SetParent(systems.transform);

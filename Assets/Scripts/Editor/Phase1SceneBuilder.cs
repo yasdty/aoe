@@ -20,6 +20,7 @@ namespace AoE.RTS.EditorTools
         const string UnitDataPath = "Assets/Data/UnitData/DefaultUnit.asset";
         const string TownCenterDataPath = "Assets/Data/BuildingData/TownCenterData.asset";
         const string DefaultTreeDataPath = GameAssetPaths.DefaultTreeData;
+        const string DefaultBerryBushDataPath = GameAssetPaths.DefaultBerryBushData;
         const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
         const string DefaultBarracksDataPath = GameAssetPaths.DefaultBarracksData;
         const string MilitiaDataPath = GameAssetPaths.MilitiaData;
@@ -194,6 +195,12 @@ namespace AoE.RTS.EditorTools
                     EditorUtility.SetDirty(existing);
                 }
 
+                if (existing.villagerFoodCost != 50f)
+                {
+                    existing.villagerFoodCost = 50f;
+                    EditorUtility.SetDirty(existing);
+                }
+
                 AssetDatabase.SaveAssets();
                 return existing;
             }
@@ -201,6 +208,7 @@ namespace AoE.RTS.EditorTools
             BuildingData data = ScriptableObject.CreateInstance<BuildingData>();
             data.displayName = "Town Center";
             data.villagerTrainTime = 3f;
+            data.villagerFoodCost = 50f;
             data.villagerUnitData = villagerData;
             data.spawnForwardOffset = 8f;
             data.spawnClearance = 4f;
@@ -428,6 +436,65 @@ namespace AoE.RTS.EditorTools
             AssetDatabase.CreateAsset(data, DefaultTreeDataPath);
             AssetDatabase.SaveAssets();
             return data;
+        }
+
+        public static FoodNodeData EnsureDefaultBerryBushData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/ResourceData"))
+                AssetDatabase.CreateFolder("Assets/Data", "ResourceData");
+
+            FoodNodeData existing = AssetDatabase.LoadAssetAtPath<FoodNodeData>(DefaultBerryBushDataPath);
+            if (existing != null)
+                return existing;
+
+            FoodNodeData data = ScriptableObject.CreateInstance<FoodNodeData>();
+            data.displayName = "Berry Bush";
+            data.initialFood = 250f;
+            AssetDatabase.CreateAsset(data, DefaultBerryBushDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static GameObject CreateBerryBush(FoodNodeData bushData, Vector3 position)
+        {
+            const float radius = 1.2f;
+            const float groundClearance = 0.05f;
+
+            Vector3 worldPosition = new Vector3(
+                position.x,
+                radius + groundClearance,
+                position.z);
+
+            GameObject bushObject = new GameObject("BerryBush");
+            bushObject.layer = LayerMask.NameToLayer(GameLayers.ResourceLayerName);
+            bushObject.transform.position = worldPosition;
+
+            SphereCollider collider = bushObject.AddComponent<SphereCollider>();
+            collider.radius = radius;
+
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            visual.name = "Visual";
+            visual.transform.SetParent(bushObject.transform, false);
+            visual.transform.localScale = Vector3.one * (radius * 2f);
+            Object.DestroyImmediate(visual.GetComponent<Collider>());
+
+            Renderer renderer = visual.GetComponent<Renderer>();
+            if (renderer != null && bushData != null)
+            {
+                Material material = SceneMaterialFactory.CreateLitMaterial(bushData.defaultColor);
+                renderer.sharedMaterial = material;
+            }
+
+            BerryBushResource berryBush = bushObject.AddComponent<BerryBushResource>();
+            SerializedObject serializedBush = new SerializedObject(berryBush);
+            serializedBush.FindProperty("data").objectReferenceValue = bushData;
+            serializedBush.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(berryBush);
+            EditorUtility.SetDirty(bushObject);
+
+            return bushObject;
         }
 
         public static GameObject CreateTree(ResourceNodeData treeData, Vector3 position)

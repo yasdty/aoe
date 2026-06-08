@@ -100,7 +100,11 @@ namespace AoE.RTS.Buildings
             return null;
         }
 
-        public static bool TryQueueProduction(TownCenter townCenter, UnitData unitData, float trainSeconds)
+        public static bool TryQueueProduction(
+            TownCenter townCenter,
+            UnitData unitData,
+            float trainSeconds,
+            float foodCost = 0f)
         {
             if (instance == null || townCenter == null || unitData == null || trainSeconds <= 0f)
                 return false;
@@ -109,6 +113,9 @@ namespace AoE.RTS.Buildings
                 return false;
 
             if (!PopulationManager.CanTrainUnit(townCenter.Team))
+                return false;
+
+            if (foodCost > 0f && !ResourceManager.TrySpendFood(townCenter.Team, foodCost))
                 return false;
 
             instance.activeJobs.Add(new ProductionJob

@@ -16,6 +16,7 @@ namespace AoE.RTS.Selection
         const float Margin = 12f;
         const float PanelWidth = 210f;
         const float WoodLineHeight = 24f;
+        const float FoodLineHeight = 24f;
         const float PopLineHeight = 24f;
         const float ButtonHeight = 28f;
         const float ButtonGap = 4f;
@@ -47,7 +48,7 @@ namespace AoE.RTS.Selection
         {
             PlacedBuildingData house = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
-            float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + PopLineHeight + ButtonGap
+            float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + FoodLineHeight + ButtonGap + PopLineHeight + ButtonGap
                 + ButtonHeight + ButtonGap + ButtonHeight;
             Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
             GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
@@ -59,6 +60,10 @@ namespace AoE.RTS.Selection
             Rect woodRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, WoodLineHeight);
             GUI.Label(woodRect, $"Wood: {Mathf.FloorToInt(ResourceManager.Wood)}");
             y += WoodLineHeight + ButtonGap;
+
+            Rect foodRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, FoodLineHeight);
+            GUI.Label(foodRect, $"Food: {Mathf.FloorToInt(ResourceManager.Food)}");
+            y += FoodLineHeight + ButtonGap;
 
             Rect popRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, PopLineHeight);
             GUI.Label(popRect, $"Pop: {PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}");

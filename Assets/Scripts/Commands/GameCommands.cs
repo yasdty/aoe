@@ -49,6 +49,7 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(units);
             GatherManager.CancelForUnits(units);
+            FoodGatherManager.CancelForUnits(units);
             AttackManager.CancelForUnits(units);
             GroupMoveFormation.AssignMoveTargets(units, destination, spacing);
         }
@@ -74,7 +75,33 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
+            FoodGatherManager.CancelForUnits(units);
             GatherManager.IssueGatherCommand(units, tree);
+        }
+    }
+
+    public sealed class GatherFoodCommand : IGameCommand
+    {
+        readonly List<Unit> units;
+        readonly BerryBushResource bush;
+
+        public string DebugName => "GatherFood";
+
+        public GatherFoodCommand(IReadOnlyList<Unit> units, BerryBushResource bush)
+        {
+            this.units = GameCommandLists.CopyUnits(units);
+            this.bush = bush;
+        }
+
+        public void Execute()
+        {
+            if (units.Count == 0 || bush == null || bush.IsDepleted)
+                return;
+
+            BuildingPlacementManager.AbortConstructionForUnits(units);
+            AttackManager.CancelForUnits(units);
+            GatherManager.CancelForUnits(units);
+            FoodGatherManager.IssueGatherCommand(units, bush);
         }
     }
 
@@ -112,6 +139,7 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
             GatherManager.CancelForUnits(selectedUnits);
+            FoodGatherManager.CancelForUnits(selectedUnits);
             AttackManager.IssueAttack(attackers, targetUnit);
         }
     }
@@ -150,6 +178,7 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
             GatherManager.CancelForUnits(selectedUnits);
+            FoodGatherManager.CancelForUnits(selectedUnits);
             AttackManager.IssueAttack(attackers, targetBuilding);
         }
     }

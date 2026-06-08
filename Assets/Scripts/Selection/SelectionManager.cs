@@ -287,6 +287,13 @@ namespace AoE.RTS.Selection
 
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, GameLayers.ResourceMask))
             {
+                BerryBushResource bush = hit.collider.GetComponentInParent<BerryBushResource>();
+                if (bush != null && !bush.IsDepleted)
+                {
+                    CommandQueue.Enqueue(new GatherFoodCommand(selectedUnits, bush));
+                    return;
+                }
+
                 TreeResource tree = hit.collider.GetComponentInParent<TreeResource>();
                 if (tree != null && !tree.IsDepleted)
                 {
