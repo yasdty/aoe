@@ -81,6 +81,13 @@ namespace AoE.RTS.Buildings
                 return;
             }
 
+            LumberCamp lumberCamp = GetComponent<LumberCamp>();
+            if (lumberCamp != null)
+            {
+                BuildingPool.ReturnLumberCamp(lumberCamp);
+                return;
+            }
+
             Destroy(gameObject);
         }
 

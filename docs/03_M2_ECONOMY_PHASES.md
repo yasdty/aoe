@@ -13,7 +13,7 @@
 |-------|------|------|------|
 | 17 | Food | Berry Bush 採集 + Villager Food コスト | ✅ 実装済み |
 | 18 | Farm | 建築 + 継続 Food 生産 | ✅ 実装済み |
-| 19 | Lumber Camp | 木採集効率・Drop-off | ⬜ 未着手 |
+| 19 | Lumber Camp | 木採集効率・Drop-off | ✅ 実装済み |
 | 20 | Gold + Stone | 4 資源完成 | ⬜ 未着手 |
 
 **M2 完了条件:** Wood / Food / Gold / Stone の 4 資源がゲーム内で機能する。
@@ -42,11 +42,11 @@
 
 ---
 
-## Phase 19 — Lumber Camp ⬜
+## Phase 19 — Lumber Camp ✅
 
 **目的:** Lumber Camp を Wood の Drop-off 拠点にし、森近くへの搬入で採集効率を改善。
 
-**実装予定:** `LumberCamp` / `LumberCampData` / `GatherManager` Deposit 先拡張 / HUD Build Lumber Camp
+**実装:** `LumberCamp` / `LumberCampData` / `LumberCampRegistry` / `GatherManager` Deposit 先拡張 / HUD Build Lumber Camp
 
 **プロンプト:** [prompts/phase19-prompt.md](prompts/phase19-prompt.md)
 

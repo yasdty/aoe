@@ -80,5 +80,27 @@ namespace AoE.RTS.Buildings
             cached.defaultColor = new Color(0.35f, 0.7f, 0.25f);
             return cached;
         }
+
+        public static PlacedBuildingData ResolveLumberCamp(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultLumberCampData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.LumberCamp;
+            cached.displayName = "Lumber Camp";
+            cached.woodCost = 100f;
+            cached.buildTime = 6f;
+            cached.housingProvided = 0;
+            cached.maxHp = 400f;
+            cached.defaultColor = new Color(0.55f, 0.38f, 0.22f);
+            return cached;
+        }
     }
 }

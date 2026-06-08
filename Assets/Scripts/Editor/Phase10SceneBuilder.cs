@@ -97,6 +97,7 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
             PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
             Phase1SceneBuilder.EnsureFarmData();
+            Phase1SceneBuilder.EnsureLumberCampData();
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
             if (inputActions == null)
             {

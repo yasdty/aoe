@@ -12,6 +12,7 @@ namespace AoE.RTS.Buildings
         readonly Stack<House> availableHouses = new Stack<House>();
         readonly Stack<Barracks> availableBarracks = new Stack<Barracks>();
         readonly Stack<Farm> availableFarms = new Stack<Farm>();
+        readonly Stack<LumberCamp> availableLumberCamps = new Stack<LumberCamp>();
 
         int houseSpawnCount;
         int houseReuseCount;
@@ -19,6 +20,8 @@ namespace AoE.RTS.Buildings
         int barracksReuseCount;
         int farmSpawnCount;
         int farmReuseCount;
+        int lumberCampSpawnCount;
+        int lumberCampReuseCount;
 
         void Awake()
         {
@@ -29,6 +32,8 @@ namespace AoE.RTS.Buildings
             barracksReuseCount = 0;
             farmSpawnCount = 0;
             farmReuseCount = 0;
+            lumberCampSpawnCount = 0;
+            lumberCampReuseCount = 0;
         }
 
         void OnDestroy()
@@ -101,6 +106,28 @@ namespace AoE.RTS.Buildings
             }
 
             instance.ReturnFarmInternal(farm);
+        }
+
+        public static LumberCamp RentLumberCamp(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            if (instance == null)
+                return RuntimeBuildingFactory.CreateFreshLumberCamp(data, position, team);
+
+            return instance.RentLumberCampInternal(data, position, team);
+        }
+
+        public static void ReturnLumberCamp(LumberCamp lumberCamp)
+        {
+            if (lumberCamp == null)
+                return;
+
+            if (instance == null)
+            {
+                Object.Destroy(lumberCamp.gameObject);
+                return;
+            }
+
+            instance.ReturnLumberCampInternal(lumberCamp);
         }
 
         House RentHouseInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
@@ -191,6 +218,36 @@ namespace AoE.RTS.Buildings
             farm.transform.SetParent(transform, false);
             farm.gameObject.SetActive(false);
             availableFarms.Push(farm);
+        }
+
+        LumberCamp RentLumberCampInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            LumberCamp lumberCamp;
+            if (availableLumberCamps.Count > 0)
+            {
+                lumberCamp = availableLumberCamps.Pop();
+                lumberCampReuseCount++;
+                Debug.Log($"BuildingPool: spawn={lumberCampSpawnCount} reuse={lumberCampReuseCount} (LumberCamp)");
+            }
+            else
+            {
+                lumberCamp = RuntimeBuildingFactory.CreateFreshLumberCamp(data, position, team);
+                lumberCamp.gameObject.SetActive(false);
+                lumberCamp.transform.SetParent(transform, false);
+                lumberCampSpawnCount++;
+                Debug.Log($"BuildingPool: spawn={lumberCampSpawnCount} reuse={lumberCampReuseCount} (LumberCamp)");
+            }
+
+            lumberCamp.PrepareForReuse(data, position, team);
+            lumberCamp.gameObject.SetActive(true);
+            return lumberCamp;
+        }
+
+        void ReturnLumberCampInternal(LumberCamp lumberCamp)
+        {
+            lumberCamp.transform.SetParent(transform, false);
+            lumberCamp.gameObject.SetActive(false);
+            availableLumberCamps.Push(lumberCamp);
         }
     }
 }

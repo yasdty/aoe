@@ -13,6 +13,7 @@ namespace AoE.RTS.Selection
         [SerializeField] PlacedBuildingData houseData;
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData farmData;
+        [SerializeField] PlacedBuildingData lumberCampData;
 
         const float Margin = 12f;
         const float PanelWidth = 210f;
@@ -31,6 +32,7 @@ namespace AoE.RTS.Selection
             houseData = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
+            lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             if (selectionManager == null)
                 selectionManager = FindAnyObjectByType<SelectionManager>();
         }
@@ -51,8 +53,9 @@ namespace AoE.RTS.Selection
             PlacedBuildingData house = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             PlacedBuildingData farm = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
+            PlacedBuildingData lumberCamp = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + FoodLineHeight + ButtonGap + PopLineHeight + ButtonGap
-                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
+                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
             Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
             GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
 
@@ -109,6 +112,18 @@ namespace AoE.RTS.Selection
                     : null;
                 BuildingPlacementManager.EnterFarmPlacementMode(builders);
             }
+            y += ButtonHeight + ButtonGap;
+
+            Rect lumberCampButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canAffordLumberCamp = ResourceManager.Wood >= lumberCamp.woodCost;
+            GUI.enabled = canAffordLumberCamp && !inPlacementMode && !gameOver;
+            if (GUI.Button(lumberCampButtonRect, $"Build Lumber Camp ({lumberCamp.woodCost} Wood)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterLumberCampPlacementMode(builders);
+            }
             GUI.enabled = true;
 
             if (inPlacementMode)
@@ -120,7 +135,7 @@ namespace AoE.RTS.Selection
             else
             {
                 GameUiInput.ClearHudHintScreenRect();
-                if (!canAffordHouse && !canAffordBarracks && !canAffordFarm)
+                if (!canAffordHouse && !canAffordBarracks && !canAffordFarm && !canAffordLumberCamp)
                 {
                     Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
                     GUI.Label(hintRect, "Need more Wood.");

@@ -23,6 +23,11 @@ namespace AoE.RTS.Buildings
             return BuildingPool.RentFarm(data, position, team);
         }
 
+        public static LumberCamp CreateLumberCamp(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return BuildingPool.RentLumberCamp(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -88,6 +93,28 @@ namespace AoE.RTS.Buildings
             Farm farm = farmObject.AddComponent<Farm>();
             farm.SetData(data);
             return farm;
+        }
+
+        public static LumberCamp CreateFreshLumberCamp(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject lumberCampObject = EntityVisualBuilder.CreateBuildingShell(
+                "LumberCamp",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
+
+            ApplySharedMaterialIfMissingRendererTint(lumberCampObject);
+            ConfigureBuildingHealth(lumberCampObject, data.maxHp, data.armor, team);
+
+            LumberCamp lumberCamp = lumberCampObject.AddComponent<LumberCamp>();
+            lumberCamp.SetData(data);
+            return lumberCamp;
         }
 
         public static Vector3 ResolveWorldPosition(PlacedBuildingData data, Vector3 position)

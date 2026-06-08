@@ -7,7 +7,8 @@ namespace AoE.RTS.Buildings
     {
         House = 0,
         Barracks = 1,
-        Farm = 2
+        Farm = 2,
+        LumberCamp = 3
     }
 
     [CreateAssetMenu(fileName = "PlacedBuildingData", menuName = "AoE/Placed Building Data")]

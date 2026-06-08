@@ -240,16 +240,10 @@ namespace AoE.RTS.Economy
 
         static Vector3 GetDepositPosition(Unit unit)
         {
-            if (unit == null)
-                return Vector3.zero;
+            if (LumberCampRegistry.TryGetNearestWoodDepositPosition(unit, DepositStandRadius, out Vector3 position))
+                return position;
 
-            TownCenter townCenter = ProductionManager.GetTownCenterForTeam(unit.Team);
-            if (townCenter == null)
-                return Vector3.zero;
-
-            Vector3 center = townCenter.transform.position;
-            center.y = 1f;
-            return UnitPositionOffsets.ApplyRingOffset(center, unit, DepositStandRadius);
+            return Vector3.zero;
         }
     }
 }

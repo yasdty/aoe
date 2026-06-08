@@ -9,6 +9,7 @@ namespace AoE.RTS.Core
         public const string DefaultHouseData = "Assets/Data/BuildingData/HouseData.asset";
         public const string DefaultBarracksData = "Assets/Data/BuildingData/BarracksData.asset";
         public const string DefaultFarmData = "Assets/Data/BuildingData/FarmData.asset";
+        public const string DefaultLumberCampData = "Assets/Data/BuildingData/LumberCampData.asset";
         public const string MilitiaData = "Assets/Data/UnitData/MilitiaData.asset";
         public const string EnemyDummyData = "Assets/Data/UnitData/EnemyDummyData.asset";
     }

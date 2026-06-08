@@ -23,6 +23,7 @@ namespace AoE.RTS.EditorTools
         const string DefaultBerryBushDataPath = GameAssetPaths.DefaultBerryBushData;
         const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
         const string DefaultFarmDataPath = GameAssetPaths.DefaultFarmData;
+        const string DefaultLumberCampDataPath = GameAssetPaths.DefaultLumberCampData;
         const string DefaultBarracksDataPath = GameAssetPaths.DefaultBarracksData;
         const string MilitiaDataPath = GameAssetPaths.MilitiaData;
         const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
@@ -341,6 +342,69 @@ namespace AoE.RTS.EditorTools
             data.maxHp = 100f;
             data.defaultColor = new Color(0.35f, 0.7f, 0.25f);
             AssetDatabase.CreateAsset(data, DefaultFarmDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureLumberCampData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultLumberCampDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.LumberCamp)
+                {
+                    existing.kind = PlacedBuildingKind.LumberCamp;
+                    dirty = true;
+                }
+
+                if (existing.woodCost != 100f)
+                {
+                    existing.woodCost = 100f;
+                    dirty = true;
+                }
+
+                if (existing.buildTime != 6f)
+                {
+                    existing.buildTime = 6f;
+                    dirty = true;
+                }
+
+                if (existing.housingProvided != 0)
+                {
+                    existing.housingProvided = 0;
+                    dirty = true;
+                }
+
+                if (existing.maxHp != 400f)
+                {
+                    existing.maxHp = 400f;
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.LumberCamp;
+            data.displayName = "Lumber Camp";
+            data.woodCost = 100f;
+            data.buildTime = 6f;
+            data.housingProvided = 0;
+            data.maxHp = 400f;
+            data.defaultColor = new Color(0.55f, 0.38f, 0.22f);
+            AssetDatabase.CreateAsset(data, DefaultLumberCampDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }

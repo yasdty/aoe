@@ -3,7 +3,7 @@
 > **Milestone:** M1 — Foundation（RTS Engine 基盤）✅ **完了**  
 > **前提:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md)（Phase 1〜10.5）完了  
 > **実装状況:** [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)  
-> **次:** [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) Phase 19（Lumber Camp）— [prompts/phase19-prompt.md](prompts/phase19-prompt.md)
+> **次:** [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) Phase 20（Gold + Stone）
 
 ---
 
