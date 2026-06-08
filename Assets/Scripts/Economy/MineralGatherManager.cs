@@ -292,6 +292,16 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddGold(job.unit.Team, job.carriedAmount);
+                job.carriedAmount = 0f;
+
+                if (job.mine != null && !job.mine.IsDepleted)
+                {
+                    job.state = GatherState.MoveToMine;
+                    job.unit.SetMoveTarget(GetGatherPosition(job.mine, job.unit));
+                    goldJobs[index] = job;
+                    return;
+                }
+
                 job.unit.ClearMoveTarget();
                 goldJobs.RemoveAt(index);
                 return;
@@ -367,6 +377,16 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddStone(job.unit.Team, job.carriedAmount);
+                job.carriedAmount = 0f;
+
+                if (job.mine != null && !job.mine.IsDepleted)
+                {
+                    job.state = GatherState.MoveToMine;
+                    job.unit.SetMoveTarget(GetGatherPosition(job.mine, job.unit));
+                    stoneJobs[index] = job;
+                    return;
+                }
+
                 job.unit.ClearMoveTarget();
                 stoneJobs.RemoveAt(index);
                 return;

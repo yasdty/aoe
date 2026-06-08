@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 20 完了（Gold + Stone）。**M2 Economy 完了。次: M2.5 Phase 21（Gather Repeat）。**
+> **最終更新:** Phase 21 完了（Gather Repeat）。**M2.5 進行中。次: Phase 22（Farm + Spawn）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) / [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) / [05_M3_MILITARY_PHASES.md](05_M3_MILITARY_PHASES.md)
@@ -55,7 +55,7 @@
 | 18 | Farm（建築 + 継続 Food 採集） | `Phase10.unity` | ✅ 実装済み |
 | 19 | Lumber Camp（Wood Drop-off） | `Phase10.unity` | ✅ 実装済み |
 | 20 | Gold + Stone（採掘 + TC 搬入） | `Phase10.unity` | ✅ 実装済み |
-| 21 | Gather Repeat（搬入後採取継続） | `Phase10.unity` | ⬜ 未着手 |
+| 21 | Gather Repeat（搬入後採取継続） | `Phase10.unity` | ✅ 実装済み |
 | 22 | Farm 1 人制限 + Spawn グリッド | `Phase10.unity` | ⬜ 未着手 |
 | 23 | Mining Camp（Gold/Stone Drop-off） | `Phase10.unity` | ⬜ 未着手 |
 | 24 | Hunting（Deer / Sheep） | `Phase10.unity` | ⬜ 未着手 |
@@ -76,7 +76,7 @@
 
 **Milestone 2 Economy:** ✅ 完了（Phase 17〜20 — Wood / Food / Gold / Stone）
 
-**Milestone 2.5 Economy Polish:** ⬜ 未着手（Phase 21〜28 — 採取ループ・Drop-off 拠点・狩り・CPU 4 資源）
+**Milestone 2.5 Economy Polish:** 進行中（Phase 21 ✅ — Phase 22〜28 未着手）
 
 **Milestone 3 Military:** ⬜ 未着手（Phase 29〜34）
 
@@ -140,7 +140,7 @@
 | Food 資源 | ✅ | Berry Bush / Farm → `FoodGatherManager` → TC 搬入 |
 | Gold / Stone | ✅ | Gold/Stone Mine → `MineralGatherManager` → TC 搬入 |
 | 木（Tree）採集 | ✅ | `GatherManager` + `GatherCommand` → 最寄り Drop-off（TC / Lumber Camp） |
-| 採取リピート（搬入後継続） | ❌ | **Phase 21（M2.5）** |
+| 採取リピート（搬入後継続） | ✅ | Phase 21 — Wood / Berry / Farm / Gold / Stone |
 | Berry Bush 採集 | ✅ | `FoodGatherManager` + `GatherFoodCommand` |
 | Farm 採集 | ✅ | `FoodGatherManager` + `GatherFarmFoodCommand` |
 | Farm 1 村民制限 | ❌ | **Phase 22（M2.5）** — 現状複数村民可 |
@@ -632,7 +632,7 @@ Phase 11 以降の候補（優先度順）。
 | P0 | Fixed Tick + Command Queue 基盤 | ✅ Phase 15〜16 |
 | P0 | Object Pooling | ✅ Phase 12 |
 | P1 | Food 資源 + 農場 | ✅ Phase 17〜18（M2） |
-| P1 | 採取リピート + Drop-off 拠点 + 狩り | ⬜ Phase 21〜26（M2.5） |
+| P1 | 採取リピート + Drop-off 拠点 + 狩り | △ Phase 21 ✅ / 22〜26 ⬜ |
 | P1 | CPU 4 資源経済 | ⬜ Phase 28（M2.5） |
 | P1 | 弓兵（遠距離戦闘） | ⬜ Phase 29（M3） |
 | P1 | 本格 HUD 移行 | ⬜ |
@@ -950,7 +950,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 1 資源・3 建築・1 兵種・1 CPU の **垂直スライス** |
 | 何が一番足りない？ | 多資源・時代・兵種・本格 UI |
-| 次に何を作るべき？ | **M2.5 Phase 21 Gather Repeat** — [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) |
+| 次に何を作るべき？ | **M2.5 Phase 22 Farm + Spawn** — [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) |
 | プレイ用シーンは？ | **`Phase10.unity`** |
 | 自軍は自動反撃？ | **しない**（Phase 27 で簡易 Militia Aggro 予定） |
 | 性能ベンチマークは？ | **未計測（TBD）** — §Performance Benchmark 参照 |

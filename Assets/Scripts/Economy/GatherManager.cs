@@ -220,6 +220,16 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddWood(job.unit.Team, job.carriedWood);
+                job.carriedWood = 0f;
+
+                if (job.tree != null && !job.tree.IsDepleted)
+                {
+                    job.state = GatherState.MoveToTree;
+                    job.unit.SetMoveTarget(GetGatherPosition(job.tree, job.unit));
+                    jobs[index] = job;
+                    return;
+                }
+
                 job.unit.ClearMoveTarget();
                 jobs.RemoveAt(index);
                 return;

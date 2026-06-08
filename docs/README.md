@@ -44,7 +44,7 @@
 | M0 PoC | `01_M0_POC_PHASES.md` | 1〜10.5 | ✅ 完了 |
 | M1 Foundation | `02_M1_FOUNDATION_PHASES.md` | 11〜16 | ✅ 完了 |
 | M2 Economy | `03_M2_ECONOMY_PHASES.md` | 17〜20 | ✅ 完了 |
-| M2.5 Economy Polish | `04_M2_5_ECONOMY_POLISH_PHASES.md` | 21〜28 | ⬜ **次** |
+| M2.5 Economy Polish | `04_M2_5_ECONOMY_POLISH_PHASES.md` | 21〜28 | 🔄 Phase 21 ✅ / 22〜28 ⬜ |
 | M3 Military | `05_M3_MILITARY_PHASES.md` | 29〜34 | ⬜ 未着手 |
 | M4 AoE Gameplay | `06_M4_GAMEPLAY_PHASES.md` | 35〜39 | ⬜ 未着手 |
 

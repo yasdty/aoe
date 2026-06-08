@@ -341,6 +341,17 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                job.carriedFood = 0f;
+
+                if (IsFarmGatherTargetValid(job.farm))
+                {
+                    job.state = FarmGatherState.MoveToFarm;
+                    job.unit.SetMoveTarget(GetFarmGatherPosition(job.farm, job.unit));
+                    if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
+                        farmJobs[index] = job;
+                    return;
+                }
+
                 job.unit.ClearMoveTarget();
                 if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
                     farmJobs.RemoveAt(index);
@@ -426,6 +437,16 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                job.carriedFood = 0f;
+
+                if (job.bush != null && !job.bush.IsDepleted)
+                {
+                    job.state = GatherState.MoveToBush;
+                    job.unit.SetMoveTarget(GetGatherPosition(job.bush, job.unit));
+                    jobs[index] = job;
+                    return;
+                }
+
                 job.unit.ClearMoveTarget();
                 jobs.RemoveAt(index);
                 return;
