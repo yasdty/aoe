@@ -200,6 +200,38 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added Deer/Sheep to the open scene. Save the scene (Ctrl+S) if needed.");
         }
 
+        [MenuItem("AoE/Add Selection Info Panel (Phase10)", true)]
+        static bool ValidateAddSelectionInfoPanel() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Selection Info Panel (Phase10)")]
+        public static void AddSelectionInfoPanelToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            SelectionManager selectionManager = Object.FindAnyObjectByType<SelectionManager>();
+            if (selectionManager == null)
+            {
+                Debug.LogError("SelectionManager not found in the open scene.");
+                return;
+            }
+
+            SelectionInfoPanelView existing = selectionManager.GetComponent<SelectionInfoPanelView>();
+            if (existing != null)
+            {
+                Debug.Log("SelectionInfoPanelView already exists on SelectionManager.");
+                return;
+            }
+
+            SelectionInfoPanelView infoPanel = selectionManager.gameObject.AddComponent<SelectionInfoPanelView>();
+            SerializedObject serializedInfoPanel = new SerializedObject(infoPanel);
+            serializedInfoPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedInfoPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added SelectionInfoPanelView. Save the scene (Ctrl+S) if needed.");
+        }
+
         static void RemoveExistingHuntableAnimals()
         {
             DeerResource[] deer = Object.FindObjectsByType<DeerResource>(FindObjectsSortMode.None);
@@ -377,6 +409,7 @@ namespace AoE.RTS.EditorTools
             selectionManagerObject.AddComponent<ProductionPanelView>();
             selectionManagerObject.AddComponent<BarracksPanelView>();
             UnitHpBarView hpBarView = selectionManagerObject.AddComponent<UnitHpBarView>();
+            SelectionInfoPanelView infoPanelView = selectionManagerObject.AddComponent<SelectionInfoPanelView>();
             ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
             selectionManagerObject.AddComponent<CpuHudView>();
             selectionManagerObject.AddComponent<GameTimeHudView>();
@@ -404,6 +437,10 @@ namespace AoE.RTS.EditorTools
             SerializedObject serializedHpBar = new SerializedObject(hpBarView);
             serializedHpBar.FindProperty("selectionManager").objectReferenceValue = selectionManager;
             serializedHpBar.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedInfoPanel = new SerializedObject(infoPanelView);
+            serializedInfoPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedInfoPanel.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedPlacement = new SerializedObject(placementManager);
             serializedPlacement.FindProperty("mainCamera").objectReferenceValue = mainCamera;

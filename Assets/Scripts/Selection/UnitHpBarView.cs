@@ -28,7 +28,7 @@ namespace AoE.RTS.Selection
                 return;
 
             IReadOnlyList<Unit> units = selectionManager.SelectedUnits;
-            if (units == null || units.Count == 0)
+            if (units == null || units.Count <= 1)
                 return;
 
             int aliveCount = 0;

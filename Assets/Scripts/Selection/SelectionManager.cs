@@ -28,6 +28,8 @@ namespace AoE.RTS.Selection
 
         TownCenter selectedTownCenter;
         Barracks selectedBarracks;
+        BuildingHealth selectedPlacedBuilding;
+        Component selectedResource;
 
         Vector2 dragStartScreen;
         bool isDragging;
@@ -35,10 +37,38 @@ namespace AoE.RTS.Selection
         public IReadOnlyList<Unit> SelectedUnits => selectedUnits;
         public TownCenter SelectedTownCenter => selectedTownCenter;
         public Barracks SelectedBarracks => selectedBarracks;
+        public BuildingHealth SelectedPlacedBuilding => selectedPlacedBuilding;
+        public Component SelectedResource => selectedResource;
+
+        public bool ShouldShowSelectionInfoPanel
+        {
+            get
+            {
+                if (selectedUnits.Count > 1)
+                    return false;
+
+                if (selectedUnits.Count == 1)
+                    return true;
+
+                return selectedTownCenter != null
+                    || selectedBarracks != null
+                    || selectedPlacedBuilding != null
+                    || selectedResource != null;
+            }
+        }
 
         void Awake()
         {
             instance = this;
+            EnsureSelectionInfoPanelView();
+        }
+
+        void EnsureSelectionInfoPanelView()
+        {
+            if (GetComponent<SelectionInfoPanelView>() != null)
+                return;
+
+            gameObject.AddComponent<SelectionInfoPanelView>();
         }
 
         void OnDestroy()
@@ -148,6 +178,7 @@ namespace AoE.RTS.Selection
                 if (unit != null && IsPlayerUnit(unit))
                 {
                     ClearBuildingSelection();
+                    ClearInfoSelection();
                     if (additive)
                         ToggleUnitSelection(unit);
                     else
@@ -164,25 +195,119 @@ namespace AoE.RTS.Selection
 
             if (Physics.Raycast(ray, out hit, 1000f, GameLayers.BuildingMask))
             {
-                TownCenter townCenter = hit.collider.GetComponentInParent<TownCenter>();
-                if (townCenter != null && townCenter.Team == UnitTeam.Player)
-                {
-                    if (!additive)
-                        SetTownCenterSelection(townCenter);
+                if (TrySelectPlayerBuilding(hit, additive))
                     return;
-                }
+            }
 
-                Barracks barracks = hit.collider.GetComponentInParent<Barracks>();
-                if (barracks != null && barracks.Team == UnitTeam.Player)
-                {
-                    if (!additive)
-                        SetBarracksSelection(barracks);
+            if (Physics.Raycast(ray, out hit, 1000f, GameLayers.ResourceMask))
+            {
+                if (!additive && TrySelectResource(hit))
                     return;
-                }
             }
 
             if (!additive)
                 ClearAllSelection();
+        }
+
+        bool TrySelectPlayerBuilding(RaycastHit hit, bool additive)
+        {
+            if (additive)
+                return false;
+
+            TownCenter townCenter = hit.collider.GetComponentInParent<TownCenter>();
+            if (townCenter != null && townCenter.Team == UnitTeam.Player)
+            {
+                SetTownCenterSelection(townCenter);
+                return true;
+            }
+
+            Barracks barracks = hit.collider.GetComponentInParent<Barracks>();
+            if (barracks != null && barracks.Team == UnitTeam.Player)
+            {
+                SetBarracksSelection(barracks);
+                return true;
+            }
+
+            Farm farm = hit.collider.GetComponentInParent<Farm>();
+            if (farm != null && farm.Team == UnitTeam.Player)
+            {
+                SetPlacedBuildingSelection(farm.GetComponent<BuildingHealth>());
+                return true;
+            }
+
+            House house = hit.collider.GetComponentInParent<House>();
+            if (house != null)
+            {
+                BuildingHealth houseHealth = house.GetComponent<BuildingHealth>();
+                if (houseHealth != null && houseHealth.Team == UnitTeam.Player)
+                {
+                    SetPlacedBuildingSelection(houseHealth);
+                    return true;
+                }
+            }
+
+            LumberCamp lumberCamp = hit.collider.GetComponentInParent<LumberCamp>();
+            if (lumberCamp != null && lumberCamp.Team == UnitTeam.Player)
+            {
+                SetPlacedBuildingSelection(lumberCamp.GetComponent<BuildingHealth>());
+                return true;
+            }
+
+            MiningCamp miningCamp = hit.collider.GetComponentInParent<MiningCamp>();
+            if (miningCamp != null && miningCamp.Team == UnitTeam.Player)
+            {
+                SetPlacedBuildingSelection(miningCamp.GetComponent<BuildingHealth>());
+                return true;
+            }
+
+            return false;
+        }
+
+        bool TrySelectResource(RaycastHit hit)
+        {
+            TreeResource tree = hit.collider.GetComponentInParent<TreeResource>();
+            if (tree != null)
+            {
+                SetResourceSelection(tree);
+                return true;
+            }
+
+            BerryBushResource bush = hit.collider.GetComponentInParent<BerryBushResource>();
+            if (bush != null)
+            {
+                SetResourceSelection(bush);
+                return true;
+            }
+
+            DeerResource deer = hit.collider.GetComponentInParent<DeerResource>();
+            if (deer != null)
+            {
+                SetResourceSelection(deer);
+                return true;
+            }
+
+            SheepResource sheep = hit.collider.GetComponentInParent<SheepResource>();
+            if (sheep != null)
+            {
+                SetResourceSelection(sheep);
+                return true;
+            }
+
+            GoldMineResource goldMine = hit.collider.GetComponentInParent<GoldMineResource>();
+            if (goldMine != null)
+            {
+                SetResourceSelection(goldMine);
+                return true;
+            }
+
+            StoneMineResource stoneMine = hit.collider.GetComponentInParent<StoneMineResource>();
+            if (stoneMine != null)
+            {
+                SetResourceSelection(stoneMine);
+                return true;
+            }
+
+            return false;
         }
 
         void ApplyBoxSelection(Vector2 screenStart, Vector2 screenEnd, bool additive)
@@ -204,10 +329,12 @@ namespace AoE.RTS.Selection
                 ClearSelectionVisuals();
                 selectedUnits.Clear();
                 ClearBuildingSelection();
+                ClearInfoSelection();
             }
             else
             {
                 ClearBuildingSelection();
+                ClearInfoSelection();
             }
 
             for (int i = 0; i < selectionBuffer.Count; i++)
@@ -458,6 +585,18 @@ namespace AoE.RTS.Selection
             unit.SetSelected(true);
         }
 
+        void SetPlacedBuildingSelection(BuildingHealth building)
+        {
+            ClearAllSelection();
+            selectedPlacedBuilding = building;
+        }
+
+        void SetResourceSelection(Component resource)
+        {
+            ClearAllSelection();
+            selectedResource = resource;
+        }
+
         void ToggleUnitSelection(Unit unit)
         {
             if (selectedUnits.Contains(unit))
@@ -468,6 +607,7 @@ namespace AoE.RTS.Selection
             }
 
             ClearBuildingSelection();
+            ClearInfoSelection();
             selectedUnits.Add(unit);
             unit.SetSelected(true);
         }
@@ -514,12 +654,19 @@ namespace AoE.RTS.Selection
         {
             ClearTownCenterSelection();
             ClearBarracksSelection();
+            selectedPlacedBuilding = null;
+        }
+
+        void ClearInfoSelection()
+        {
+            selectedResource = null;
         }
 
         void ClearAllSelection()
         {
             ClearSelection();
             ClearBuildingSelection();
+            ClearInfoSelection();
         }
 
         void ClearSelectionVisuals()
