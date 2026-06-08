@@ -43,7 +43,7 @@ Phase 21〜23 で採取リピート・Farm 1 人・Spawn グリッド・Mining C
 - **FoodGatherManager** — Berry ジョブ + Farm ジョブ（別リスト）
 - **Berry 右クリック** — `GatherFoodCommand` → `IssueGatherCommand`
 - **採取リピート** — Berry / Farm 搬入後復帰（Phase 21）
-- **Drop-off** — Food は TC のみ（Mill は Phase 26）
+- **Drop-off** — Food は TC のみ（Mill は Phase 27）
 
 ### 現状のギャップ（Phase 24 で解消）
 
@@ -86,7 +86,8 @@ MoveToAnimal → Hunt（近接で Food 取得）→ MoveToDeposit（TC）
 
 ### AoE2 参考
 
-- Deer / Sheep は **反撃しない**（Boar は Phase 25）
+- Deer / Sheep は **反撃しない**（Boar は Phase 26）
+- **静止カプセルのみ** — 羊誘導・徘徊は **Phase 28**、選択詳細 UI は **Phase 25**
 - 殴ると Food が減り、枯渇で消える
 - 逃げる AI は **Phase 24 では optional**（small diff なら省略可）
 
@@ -132,9 +133,11 @@ MoveToAnimal → Hunt（近接で Food 取得）→ MoveToDeposit（TC）
 
 ### 禁止（Phase 24 範囲外）
 
-- **Boar 反撃**（Phase 25）
-- Mill Drop-off（Phase 26）
-- CPU 狩り AI（Phase 28）
+- **Boar 反撃**（Phase 26）
+- Mill Drop-off（Phase 27）
+- 羊無所属・誘導 / 動物徘徊（Phase 28）
+- 選択詳細 / 資源残量 UI（Phase 25）
+- CPU 狩り AI（Phase 30）
 - 動物の逃げ / ランダム移動 AI（optional — 入れるなら small diff）
 - Militia が動物を攻撃
 - Berry / Farm ジョブの rewrite

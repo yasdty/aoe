@@ -104,7 +104,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜12 は完了済み。Pha
 ### スポーン動作（MVP）
 
 - 既存ユニットを **Pool Return** または非アクティブ化してから再スポーン（Destroy 乱立禁止）
-- スポーン位置: グリッドまたは同心円配置（重なり最小化。Formation は Phase 26 候補）
+- スポーン位置: グリッドまたは同心円配置（重なり最小化。Formation は Phase 40 候補）
 - **`UnitManager.TickMovement` が動く**こと — 静止 800 体でも Manager コストは計測対象
 
 ### 禁止（Phase 13 範囲外）

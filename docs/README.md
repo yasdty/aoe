@@ -5,14 +5,14 @@
 | # | ファイル | Phase | 内容 |
 |---|----------|-------|------|
 | — | [../CONSTITUTION.md](../CONSTITUTION.md) | — | プロジェクト憲法（技術制約・AI ルール） |
-| — | [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) | 1〜43 | **実装状況の正本**（機能一覧・技術負債・依存関係）。**Phase 完了ごとに更新** |
+| — | [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) | 1〜45 | **実装状況の正本**（機能一覧・技術負債・依存関係）。**Phase 完了ごとに更新** |
 | 01 | [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) | 1〜10.5 | **Milestone 0 — PoC** ロードマップ |
 | 02 | [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) | 11〜16 | **Milestone 1 — Foundation** ロードマップ ✅ 完了 |
 | 03 | [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) | 17〜20 | **Milestone 2 — Economy** ✅ 完了 |
-| 04 | [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) | 21〜28 | **Milestone 2.5 — Economy Polish** 🔄 21 ✅ |
-| 05 | [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) | 29〜32 | **Milestone 2.6 — RTS UX** ⬜ M3 前 |
-| 06 | [06_M3_MILITARY_PHASES.md](06_M3_MILITARY_PHASES.md) | 33〜38 | **Milestone 3 — Military** ⬜ 未着手 |
-| 07 | [07_M4_GAMEPLAY_PHASES.md](07_M4_GAMEPLAY_PHASES.md) | 39〜43 | **Milestone 4 — AoE Gameplay** ⬜ 未着手 |
+| 04 | [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) | 21〜30 | **Milestone 2.5 — Economy Polish** 🔄 24 ✅ |
+| 05 | [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) | 31〜34 | **Milestone 2.6 — RTS UX** ⬜ M3 前 |
+| 06 | [06_M3_MILITARY_PHASES.md](06_M3_MILITARY_PHASES.md) | 35〜40 | **Milestone 3 — Military** ⬜ 未着手 |
+| 07 | [07_M4_GAMEPLAY_PHASES.md](07_M4_GAMEPLAY_PHASES.md) | 41〜45 | **Milestone 4 — AoE Gameplay** ⬜ 未着手 |
 | — | [prompts/](prompts/) | — | 各 Phase の Agent 実行プロンプト |
 
 ---
@@ -43,10 +43,10 @@
 | M0 PoC | `01_M0_POC_PHASES.md` | 1〜10.5 | ✅ 完了 |
 | M1 Foundation | `02_M1_FOUNDATION_PHASES.md` | 11〜16 | ✅ 完了 |
 | M2 Economy | `03_M2_ECONOMY_PHASES.md` | 17〜20 | ✅ 完了 |
-| M2.5 Economy Polish | `04_M2_5_ECONOMY_POLISH_PHASES.md` | 21〜28 | 🔄 Phase 21 ✅ / 22〜28 ⬜ |
-| M2.6 RTS UX | `05_M2_6_RTS_UX_PHASES.md` | 29〜32 | ⬜ M3 前 |
-| M3 Military | `06_M3_MILITARY_PHASES.md` | 33〜38 | ⬜ 未着手 |
-| M4 AoE Gameplay | `07_M4_GAMEPLAY_PHASES.md` | 39〜43 | ⬜ 未着手 |
+| M2.5 Economy Polish | `04_M2_5_ECONOMY_POLISH_PHASES.md` | 21〜30 | 🔄 Phase 21〜24 ✅ / 25〜30 ⬜ |
+| M2.6 RTS UX | `05_M2_6_RTS_UX_PHASES.md` | 31〜34 | ⬜ M3 前 |
+| M3 Military | `06_M3_MILITARY_PHASES.md` | 35〜40 | ⬜ 未着手 |
+| M4 AoE Gameplay | `07_M4_GAMEPLAY_PHASES.md` | 41〜45 | ⬜ 未着手 |
 
 ---
 

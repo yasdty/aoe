@@ -129,8 +129,8 @@ AddResource → 採取リピート（Phase 21 維持）
 ### 禁止（Phase 23 範囲外）
 
 - Mill / 狩り / Boar（Phase 24〜26）
-- Militia Aggro（Phase 27）
-- CPU Mining Camp 建築 AI（Phase 28）
+- Militia Aggro（Phase 29）
+- CPU Mining Camp 建築 AI（Phase 30）
 - Gold / Stone を別 Camp に分離（MVP は **1 建物で両方 Drop-off**）
 - Lumber Camp / Wood 搬入ロジックの変更
 - Gather リピート / Farm 1 人 / Spawn グリッドの変更

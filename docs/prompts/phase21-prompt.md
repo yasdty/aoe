@@ -46,7 +46,7 @@ M2（Phase 17〜20）で 4 資源の採集は成立したが、**搬入 1 回で
 - **Food** — Berry / Farm → `FoodGatherManager` → TC 搬入 → **ジョブ削除で停止**
 - **Gold / Stone** — `MineralGatherManager` → TC 搬入 → **ジョブ削除で停止**
 - **Command Queue** — `GatherCommand` / `GatherFoodCommand` / `GatherFarmFoodCommand` / `GatherGoldCommand` / `GatherStoneCommand`
-- **CPU** — 木採集のみ（Phase 28 で 4 資源対応予定）
+- **CPU** — 木採集のみ（Phase 30 で 4 資源対応予定）
 
 ### 現状のギャップ（Phase 21 で解消）
 
@@ -107,8 +107,8 @@ Wood / Food / Gold / Stone **すべて**同じ振る舞いにする。
 
 - Farm 1 人制限（**Phase 22**）
 - Mining Camp / Mill / 狩り（**Phase 23〜26**）
-- Militia Aggro（**Phase 27**）
-- CPU 4 資源 AI（**Phase 28**）
+- Militia Aggro（**Phase 29**）
+- CPU 4 資源 AI（**Phase 30**）
 - GatherManager 3 つを 1 クラスに統合
 - 新 Command 種類の追加（既存 Command で十分）
 - 新シーン（**検証は `Phase10.unity` のみ**）
