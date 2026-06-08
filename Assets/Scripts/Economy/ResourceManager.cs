@@ -14,9 +14,15 @@ namespace AoE.RTS.Economy
         float enemyWood;
         float playerFood;
         float enemyFood;
+        float playerGold;
+        float enemyGold;
+        float playerStone;
+        float enemyStone;
 
         public static float Wood => GetWood(UnitTeam.Player);
         public static float Food => GetFood(UnitTeam.Player);
+        public static float Gold => GetGold(UnitTeam.Player);
+        public static float Stone => GetStone(UnitTeam.Player);
 
         void Awake()
         {
@@ -47,6 +53,22 @@ namespace AoE.RTS.Economy
             return team == UnitTeam.Enemy ? instance.enemyFood : instance.playerFood;
         }
 
+        public static float GetGold(UnitTeam team)
+        {
+            if (instance == null)
+                return 0f;
+
+            return team == UnitTeam.Enemy ? instance.enemyGold : instance.playerGold;
+        }
+
+        public static float GetStone(UnitTeam team)
+        {
+            if (instance == null)
+                return 0f;
+
+            return team == UnitTeam.Enemy ? instance.enemyStone : instance.playerStone;
+        }
+
         public static void AddWood(float amount)
         {
             AddWood(UnitTeam.Player, amount);
@@ -72,6 +94,28 @@ namespace AoE.RTS.Economy
                 instance.enemyFood += amount;
             else
                 instance.playerFood += amount;
+        }
+
+        public static void AddGold(UnitTeam team, float amount)
+        {
+            if (instance == null || amount <= 0f)
+                return;
+
+            if (team == UnitTeam.Enemy)
+                instance.enemyGold += amount;
+            else
+                instance.playerGold += amount;
+        }
+
+        public static void AddStone(UnitTeam team, float amount)
+        {
+            if (instance == null || amount <= 0f)
+                return;
+
+            if (team == UnitTeam.Enemy)
+                instance.enemyStone += amount;
+            else
+                instance.playerStone += amount;
         }
 
         public static bool TrySpendWood(float amount)

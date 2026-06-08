@@ -147,6 +147,7 @@ namespace AoE.RTS.Units
 
             GatherManager.CancelForUnit(this);
             FoodGatherManager.CancelForUnit(this);
+            MineralGatherManager.CancelForUnit(this);
             BuildingPlacementManager.AbortConstructionForUnit(this);
             AttackManager.CancelJobsForUnit(this);
             SelectionManager.HandleUnitDied(this);

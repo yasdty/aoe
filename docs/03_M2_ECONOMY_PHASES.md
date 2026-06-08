@@ -14,9 +14,9 @@
 | 17 | Food | Berry Bush 採集 + Villager Food コスト | ✅ 実装済み |
 | 18 | Farm | 建築 + 継続 Food 生産 | ✅ 実装済み |
 | 19 | Lumber Camp | 木採集効率・Drop-off | ✅ 実装済み |
-| 20 | Gold + Stone | 4 資源完成 | ⬜ 未着手 |
+| 20 | Gold + Stone | 4 資源完成 | ✅ 実装済み |
 
-**M2 完了条件:** Wood / Food / Gold / Stone の 4 資源がゲーム内で機能する。
+**M2 完了条件:** Wood / Food / Gold / Stone の 4 資源がゲーム内で機能する。 ✅ **達成**
 
 ---
 
@@ -52,11 +52,11 @@
 
 ---
 
-## Phase 20 — Gold + Stone ⬜
+## Phase 20 — Gold + Stone ✅
 
-**目的:** Gold Mine / Stone Mine から採掘し TC に搬入。**M2 Economy 完了 Phase**（4 資源完成）。
+**目的:** Gold Mine / Stone Mine から採掘し TC に搬入。**M2 Economy 完了。**
 
-**実装予定:** `MineralGatherManager` / `GoldMineResource` / `StoneMineResource` / HUD Gold+Stone
+**実装:** `MineralNodeData` / `GoldMineResource` / `StoneMineResource` / `MineralGatherManager` / `GatherGoldCommand` / `GatherStoneCommand`
 
 **プロンプト:** [prompts/phase20-prompt.md](prompts/phase20-prompt.md)
 

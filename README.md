@@ -179,6 +179,7 @@ Foundation ロードマップ: [docs/02_M1_FOUNDATION_PHASES.md](docs/02_M1_FOUN
 | 操作 | 内容 |
 |------|------|
 | Food 採集 | Berry Bush または **Farm** を右クリック → TC 搬入 |
+| Gold / Stone 採集 | **Gold Mine / Stone Mine** を右クリック → TC 搬入 |
 | Farm 建築 | **Build Farm (60 Wood)** → 配置 → Villager 建築（**8 秒**） |
 | Lumber Camp 建築 | **Build Lumber Camp (100 Wood)** → 森近くに配置 → Wood Drop-off |
 | CPU 経済 | Phase 9 と同様（木採集・House・Villager） |

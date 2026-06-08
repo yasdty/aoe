@@ -8,7 +8,7 @@
 | — | [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) | 1〜16 | **実装状況の正本**（機能一覧・技術負債・依存関係）。**Phase 完了ごとに更新** |
 | 01 | [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) | 1〜10.5 | **Milestone 0 — PoC** ロードマップ |
 | 02 | [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) | 11〜16 | **Milestone 1 — Foundation** ロードマップ ✅ 完了 |
-| 03 | [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) | 17〜20 | **Milestone 2 — Economy**（Phase 17〜19 ✅） |
+| 03 | [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) | 17〜20 | **Milestone 2 — Economy** ✅ 完了 |
 | — | [prompts/](prompts/) | — | 各 Phase の Agent 実行プロンプト |
 
 ---
@@ -40,7 +40,7 @@
 |-----------|----------|-------|------|
 | M0 PoC | `01_M0_POC_PHASES.md` | 1〜10.5 | ✅ 完了 |
 | M1 Foundation | `02_M1_FOUNDATION_PHASES.md` | 11〜16 | ✅ 完了 |
-| M2 Economy | `03_M2_ECONOMY_PHASES.md` | 17〜20 | △ Phase 17〜19 ✅ |
+| M2 Economy | `03_M2_ECONOMY_PHASES.md` | 17〜20 | ✅ 完了 |
 | M3 Military | `04_M3_MILITARY_PHASES.md` | 21〜26 | ⬜ 未着手 |
 | M4 AoE Gameplay | `05_M4_GAMEPLAY_PHASES.md` | 27〜31 | ⬜ 未着手 |
 

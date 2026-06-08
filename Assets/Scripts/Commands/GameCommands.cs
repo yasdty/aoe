@@ -50,6 +50,7 @@ namespace AoE.RTS.Commands
             BuildingPlacementManager.AbortConstructionForUnits(units);
             GatherManager.CancelForUnits(units);
             FoodGatherManager.CancelForUnits(units);
+            MineralGatherManager.CancelForUnits(units);
             AttackManager.CancelForUnits(units);
             GroupMoveFormation.AssignMoveTargets(units, destination, spacing);
         }
@@ -76,6 +77,7 @@ namespace AoE.RTS.Commands
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
             FoodGatherManager.CancelForUnits(units);
+            MineralGatherManager.CancelForUnits(units);
             GatherManager.IssueGatherCommand(units, tree);
         }
     }
@@ -101,6 +103,7 @@ namespace AoE.RTS.Commands
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
             GatherManager.CancelForUnits(units);
+            MineralGatherManager.CancelForUnits(units);
             FoodGatherManager.IssueGatherFarmCommand(units, farm);
         }
     }
@@ -126,7 +129,60 @@ namespace AoE.RTS.Commands
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
             GatherManager.CancelForUnits(units);
+            MineralGatherManager.CancelForUnits(units);
             FoodGatherManager.IssueGatherCommand(units, bush);
+        }
+    }
+
+    public sealed class GatherGoldCommand : IGameCommand
+    {
+        readonly List<Unit> units;
+        readonly GoldMineResource mine;
+
+        public string DebugName => "GatherGold";
+
+        public GatherGoldCommand(IReadOnlyList<Unit> units, GoldMineResource mine)
+        {
+            this.units = GameCommandLists.CopyUnits(units);
+            this.mine = mine;
+        }
+
+        public void Execute()
+        {
+            if (units.Count == 0 || mine == null || mine.IsDepleted)
+                return;
+
+            BuildingPlacementManager.AbortConstructionForUnits(units);
+            AttackManager.CancelForUnits(units);
+            GatherManager.CancelForUnits(units);
+            FoodGatherManager.CancelForUnits(units);
+            MineralGatherManager.IssueGatherGoldCommand(units, mine);
+        }
+    }
+
+    public sealed class GatherStoneCommand : IGameCommand
+    {
+        readonly List<Unit> units;
+        readonly StoneMineResource mine;
+
+        public string DebugName => "GatherStone";
+
+        public GatherStoneCommand(IReadOnlyList<Unit> units, StoneMineResource mine)
+        {
+            this.units = GameCommandLists.CopyUnits(units);
+            this.mine = mine;
+        }
+
+        public void Execute()
+        {
+            if (units.Count == 0 || mine == null || mine.IsDepleted)
+                return;
+
+            BuildingPlacementManager.AbortConstructionForUnits(units);
+            AttackManager.CancelForUnits(units);
+            GatherManager.CancelForUnits(units);
+            FoodGatherManager.CancelForUnits(units);
+            MineralGatherManager.IssueGatherStoneCommand(units, mine);
         }
     }
 
@@ -165,6 +221,7 @@ namespace AoE.RTS.Commands
             BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
             GatherManager.CancelForUnits(selectedUnits);
             FoodGatherManager.CancelForUnits(selectedUnits);
+            MineralGatherManager.CancelForUnits(selectedUnits);
             AttackManager.IssueAttack(attackers, targetUnit);
         }
     }
@@ -204,6 +261,7 @@ namespace AoE.RTS.Commands
             BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
             GatherManager.CancelForUnits(selectedUnits);
             FoodGatherManager.CancelForUnits(selectedUnits);
+            MineralGatherManager.CancelForUnits(selectedUnits);
             AttackManager.IssueAttack(attackers, targetBuilding);
         }
     }

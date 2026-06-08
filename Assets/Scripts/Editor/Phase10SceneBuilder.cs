@@ -79,6 +79,26 @@ namespace AoE.RTS.EditorTools
             new Vector3(0f, 0f, -38f)
         };
 
+        static readonly Vector3[] PlayerGoldMinePositions =
+        {
+            new Vector3(16f, 0f, 12f)
+        };
+
+        static readonly Vector3[] PlayerStoneMinePositions =
+        {
+            new Vector3(-16f, 0f, 12f)
+        };
+
+        static readonly Vector3[] CpuGoldMinePositions =
+        {
+            new Vector3(8f, 0f, -30f)
+        };
+
+        static readonly Vector3[] CpuStoneMinePositions =
+        {
+            new Vector3(-8f, 0f, -32f)
+        };
+
         [MenuItem("AoE/Setup Phase10 Scene", true)]
         static bool ValidateSetupPhase10Scene() => !EditorApplication.isPlaying;
 
@@ -94,6 +114,8 @@ namespace AoE.RTS.EditorTools
             BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
             ResourceNodeData treeData = Phase1SceneBuilder.EnsureDefaultTreeData();
             FoodNodeData berryBushData = Phase1SceneBuilder.EnsureDefaultBerryBushData();
+            MineralNodeData goldMineData = Phase1SceneBuilder.EnsureDefaultGoldMineData();
+            MineralNodeData stoneMineData = Phase1SceneBuilder.EnsureDefaultStoneMineData();
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
             PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
             Phase1SceneBuilder.EnsureFarmData();
@@ -113,6 +135,7 @@ namespace AoE.RTS.EditorTools
             GameObject cpuTownCenter = CreateCpuTownCenter(townCenterData);
             CreateTrees(treeData);
             CreateBerryBushes(berryBushData);
+            CreateMineralMines(goldMineData, stoneMineData);
             CreateCpuVillagers(villagerData);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
             Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
@@ -155,6 +178,21 @@ namespace AoE.RTS.EditorTools
 
             for (int i = 0; i < CpuBerryBushPositions.Length; i++)
                 Phase1SceneBuilder.CreateBerryBush(bushData, CpuBerryBushPositions[i]);
+        }
+
+        static void CreateMineralMines(MineralNodeData goldMineData, MineralNodeData stoneMineData)
+        {
+            for (int i = 0; i < PlayerGoldMinePositions.Length; i++)
+                Phase1SceneBuilder.CreateGoldMine(goldMineData, PlayerGoldMinePositions[i]);
+
+            for (int i = 0; i < PlayerStoneMinePositions.Length; i++)
+                Phase1SceneBuilder.CreateStoneMine(stoneMineData, PlayerStoneMinePositions[i]);
+
+            for (int i = 0; i < CpuGoldMinePositions.Length; i++)
+                Phase1SceneBuilder.CreateGoldMine(goldMineData, CpuGoldMinePositions[i]);
+
+            for (int i = 0; i < CpuStoneMinePositions.Length; i++)
+                Phase1SceneBuilder.CreateStoneMine(stoneMineData, CpuStoneMinePositions[i]);
         }
 
         static void CreateTrees(ResourceNodeData treeData)
@@ -237,6 +275,10 @@ namespace AoE.RTS.EditorTools
             GameObject foodGatherManagerObject = new GameObject("FoodGatherManager");
             foodGatherManagerObject.transform.SetParent(systems.transform);
             foodGatherManagerObject.AddComponent<FoodGatherManager>();
+
+            GameObject mineralGatherManagerObject = new GameObject("MineralGatherManager");
+            mineralGatherManagerObject.transform.SetParent(systems.transform);
+            mineralGatherManagerObject.AddComponent<MineralGatherManager>();
 
             GameObject placementManagerObject = new GameObject("BuildingPlacementManager");
             placementManagerObject.transform.SetParent(systems.transform);

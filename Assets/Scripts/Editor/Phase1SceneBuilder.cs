@@ -21,6 +21,8 @@ namespace AoE.RTS.EditorTools
         const string TownCenterDataPath = "Assets/Data/BuildingData/TownCenterData.asset";
         const string DefaultTreeDataPath = GameAssetPaths.DefaultTreeData;
         const string DefaultBerryBushDataPath = GameAssetPaths.DefaultBerryBushData;
+        const string DefaultGoldMineDataPath = GameAssetPaths.DefaultGoldMineData;
+        const string DefaultStoneMineDataPath = GameAssetPaths.DefaultStoneMineData;
         const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
         const string DefaultFarmDataPath = GameAssetPaths.DefaultFarmData;
         const string DefaultLumberCampDataPath = GameAssetPaths.DefaultLumberCampData;
@@ -630,6 +632,96 @@ namespace AoE.RTS.EditorTools
             EditorUtility.SetDirty(bushObject);
 
             return bushObject;
+        }
+
+        public static MineralNodeData EnsureDefaultGoldMineData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/ResourceData"))
+                AssetDatabase.CreateFolder("Assets/Data", "ResourceData");
+
+            MineralNodeData existing = AssetDatabase.LoadAssetAtPath<MineralNodeData>(DefaultGoldMineDataPath);
+            if (existing != null)
+                return existing;
+
+            MineralNodeData data = ScriptableObject.CreateInstance<MineralNodeData>();
+            data.displayName = "Gold Mine";
+            data.initialAmount = 800f;
+            data.defaultColor = new Color(0.85f, 0.72f, 0.2f);
+            AssetDatabase.CreateAsset(data, DefaultGoldMineDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static MineralNodeData EnsureDefaultStoneMineData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/ResourceData"))
+                AssetDatabase.CreateFolder("Assets/Data", "ResourceData");
+
+            MineralNodeData existing = AssetDatabase.LoadAssetAtPath<MineralNodeData>(DefaultStoneMineDataPath);
+            if (existing != null)
+                return existing;
+
+            MineralNodeData data = ScriptableObject.CreateInstance<MineralNodeData>();
+            data.displayName = "Stone Mine";
+            data.initialAmount = 350f;
+            data.defaultColor = new Color(0.55f, 0.55f, 0.58f);
+            AssetDatabase.CreateAsset(data, DefaultStoneMineDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static GameObject CreateGoldMine(MineralNodeData mineData, Vector3 position)
+        {
+            return CreateMineralMine("GoldMine", mineData, position, typeof(GoldMineResource));
+        }
+
+        public static GameObject CreateStoneMine(MineralNodeData mineData, Vector3 position)
+        {
+            return CreateMineralMine("StoneMine", mineData, position, typeof(StoneMineResource));
+        }
+
+        static GameObject CreateMineralMine(string objectName, MineralNodeData mineData, Vector3 position, System.Type resourceType)
+        {
+            const float size = 3f;
+            const float groundClearance = 0.05f;
+
+            Vector3 worldPosition = new Vector3(
+                position.x,
+                size * 0.5f + groundClearance,
+                position.z);
+
+            GameObject mineObject = new GameObject(objectName);
+            mineObject.layer = LayerMask.NameToLayer(GameLayers.ResourceLayerName);
+            mineObject.transform.position = worldPosition;
+
+            BoxCollider collider = mineObject.AddComponent<BoxCollider>();
+            collider.size = new Vector3(size, size, size);
+
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visual.name = "Visual";
+            visual.transform.SetParent(mineObject.transform, false);
+            visual.transform.localScale = Vector3.one * size;
+            Object.DestroyImmediate(visual.GetComponent<Collider>());
+
+            Renderer renderer = visual.GetComponent<Renderer>();
+            if (renderer != null && mineData != null)
+            {
+                Material material = SceneMaterialFactory.CreateLitMaterial(mineData.defaultColor);
+                renderer.sharedMaterial = material;
+            }
+
+            Component resource = mineObject.AddComponent(resourceType);
+            SerializedObject serializedMine = new SerializedObject(resource);
+            serializedMine.FindProperty("data").objectReferenceValue = mineData;
+            serializedMine.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(resource);
+            EditorUtility.SetDirty(mineObject);
+
+            return mineObject;
         }
 
         public static GameObject CreateTree(ResourceNodeData treeData, Vector3 position)

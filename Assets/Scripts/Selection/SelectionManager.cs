@@ -24,6 +24,7 @@ namespace AoE.RTS.Selection
         readonly List<Unit> selectionBuffer = new List<Unit>();
         readonly List<Unit> attackCommandBuffer = new List<Unit>();
         readonly List<Unit> gatherFarmBuffer = new List<Unit>();
+        readonly List<Unit> gatherMineralBuffer = new List<Unit>();
 
         TownCenter selectedTownCenter;
         Barracks selectedBarracks;
@@ -295,6 +296,14 @@ namespace AoE.RTS.Selection
                     return;
                 }
 
+                GoldMineResource goldMine = hit.collider.GetComponentInParent<GoldMineResource>();
+                if (goldMine != null && !goldMine.IsDepleted && TryIssueGatherGoldCommand(goldMine))
+                    return;
+
+                StoneMineResource stoneMine = hit.collider.GetComponentInParent<StoneMineResource>();
+                if (stoneMine != null && !stoneMine.IsDepleted && TryIssueGatherStoneCommand(stoneMine))
+                    return;
+
                 TreeResource tree = hit.collider.GetComponentInParent<TreeResource>();
                 if (tree != null && !tree.IsDepleted)
                 {
@@ -362,6 +371,44 @@ namespace AoE.RTS.Selection
                 return false;
 
             CommandQueue.Enqueue(new GatherFarmFoodCommand(selectedUnits, farm));
+            return true;
+        }
+
+        bool TryIssueGatherGoldCommand(GoldMineResource mine)
+        {
+            gatherMineralBuffer.Clear();
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit == null || unit.CanAttack)
+                    continue;
+
+                gatherMineralBuffer.Add(unit);
+            }
+
+            if (gatherMineralBuffer.Count == 0)
+                return false;
+
+            CommandQueue.Enqueue(new GatherGoldCommand(selectedUnits, mine));
+            return true;
+        }
+
+        bool TryIssueGatherStoneCommand(StoneMineResource mine)
+        {
+            gatherMineralBuffer.Clear();
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit == null || unit.CanAttack)
+                    continue;
+
+                gatherMineralBuffer.Add(unit);
+            }
+
+            if (gatherMineralBuffer.Count == 0)
+                return false;
+
+            CommandQueue.Enqueue(new GatherStoneCommand(selectedUnits, mine));
             return true;
         }
 

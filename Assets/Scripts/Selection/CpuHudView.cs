@@ -13,7 +13,7 @@ namespace AoE.RTS.Selection
 
         void OnGUI()
         {
-            float panelHeight = Padding * 2f + LineHeight * 3f;
+            float panelHeight = Padding * 2f + LineHeight * 5f;
             float x = Screen.width - PanelWidth - Margin;
             Rect panelRect = new Rect(x, Margin, PanelWidth, panelHeight);
             GUI.Box(panelRect, GUIContent.none);
@@ -25,6 +25,14 @@ namespace AoE.RTS.Selection
 
             Rect foodRect = new Rect(x + Padding, y, PanelWidth - Padding * 2f, LineHeight);
             GUI.Label(foodRect, $"CPU Food: {Mathf.FloorToInt(ResourceManager.GetFood(UnitTeam.Enemy))}");
+            y += LineHeight;
+
+            Rect goldRect = new Rect(x + Padding, y, PanelWidth - Padding * 2f, LineHeight);
+            GUI.Label(goldRect, $"CPU Gold: {Mathf.FloorToInt(ResourceManager.GetGold(UnitTeam.Enemy))}");
+            y += LineHeight;
+
+            Rect stoneRect = new Rect(x + Padding, y, PanelWidth - Padding * 2f, LineHeight);
+            GUI.Label(stoneRect, $"CPU Stone: {Mathf.FloorToInt(ResourceManager.GetStone(UnitTeam.Enemy))}");
             y += LineHeight;
 
             Rect popRect = new Rect(x + Padding, y, PanelWidth - Padding * 2f, LineHeight);

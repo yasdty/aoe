@@ -19,6 +19,8 @@ namespace AoE.RTS.Selection
         const float PanelWidth = 210f;
         const float WoodLineHeight = 24f;
         const float FoodLineHeight = 24f;
+        const float GoldLineHeight = 24f;
+        const float StoneLineHeight = 24f;
         const float PopLineHeight = 24f;
         const float ButtonHeight = 28f;
         const float ButtonGap = 4f;
@@ -54,7 +56,8 @@ namespace AoE.RTS.Selection
             PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             PlacedBuildingData farm = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             PlacedBuildingData lumberCamp = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
-            float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + FoodLineHeight + ButtonGap + PopLineHeight + ButtonGap
+            float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + FoodLineHeight + ButtonGap
+                + GoldLineHeight + ButtonGap + StoneLineHeight + ButtonGap + PopLineHeight + ButtonGap
                 + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
             Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
             GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
@@ -70,6 +73,14 @@ namespace AoE.RTS.Selection
             Rect foodRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, FoodLineHeight);
             GUI.Label(foodRect, $"Food: {Mathf.FloorToInt(ResourceManager.Food)}");
             y += FoodLineHeight + ButtonGap;
+
+            Rect goldRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, GoldLineHeight);
+            GUI.Label(goldRect, $"Gold: {Mathf.FloorToInt(ResourceManager.Gold)}");
+            y += GoldLineHeight + ButtonGap;
+
+            Rect stoneRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, StoneLineHeight);
+            GUI.Label(stoneRect, $"Stone: {Mathf.FloorToInt(ResourceManager.Stone)}");
+            y += StoneLineHeight + ButtonGap;
 
             Rect popRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, PopLineHeight);
             GUI.Label(popRect, $"Pop: {PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}");
