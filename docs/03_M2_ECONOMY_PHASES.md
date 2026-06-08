@@ -12,7 +12,7 @@
 | Phase | 名称 | 目的 | 状態 |
 |-------|------|------|------|
 | 17 | Food | Berry Bush 採集 + Villager Food コスト | ✅ 実装済み |
-| 18 | Farm | 建築 + 継続 Food 生産 | ⬜ 未着手 |
+| 18 | Farm | 建築 + 継続 Food 生産 | ✅ 実装済み |
 | 19 | Lumber Camp | 木採集効率・Drop-off | ⬜ 未着手 |
 | 20 | Gold + Stone | 4 資源完成 | ⬜ 未着手 |
 
@@ -32,12 +32,30 @@
 
 ---
 
-## Phase 18〜20（未着手）
+## Phase 18 — Farm ✅
+
+**目的:** Wood で Farm を建築し、村民が継続的に Food を採集。枯渇時は Pool 返却。
+
+**実装:** `Farm` / `FarmData` / `FoodGatherManager`（Farm ジョブ）/ `GatherFarmFoodCommand` / HUD Build Farm
+
+**プロンプト:** [prompts/phase18-prompt.md](prompts/phase18-prompt.md)
+
+---
+
+## Phase 19 — Lumber Camp ⬜
+
+**目的:** Lumber Camp を Wood の Drop-off 拠点にし、森近くへの搬入で採集効率を改善。
+
+**実装予定:** `LumberCamp` / `LumberCampData` / `GatherManager` Deposit 先拡張 / HUD Build Lumber Camp
+
+**プロンプト:** [prompts/phase19-prompt.md](prompts/phase19-prompt.md)
+
+---
+
+## Phase 20（未着手）
 
 | Phase | 概要 |
 |-------|------|
-| 18 Farm | 建築 + Villager による継続 Food 生産 |
-| 19 Lumber Camp | 木の Drop-off 拠点 |
 | 20 Gold + Stone | 採掘ノード + 搬入 |
 
 ---

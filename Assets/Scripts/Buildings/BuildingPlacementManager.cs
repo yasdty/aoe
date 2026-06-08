@@ -32,6 +32,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] RTSInputReader input;
         [SerializeField] PlacedBuildingData houseData;
         [SerializeField] PlacedBuildingData barracksData;
+        [SerializeField] PlacedBuildingData farmData;
 
         PlacedBuildingData activePlacementData;
 
@@ -101,6 +102,7 @@ namespace AoE.RTS.Buildings
             instance = this;
             houseData = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
+            farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             if (mainCamera == null)
                 mainCamera = UnityEngine.Camera.main;
             if (input == null)
@@ -191,6 +193,33 @@ namespace AoE.RTS.Buildings
             }
 
             instance.activePlacementData = instance.barracksData;
+            instance.isPlacementModeActive = true;
+            instance.placementOpenedFrame = Time.frameCount;
+            instance.ghostObject.SetActive(true);
+            instance.RefreshGhostFromPointer();
+        }
+
+        public static void EnterFarmPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.farmData = PlacedBuildingDataResolver.ResolveFarm(ref instance.farmData);
+            if (instance.farmData == null)
+                return;
+
+            instance.stashedBuilders.Clear();
+            if (builders != null)
+            {
+                for (int i = 0; i < builders.Count; i++)
+                {
+                    Unit unit = builders[i];
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
+                        instance.stashedBuilders.Add(unit);
+                }
+            }
+
+            instance.activePlacementData = instance.farmData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.ghostObject.SetActive(true);
@@ -484,6 +513,13 @@ namespace AoE.RTS.Buildings
                 Barracks barracks = RuntimeBuildingFactory.CreateBarracks(site.data, site.position, team);
                 if (barracks != null && site.builder != null)
                     barracks.SetTeam(site.builder.Team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.Farm)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                RuntimeBuildingFactory.CreateFarm(site.data, site.position, team);
                 return;
             }
 

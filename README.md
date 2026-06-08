@@ -178,6 +178,8 @@ Foundation ロードマップ: [docs/02_M1_FOUNDATION_PHASES.md](docs/02_M1_FOUN
 
 | 操作 | 内容 |
 |------|------|
+| Food 採集 | Berry Bush または **Farm** を右クリック → TC 搬入 |
+| Farm 建築 | **Build Farm (60 Wood)** → 配置 → Villager 建築（**8 秒**） |
 | CPU 経済 | Phase 9 と同様（木採集・House・Villager） |
 | CPU 軍事 | 自動で Barracks 建築 → Militia 生産（青系） |
 | CPU 攻撃波 | **30 秒毎**に CPU Militia **全員**が最寄りの自軍へ攻撃（3 体未満でも 1 体から波開始） |

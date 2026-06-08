@@ -23,6 +23,7 @@ namespace AoE.RTS.Selection
         readonly List<Unit> selectedUnits = new List<Unit>();
         readonly List<Unit> selectionBuffer = new List<Unit>();
         readonly List<Unit> attackCommandBuffer = new List<Unit>();
+        readonly List<Unit> gatherFarmBuffer = new List<Unit>();
 
         TownCenter selectedTownCenter;
         Barracks selectedBarracks;
@@ -311,6 +312,10 @@ namespace AoE.RTS.Selection
 
             if (Physics.Raycast(ray, out hit, 1000f, GameLayers.BuildingMask))
             {
+                Farm farm = hit.collider.GetComponentInParent<Farm>();
+                if (farm != null && !farm.IsDepleted && TryIssueGatherFarmCommand(farm))
+                    return;
+
                 BuildingHealth targetBuilding = hit.collider.GetComponentInParent<BuildingHealth>();
                 if (targetBuilding != null && TryIssueAttackBuildingCommand(targetBuilding))
                     return;
@@ -338,6 +343,25 @@ namespace AoE.RTS.Selection
                 return false;
 
             CommandQueue.Enqueue(new AttackUnitCommand(selectedUnits, targetUnit));
+            return true;
+        }
+
+        bool TryIssueGatherFarmCommand(Farm farm)
+        {
+            gatherFarmBuffer.Clear();
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit == null || unit.CanAttack || unit.Team != farm.Team)
+                    continue;
+
+                gatherFarmBuffer.Add(unit);
+            }
+
+            if (gatherFarmBuffer.Count == 0)
+                return false;
+
+            CommandQueue.Enqueue(new GatherFarmFoodCommand(selectedUnits, farm));
             return true;
         }
 

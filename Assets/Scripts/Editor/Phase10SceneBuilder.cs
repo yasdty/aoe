@@ -96,6 +96,7 @@ namespace AoE.RTS.EditorTools
             FoodNodeData berryBushData = Phase1SceneBuilder.EnsureDefaultBerryBushData();
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
             PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
+            Phase1SceneBuilder.EnsureFarmData();
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
             if (inputActions == null)
             {

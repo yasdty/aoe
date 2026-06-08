@@ -57,5 +57,28 @@ namespace AoE.RTS.Buildings
             cached.trainWoodCost = 20f;
             return cached;
         }
+
+        public static PlacedBuildingData ResolveFarm(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultFarmData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.Farm;
+            cached.displayName = "Farm";
+            cached.woodCost = 60f;
+            cached.buildTime = 8f;
+            cached.housingProvided = 0;
+            cached.foodCapacity = 250f;
+            cached.maxHp = 100f;
+            cached.defaultColor = new Color(0.35f, 0.7f, 0.25f);
+            return cached;
+        }
     }
 }

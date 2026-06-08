@@ -18,6 +18,11 @@ namespace AoE.RTS.Buildings
             return BuildingPool.RentBarracks(data, position, team);
         }
 
+        public static Farm CreateFarm(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return BuildingPool.RentFarm(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -61,6 +66,28 @@ namespace AoE.RTS.Buildings
             barracks.SetData(data);
             barracks.SetTeam(team);
             return barracks;
+        }
+
+        public static Farm CreateFreshFarm(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject farmObject = EntityVisualBuilder.CreateBuildingShell(
+                "Farm",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
+
+            ApplySharedMaterialIfMissingRendererTint(farmObject);
+            ConfigureBuildingHealth(farmObject, data.maxHp, data.armor, team);
+
+            Farm farm = farmObject.AddComponent<Farm>();
+            farm.SetData(data);
+            return farm;
         }
 
         public static Vector3 ResolveWorldPosition(PlacedBuildingData data, Vector3 position)

@@ -6,7 +6,8 @@ namespace AoE.RTS.Buildings
     public enum PlacedBuildingKind
     {
         House = 0,
-        Barracks = 1
+        Barracks = 1,
+        Farm = 2
     }
 
     [CreateAssetMenu(fileName = "PlacedBuildingData", menuName = "AoE/Placed Building Data")]
@@ -31,5 +32,6 @@ namespace AoE.RTS.Buildings
         public Color selectedColor = new Color(0.95f, 0.85f, 0.35f);
         public float maxHp = 150f;
         public float armor;
+        public float foodCapacity;
     }
 }

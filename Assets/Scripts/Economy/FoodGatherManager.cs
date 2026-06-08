@@ -15,11 +15,26 @@ namespace AoE.RTS.Economy
             MoveToDeposit
         }
 
+        enum FarmGatherState
+        {
+            MoveToFarm,
+            Gather,
+            MoveToDeposit
+        }
+
         struct FoodGatherJob
         {
             public Unit unit;
             public BerryBushResource bush;
             public GatherState state;
+            public float carriedFood;
+        }
+
+        struct FarmGatherJob
+        {
+            public Unit unit;
+            public Farm farm;
+            public FarmGatherState state;
             public float carriedFood;
         }
 
@@ -32,6 +47,7 @@ namespace AoE.RTS.Economy
 
         static FoodGatherManager instance;
         readonly List<FoodGatherJob> jobs = new List<FoodGatherJob>();
+        readonly List<FarmGatherJob> farmJobs = new List<FarmGatherJob>();
 
         void Awake()
         {
@@ -52,6 +68,12 @@ namespace AoE.RTS.Economy
         }
 
         public void TickSimulation(float fixedDeltaTime)
+        {
+            TickBerryJobs(fixedDeltaTime);
+            TickFarmJobs(fixedDeltaTime);
+        }
+
+        void TickBerryJobs(float fixedDeltaTime)
         {
             if (jobs.Count == 0)
                 return;
@@ -84,6 +106,50 @@ namespace AoE.RTS.Economy
                         TickMoveToDeposit(ref job, i);
                         break;
                 }
+            }
+        }
+
+        public static void IssueGatherFarmCommand(IReadOnlyList<Unit> units, Farm farm)
+        {
+            if (instance == null || farm == null || farm.IsDepleted)
+                return;
+
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || unit.CanAttack || unit.Team != farm.Team)
+                    continue;
+
+                if (ProductionManager.GetTownCenterForTeam(unit.Team) == null)
+                    continue;
+
+                instance.RemoveJobForUnit(unit);
+                instance.farmJobs.Add(new FarmGatherJob
+                {
+                    unit = unit,
+                    farm = farm,
+                    state = FarmGatherState.MoveToFarm,
+                    carriedFood = 0f
+                });
+                unit.SetMoveTarget(GetFarmGatherPosition(farm, unit));
+            }
+        }
+
+        public static void CancelJobsForFarm(Farm farm)
+        {
+            if (instance == null || farm == null)
+                return;
+
+            for (int i = instance.farmJobs.Count - 1; i >= 0; i--)
+            {
+                if (instance.farmJobs[i].farm != farm)
+                    continue;
+
+                Unit unit = instance.farmJobs[i].unit;
+                if (unit != null)
+                    unit.ClearMoveTarget();
+
+                instance.farmJobs.RemoveAt(i);
             }
         }
 
@@ -138,6 +204,160 @@ namespace AoE.RTS.Economy
                 if (jobs[i].unit == unit)
                     jobs.RemoveAt(i);
             }
+
+            for (int i = farmJobs.Count - 1; i >= 0; i--)
+            {
+                if (farmJobs[i].unit == unit)
+                    farmJobs.RemoveAt(i);
+            }
+        }
+
+        void TickFarmJobs(float fixedDeltaTime)
+        {
+            for (int i = farmJobs.Count - 1; i >= 0; i--)
+            {
+                if (i >= farmJobs.Count)
+                    continue;
+
+                FarmGatherJob job = farmJobs[i];
+                if (job.unit == null || !job.unit.IsAlive)
+                {
+                    farmJobs.RemoveAt(i);
+                    continue;
+                }
+
+                if (!IsFarmGatherTargetValid(job.farm))
+                {
+                    FinishFarmJobWithoutTarget(ref job, i);
+                    continue;
+                }
+
+                switch (job.state)
+                {
+                    case FarmGatherState.MoveToFarm:
+                        TickMoveToFarm(ref job, i);
+                        break;
+                    case FarmGatherState.Gather:
+                        TickFarmGather(ref job, i, fixedDeltaTime);
+                        break;
+                    case FarmGatherState.MoveToDeposit:
+                        TickFarmMoveToDeposit(ref job, i);
+                        break;
+                }
+            }
+        }
+
+        static bool IsFarmGatherTargetValid(Farm farm)
+        {
+            return farm != null && farm.gameObject.activeInHierarchy && !farm.IsDepleted;
+        }
+
+        void FinishFarmJobWithoutTarget(ref FarmGatherJob job, int index)
+        {
+            if (job.carriedFood > 0f && ProductionManager.GetTownCenterForTeam(job.unit.Team) != null)
+            {
+                BeginFarmMoveToDeposit(ref job, index);
+                return;
+            }
+
+            job.unit.ClearMoveTarget();
+            if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
+                farmJobs.RemoveAt(index);
+        }
+
+        void TickMoveToFarm(ref FarmGatherJob job, int index)
+        {
+            if (!IsFarmGatherTargetValid(job.farm))
+            {
+                FinishFarmJobWithoutTarget(ref job, index);
+                return;
+            }
+
+            Vector3 gatherPosition = GetFarmGatherPosition(job.farm, job.unit);
+            if (job.unit.IsNear(gatherPosition, GatherReachDistance))
+            {
+                job.unit.ClearMoveTarget();
+                job.state = FarmGatherState.Gather;
+                if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
+                    farmJobs[index] = job;
+                return;
+            }
+
+            if (!job.unit.HasMoveTarget)
+                job.unit.SetMoveTarget(gatherPosition);
+        }
+
+        void TickFarmGather(ref FarmGatherJob job, int index, float deltaTime)
+        {
+            if (!IsFarmGatherTargetValid(job.farm))
+            {
+                FinishFarmJobWithoutTarget(ref job, index);
+                return;
+            }
+
+            float request = GatherRate * deltaTime;
+            float room = CarryCapacity - job.carriedFood;
+            float taken = job.farm.TakeFood(Mathf.Min(request, room));
+            job.carriedFood += taken;
+
+            if (!IsFarmGatherTargetValid(job.farm))
+            {
+                FinishFarmJobWithoutTarget(ref job, index);
+                return;
+            }
+
+            if (job.carriedFood >= CarryCapacity)
+                BeginFarmMoveToDeposit(ref job, index);
+            else if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
+                farmJobs[index] = job;
+        }
+
+        void BeginFarmMoveToDeposit(ref FarmGatherJob job, int index)
+        {
+            if (job.carriedFood <= 0f || ProductionManager.GetTownCenterForTeam(job.unit.Team) == null)
+            {
+                job.unit.ClearMoveTarget();
+                if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
+                    farmJobs.RemoveAt(index);
+                return;
+            }
+
+            job.state = FarmGatherState.MoveToDeposit;
+            job.unit.SetMoveTarget(GetDepositPosition(job.unit));
+            if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
+                farmJobs[index] = job;
+        }
+
+        void TickFarmMoveToDeposit(ref FarmGatherJob job, int index)
+        {
+            Vector3 depositPosition = GetDepositPosition(job.unit);
+            if (depositPosition == Vector3.zero)
+            {
+                if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
+                    farmJobs.RemoveAt(index);
+                return;
+            }
+
+            if (job.unit.IsNear(depositPosition, DepositReachDistance))
+            {
+                ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                job.unit.ClearMoveTarget();
+                if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
+                    farmJobs.RemoveAt(index);
+                return;
+            }
+
+            if (!job.unit.HasMoveTarget)
+                job.unit.SetMoveTarget(depositPosition);
+        }
+
+        static Vector3 GetFarmGatherPosition(Farm farm, Unit unit)
+        {
+            if (farm == null)
+                return Vector3.zero;
+
+            Vector3 center = farm.GetGatherPosition();
+            return UnitPositionOffsets.ApplyRingOffset(center, unit, GatherStandRadius);
         }
 
         void TickMoveToBush(ref FoodGatherJob job, int index)

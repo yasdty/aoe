@@ -80,6 +80,31 @@ namespace AoE.RTS.Commands
         }
     }
 
+    public sealed class GatherFarmFoodCommand : IGameCommand
+    {
+        readonly List<Unit> units;
+        readonly Farm farm;
+
+        public string DebugName => "GatherFarmFood";
+
+        public GatherFarmFoodCommand(IReadOnlyList<Unit> units, Farm farm)
+        {
+            this.units = GameCommandLists.CopyUnits(units);
+            this.farm = farm;
+        }
+
+        public void Execute()
+        {
+            if (units.Count == 0 || farm == null || farm.IsDepleted)
+                return;
+
+            BuildingPlacementManager.AbortConstructionForUnits(units);
+            AttackManager.CancelForUnits(units);
+            GatherManager.CancelForUnits(units);
+            FoodGatherManager.IssueGatherFarmCommand(units, farm);
+        }
+    }
+
     public sealed class GatherFoodCommand : IGameCommand
     {
         readonly List<Unit> units;

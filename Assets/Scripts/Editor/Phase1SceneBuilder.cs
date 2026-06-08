@@ -22,6 +22,7 @@ namespace AoE.RTS.EditorTools
         const string DefaultTreeDataPath = GameAssetPaths.DefaultTreeData;
         const string DefaultBerryBushDataPath = GameAssetPaths.DefaultBerryBushData;
         const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
+        const string DefaultFarmDataPath = GameAssetPaths.DefaultFarmData;
         const string DefaultBarracksDataPath = GameAssetPaths.DefaultBarracksData;
         const string MilitiaDataPath = GameAssetPaths.MilitiaData;
         const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
@@ -270,6 +271,76 @@ namespace AoE.RTS.EditorTools
             data.housingProvided = 5;
             data.maxHp = 150f;
             AssetDatabase.CreateAsset(data, DefaultHouseDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureFarmData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultFarmDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.Farm)
+                {
+                    existing.kind = PlacedBuildingKind.Farm;
+                    dirty = true;
+                }
+
+                if (existing.woodCost != 60f)
+                {
+                    existing.woodCost = 60f;
+                    dirty = true;
+                }
+
+                if (existing.buildTime != 8f)
+                {
+                    existing.buildTime = 8f;
+                    dirty = true;
+                }
+
+                if (existing.foodCapacity != 250f)
+                {
+                    existing.foodCapacity = 250f;
+                    dirty = true;
+                }
+
+                if (existing.housingProvided != 0)
+                {
+                    existing.housingProvided = 0;
+                    dirty = true;
+                }
+
+                if (existing.maxHp != 100f)
+                {
+                    existing.maxHp = 100f;
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.Farm;
+            data.displayName = "Farm";
+            data.woodCost = 60f;
+            data.buildTime = 8f;
+            data.housingProvided = 0;
+            data.foodCapacity = 250f;
+            data.maxHp = 100f;
+            data.defaultColor = new Color(0.35f, 0.7f, 0.25f);
+            AssetDatabase.CreateAsset(data, DefaultFarmDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }

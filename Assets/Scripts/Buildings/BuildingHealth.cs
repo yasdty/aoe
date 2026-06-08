@@ -1,4 +1,5 @@
 using AoE.RTS.Core;
+using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -69,6 +70,14 @@ namespace AoE.RTS.Buildings
             if (house != null)
             {
                 BuildingPool.ReturnHouse(house);
+                return;
+            }
+
+            Farm farm = GetComponent<Farm>();
+            if (farm != null)
+            {
+                FoodGatherManager.CancelJobsForFarm(farm);
+                BuildingPool.ReturnFarm(farm);
                 return;
             }
 

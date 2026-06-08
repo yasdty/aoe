@@ -11,11 +11,14 @@ namespace AoE.RTS.Buildings
 
         readonly Stack<House> availableHouses = new Stack<House>();
         readonly Stack<Barracks> availableBarracks = new Stack<Barracks>();
+        readonly Stack<Farm> availableFarms = new Stack<Farm>();
 
         int houseSpawnCount;
         int houseReuseCount;
         int barracksSpawnCount;
         int barracksReuseCount;
+        int farmSpawnCount;
+        int farmReuseCount;
 
         void Awake()
         {
@@ -24,6 +27,8 @@ namespace AoE.RTS.Buildings
             houseReuseCount = 0;
             barracksSpawnCount = 0;
             barracksReuseCount = 0;
+            farmSpawnCount = 0;
+            farmReuseCount = 0;
         }
 
         void OnDestroy()
@@ -74,6 +79,28 @@ namespace AoE.RTS.Buildings
             }
 
             instance.ReturnBarracksInternal(barracks);
+        }
+
+        public static Farm RentFarm(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            if (instance == null)
+                return RuntimeBuildingFactory.CreateFreshFarm(data, position, team);
+
+            return instance.RentFarmInternal(data, position, team);
+        }
+
+        public static void ReturnFarm(Farm farm)
+        {
+            if (farm == null)
+                return;
+
+            if (instance == null)
+            {
+                Object.Destroy(farm.gameObject);
+                return;
+            }
+
+            instance.ReturnFarmInternal(farm);
         }
 
         House RentHouseInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
@@ -134,6 +161,36 @@ namespace AoE.RTS.Buildings
             barracks.transform.SetParent(transform, false);
             barracks.gameObject.SetActive(false);
             availableBarracks.Push(barracks);
+        }
+
+        Farm RentFarmInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            Farm farm;
+            if (availableFarms.Count > 0)
+            {
+                farm = availableFarms.Pop();
+                farmReuseCount++;
+                Debug.Log($"BuildingPool: spawn={farmSpawnCount} reuse={farmReuseCount} (Farm)");
+            }
+            else
+            {
+                farm = RuntimeBuildingFactory.CreateFreshFarm(data, position, team);
+                farm.gameObject.SetActive(false);
+                farm.transform.SetParent(transform, false);
+                farmSpawnCount++;
+                Debug.Log($"BuildingPool: spawn={farmSpawnCount} reuse={farmReuseCount} (Farm)");
+            }
+
+            farm.PrepareForReuse(data, position, team);
+            farm.gameObject.SetActive(true);
+            return farm;
+        }
+
+        void ReturnFarmInternal(Farm farm)
+        {
+            farm.transform.SetParent(transform, false);
+            farm.gameObject.SetActive(false);
+            availableFarms.Push(farm);
         }
     }
 }
