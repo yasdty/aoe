@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 22 完了（Farm 1 人制限 + Spawn グリッド）。**M2.5 進行中。次: Phase 23（Mining Camp）。**
+> **最終更新:** Phase 23 完了（Mining Camp）。**M2.5 進行中。次: Phase 24（Hunting）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) / [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) / [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) / [06_M3_MILITARY_PHASES.md](06_M3_MILITARY_PHASES.md)
@@ -57,7 +57,7 @@
 | 20 | Gold + Stone（採掘 + TC 搬入） | `Phase10.unity` | ✅ 実装済み |
 | 21 | Gather Repeat（搬入後採取継続） | `Phase10.unity` | ✅ 実装済み |
 | 22 | Farm 1 人制限 + Spawn グリッド | `Phase10.unity` | ✅ 実装済み |
-| 23 | Mining Camp（Gold/Stone Drop-off） | `Phase10.unity` | ⬜ 未着手 |
+| 23 | Mining Camp（Gold/Stone Drop-off） | `Phase10.unity` | ✅ 実装済み |
 | 24 | Hunting（Deer / Sheep） | `Phase10.unity` | ⬜ 未着手 |
 | 25 | Boar（反撃狩り） | `Phase10.unity` | ⬜ 未着手 |
 | 26 | Mill（Food Drop-off） | `Phase10.unity` | ⬜ 未着手 |
@@ -80,7 +80,7 @@
 
 **Milestone 2 Economy:** ✅ 完了（Phase 17〜20 — Wood / Food / Gold / Stone）
 
-**Milestone 2.5 Economy Polish:** 進行中（Phase 21〜22 ✅ — Phase 23〜28 未着手）
+**Milestone 2.5 Economy Polish:** 進行中（Phase 21〜23 ✅ — Phase 24〜28 未着手）
 
 **Milestone 2.6 RTS UX:** ⬜ 未着手（Phase 29〜32 — ユニット生産キュー・Idle・Rally・Control Group）
 
@@ -159,7 +159,7 @@
 | Stone 採集 | ✅ | `MineralGatherManager` + `GatherStoneCommand` |
 | TownCenter への搬入 | ✅ | チーム別 TC |
 | Lumber Camp Drop-off | ✅ | Wood |
-| Mining Camp Drop-off | ❌ | **Phase 23（M2.5）** — Gold/Stone は TC のみ |
+| Mining Camp Drop-off | ✅ | Phase 23 — Gold/Stone → 最寄り TC / Mining Camp |
 | Mill Drop-off | ❌ | **Phase 26（M2.5）** — Food は TC のみ |
 | 資源ノード枯渇 | ✅ | 色変化・採集不可 |
 | 共有木の競合採集 | ✅ | Phase 9/10（先に切った側が取得） |
@@ -177,7 +177,7 @@
 | Barracks | ✅ | 50 Wood / 5 秒 |
 | Farm | ✅ | 60 Wood / 8 秒 / HP 100 / Pop +0 |
 | Lumber Camp | ✅ | 100 Wood / 6 秒 / HP 400 / Pop +0 |
-| Mining Camp | ❌ | **Phase 23（M2.5）** |
+| Mining Camp | ✅ | 100 Wood / 6 秒 / Gold+Stone Drop-off 拠点 |
 | Mill | ❌ | **Phase 26（M2.5）** |
 | 配置ゴーストプレビュー | ✅ | 有効/無効色 |
 | Villager による建築 | ✅ | 現場移動 → 建築タイマー |
@@ -644,7 +644,7 @@ Phase 11 以降の候補（優先度順）。
 | P0 | Fixed Tick + Command Queue 基盤 | ✅ Phase 15〜16 |
 | P0 | Object Pooling | ✅ Phase 12 |
 | P1 | Food 資源 + 農場 | ✅ Phase 17〜18（M2） |
-| P1 | 採取リピート + Drop-off 拠点 + 狩り | △ Phase 21〜22 ✅ / 23〜26 ⬜ |
+| P1 | 採取リピート + Drop-off 拠点 + 狩り | △ Phase 21〜23 ✅ / 24〜26 ⬜ |
 | P1 | RTS UX（生産キュー・Idle・Rally） | ⬜ Phase 29〜31（M2.6） |
 | P1 | CPU 4 資源経済 | ⬜ Phase 28（M2.5） |
 | P1 | 弓兵（遠距離戦闘） | ⬜ Phase 33（M3） |
@@ -963,7 +963,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 1 資源・3 建築・1 兵種・1 CPU の **垂直スライス** |
 | 何が一番足りない？ | 多資源・時代・兵種・本格 UI |
-| 次に何を作るべき？ | **M2.5 Phase 23 Mining Camp** — [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) |
+| 次に何を作るべき？ | **M2.5 Phase 24 Hunting** — [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) |
 | プレイ用シーンは？ | **`Phase10.unity`** |
 | 自軍は自動反撃？ | **しない**（Phase 27 で簡易 Militia Aggro 予定） |
 | 性能ベンチマークは？ | **未計測（TBD）** — §Performance Benchmark 参照 |

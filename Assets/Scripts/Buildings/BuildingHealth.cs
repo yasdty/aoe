@@ -88,6 +88,13 @@ namespace AoE.RTS.Buildings
                 return;
             }
 
+            MiningCamp miningCamp = GetComponent<MiningCamp>();
+            if (miningCamp != null)
+            {
+                BuildingPool.ReturnMiningCamp(miningCamp);
+                return;
+            }
+
             Destroy(gameObject);
         }
 

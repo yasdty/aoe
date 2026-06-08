@@ -26,6 +26,7 @@ namespace AoE.RTS.EditorTools
         const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
         const string DefaultFarmDataPath = GameAssetPaths.DefaultFarmData;
         const string DefaultLumberCampDataPath = GameAssetPaths.DefaultLumberCampData;
+        const string DefaultMiningCampDataPath = GameAssetPaths.DefaultMiningCampData;
         const string DefaultBarracksDataPath = GameAssetPaths.DefaultBarracksData;
         const string MilitiaDataPath = GameAssetPaths.MilitiaData;
         const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
@@ -407,6 +408,69 @@ namespace AoE.RTS.EditorTools
             data.maxHp = 400f;
             data.defaultColor = new Color(0.55f, 0.38f, 0.22f);
             AssetDatabase.CreateAsset(data, DefaultLumberCampDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureMiningCampData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultMiningCampDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.MiningCamp)
+                {
+                    existing.kind = PlacedBuildingKind.MiningCamp;
+                    dirty = true;
+                }
+
+                if (existing.woodCost != 100f)
+                {
+                    existing.woodCost = 100f;
+                    dirty = true;
+                }
+
+                if (existing.buildTime != 6f)
+                {
+                    existing.buildTime = 6f;
+                    dirty = true;
+                }
+
+                if (existing.housingProvided != 0)
+                {
+                    existing.housingProvided = 0;
+                    dirty = true;
+                }
+
+                if (existing.maxHp != 400f)
+                {
+                    existing.maxHp = 400f;
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.MiningCamp;
+            data.displayName = "Mining Camp";
+            data.woodCost = 100f;
+            data.buildTime = 6f;
+            data.housingProvided = 0;
+            data.maxHp = 400f;
+            data.defaultColor = new Color(0.45f, 0.48f, 0.52f);
+            AssetDatabase.CreateAsset(data, DefaultMiningCampDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }

@@ -34,6 +34,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
+        [SerializeField] PlacedBuildingData miningCampData;
 
         PlacedBuildingData activePlacementData;
 
@@ -105,6 +106,7 @@ namespace AoE.RTS.Buildings
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
+            miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
             if (mainCamera == null)
                 mainCamera = UnityEngine.Camera.main;
             if (input == null)
@@ -249,6 +251,33 @@ namespace AoE.RTS.Buildings
             }
 
             instance.activePlacementData = instance.lumberCampData;
+            instance.isPlacementModeActive = true;
+            instance.placementOpenedFrame = Time.frameCount;
+            instance.ghostObject.SetActive(true);
+            instance.RefreshGhostFromPointer();
+        }
+
+        public static void EnterMiningCampPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref instance.miningCampData);
+            if (instance.miningCampData == null)
+                return;
+
+            instance.stashedBuilders.Clear();
+            if (builders != null)
+            {
+                for (int i = 0; i < builders.Count; i++)
+                {
+                    Unit unit = builders[i];
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
+                        instance.stashedBuilders.Add(unit);
+                }
+            }
+
+            instance.activePlacementData = instance.miningCampData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.ghostObject.SetActive(true);
@@ -558,6 +587,13 @@ namespace AoE.RTS.Buildings
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
                 RuntimeBuildingFactory.CreateLumberCamp(site.data, site.position, team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.MiningCamp)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                RuntimeBuildingFactory.CreateMiningCamp(site.data, site.position, team);
                 return;
             }
 

@@ -13,6 +13,7 @@ namespace AoE.RTS.Buildings
         readonly Stack<Barracks> availableBarracks = new Stack<Barracks>();
         readonly Stack<Farm> availableFarms = new Stack<Farm>();
         readonly Stack<LumberCamp> availableLumberCamps = new Stack<LumberCamp>();
+        readonly Stack<MiningCamp> availableMiningCamps = new Stack<MiningCamp>();
 
         int houseSpawnCount;
         int houseReuseCount;
@@ -22,6 +23,8 @@ namespace AoE.RTS.Buildings
         int farmReuseCount;
         int lumberCampSpawnCount;
         int lumberCampReuseCount;
+        int miningCampSpawnCount;
+        int miningCampReuseCount;
 
         void Awake()
         {
@@ -34,6 +37,8 @@ namespace AoE.RTS.Buildings
             farmReuseCount = 0;
             lumberCampSpawnCount = 0;
             lumberCampReuseCount = 0;
+            miningCampSpawnCount = 0;
+            miningCampReuseCount = 0;
         }
 
         void OnDestroy()
@@ -128,6 +133,28 @@ namespace AoE.RTS.Buildings
             }
 
             instance.ReturnLumberCampInternal(lumberCamp);
+        }
+
+        public static MiningCamp RentMiningCamp(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            if (instance == null)
+                return RuntimeBuildingFactory.CreateFreshMiningCamp(data, position, team);
+
+            return instance.RentMiningCampInternal(data, position, team);
+        }
+
+        public static void ReturnMiningCamp(MiningCamp miningCamp)
+        {
+            if (miningCamp == null)
+                return;
+
+            if (instance == null)
+            {
+                Object.Destroy(miningCamp.gameObject);
+                return;
+            }
+
+            instance.ReturnMiningCampInternal(miningCamp);
         }
 
         House RentHouseInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
@@ -248,6 +275,36 @@ namespace AoE.RTS.Buildings
             lumberCamp.transform.SetParent(transform, false);
             lumberCamp.gameObject.SetActive(false);
             availableLumberCamps.Push(lumberCamp);
+        }
+
+        MiningCamp RentMiningCampInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            MiningCamp miningCamp;
+            if (availableMiningCamps.Count > 0)
+            {
+                miningCamp = availableMiningCamps.Pop();
+                miningCampReuseCount++;
+                Debug.Log($"BuildingPool: spawn={miningCampSpawnCount} reuse={miningCampReuseCount} (MiningCamp)");
+            }
+            else
+            {
+                miningCamp = RuntimeBuildingFactory.CreateFreshMiningCamp(data, position, team);
+                miningCamp.gameObject.SetActive(false);
+                miningCamp.transform.SetParent(transform, false);
+                miningCampSpawnCount++;
+                Debug.Log($"BuildingPool: spawn={miningCampSpawnCount} reuse={miningCampReuseCount} (MiningCamp)");
+            }
+
+            miningCamp.PrepareForReuse(data, position, team);
+            miningCamp.gameObject.SetActive(true);
+            return miningCamp;
+        }
+
+        void ReturnMiningCampInternal(MiningCamp miningCamp)
+        {
+            miningCamp.transform.SetParent(transform, false);
+            miningCamp.gameObject.SetActive(false);
+            availableMiningCamps.Push(miningCamp);
         }
     }
 }

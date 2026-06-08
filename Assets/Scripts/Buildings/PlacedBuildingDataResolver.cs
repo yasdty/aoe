@@ -102,5 +102,27 @@ namespace AoE.RTS.Buildings
             cached.defaultColor = new Color(0.55f, 0.38f, 0.22f);
             return cached;
         }
+
+        public static PlacedBuildingData ResolveMiningCamp(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultMiningCampData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.MiningCamp;
+            cached.displayName = "Mining Camp";
+            cached.woodCost = 100f;
+            cached.buildTime = 6f;
+            cached.housingProvided = 0;
+            cached.maxHp = 400f;
+            cached.defaultColor = new Color(0.45f, 0.48f, 0.52f);
+            return cached;
+        }
     }
 }

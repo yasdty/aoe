@@ -1,6 +1,6 @@
 # Phase 23 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜22 完了（PoC + Foundation + M2 Economy + M2.5 Phase 21〜22）  
 > **マイルストン:** M2.5 Economy Polish  
 > **ロードマップ:** [04_M2_5_ECONOMY_POLISH_PHASES.md](../04_M2_5_ECONOMY_POLISH_PHASES.md)  
@@ -212,15 +212,15 @@ static Vector3 GetDepositPosition(Unit unit)
 
 ## ⑨ 完了条件（Phase 23 MVP）
 
-- [ ] **HUD** — Build Mining Camp ボタンで配置モード開始
-- [ ] **建築** — 100 Wood / 6 秒 / 完成後 Drop-off 有効
-- [ ] **Gold** — 鉱山近く Camp 建築 → 搬入先が Camp（TC より近い場合）
-- [ ] **Stone** — 同上
-- [ ] **TC 搬入** — Camp より TC が近い場合は TC へ（Lumber Camp と同ロジック）
-- [ ] **採取リピート** — Phase 21 回帰（Gold / Stone 複数往復）
-- [ ] Wood / Berry / Farm / Lumber Camp 回帰
-- [ ] Console エラーなし
-- [ ] `docs/IMPLEMENTATION_STATUS.md` / `04_M2_5_ECONOMY_POLISH_PHASES.md` Phase 23 を ✅
+- [x] **HUD** — Build Mining Camp ボタンで配置モード開始
+- [x] **建築** — 100 Wood / 6 秒 / 完成後 Drop-off 有効
+- [x] **Gold** — 鉱山近く Camp 建築 → 搬入先が Camp（TC より近い場合）
+- [x] **Stone** — 同上
+- [x] **TC 搬入** — Camp より TC が近い場合は TC へ（Lumber Camp と同ロジック）
+- [x] **採取リピート** — Phase 21 回帰（Gold / Stone 複数往復）
+- [x] Wood / Berry / Farm / Lumber Camp 回帰
+- [ ] Console エラーなし（Play 確認待ち）
+- [x] `docs/IMPLEMENTATION_STATUS.md` / `04_M2_5_ECONOMY_POLISH_PHASES.md` Phase 23 を ✅
 
 ### Victory 確認について
 

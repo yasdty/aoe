@@ -120,6 +120,7 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
             Phase1SceneBuilder.EnsureFarmData();
             Phase1SceneBuilder.EnsureLumberCampData();
+            Phase1SceneBuilder.EnsureMiningCampData();
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
             if (inputActions == null)
             {

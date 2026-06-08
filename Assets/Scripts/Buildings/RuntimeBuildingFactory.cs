@@ -28,6 +28,11 @@ namespace AoE.RTS.Buildings
             return BuildingPool.RentLumberCamp(data, position, team);
         }
 
+        public static MiningCamp CreateMiningCamp(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return BuildingPool.RentMiningCamp(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -115,6 +120,28 @@ namespace AoE.RTS.Buildings
             LumberCamp lumberCamp = lumberCampObject.AddComponent<LumberCamp>();
             lumberCamp.SetData(data);
             return lumberCamp;
+        }
+
+        public static MiningCamp CreateFreshMiningCamp(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject miningCampObject = EntityVisualBuilder.CreateBuildingShell(
+                "MiningCamp",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
+
+            ApplySharedMaterialIfMissingRendererTint(miningCampObject);
+            ConfigureBuildingHealth(miningCampObject, data.maxHp, data.armor, team);
+
+            MiningCamp miningCamp = miningCampObject.AddComponent<MiningCamp>();
+            miningCamp.SetData(data);
+            return miningCamp;
         }
 
         public static Vector3 ResolveWorldPosition(PlacedBuildingData data, Vector3 position)
