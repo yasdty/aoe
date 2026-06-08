@@ -184,6 +184,16 @@ namespace AoE.RTS.Selection
                     title = "Sheep";
                     lines.Add($"Food: {Mathf.FloorToInt(sheep.RemainingFood)}");
                     break;
+                case BoarResource boar:
+                    title = "Boar";
+                    if (boar.IsDead)
+                        lines.Add($"Food: {Mathf.FloorToInt(boar.RemainingFood)}");
+                    else
+                    {
+                        lines.Add($"HP: {Mathf.FloorToInt(boar.CurrentHp)}/{Mathf.FloorToInt(boar.MaxHp)}");
+                        lines.Add($"Attack: {boar.AttackPower:0}");
+                    }
+                    break;
                 case GoldMineResource goldMine:
                     title = "Gold Mine";
                     lines.Add($"Gold: {Mathf.FloorToInt(goldMine.RemainingAmount)}");

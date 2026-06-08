@@ -8,6 +8,7 @@ namespace AoE.RTS.Core
         public const string DefaultBerryBushData = "Assets/Data/ResourceData/DefaultBerryBush.asset";
         public const string DefaultDeerData = "Assets/Data/ResourceData/DefaultDeer.asset";
         public const string DefaultSheepData = "Assets/Data/ResourceData/DefaultSheep.asset";
+        public const string DefaultBoarData = "Assets/Data/ResourceData/DefaultBoar.asset";
         public const string DefaultGoldMineData = "Assets/Data/ResourceData/DefaultGoldMine.asset";
         public const string DefaultStoneMineData = "Assets/Data/ResourceData/DefaultStoneMine.asset";
         public const string DefaultHouseData = "Assets/Data/BuildingData/HouseData.asset";

@@ -52,6 +52,7 @@ namespace AoE.RTS.Commands
             FoodGatherManager.CancelForUnits(units);
             MineralGatherManager.CancelForUnits(units);
             AttackManager.CancelForUnits(units);
+            BoarAttackManager.CancelForUnits(units);
             GroupMoveFormation.AssignMoveTargets(units, destination, spacing);
         }
     }
@@ -76,6 +77,7 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
+            BoarAttackManager.CancelForUnits(units);
             FoodGatherManager.CancelForUnits(units);
             MineralGatherManager.CancelForUnits(units);
             GatherManager.IssueGatherCommand(units, tree);
@@ -102,6 +104,7 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
+            BoarAttackManager.CancelForUnits(units);
             GatherManager.CancelForUnits(units);
             MineralGatherManager.CancelForUnits(units);
             FoodGatherManager.IssueGatherFarmCommand(units, farm);
@@ -128,6 +131,7 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
+            BoarAttackManager.CancelForUnits(units);
             GatherManager.CancelForUnits(units);
             MineralGatherManager.CancelForUnits(units);
             FoodGatherManager.IssueGatherCommand(units, bush);
@@ -151,6 +155,12 @@ namespace AoE.RTS.Commands
         {
             this.units = GameCommandLists.CopyUnits(units);
             animal = sheep;
+        }
+
+        public HuntFoodCommand(IReadOnlyList<Unit> units, BoarResource boar)
+        {
+            this.units = GameCommandLists.CopyUnits(units);
+            animal = boar;
         }
 
         public void Execute()
@@ -186,6 +196,7 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
+            BoarAttackManager.CancelForUnits(units);
             GatherManager.CancelForUnits(units);
             FoodGatherManager.CancelForUnits(units);
             MineralGatherManager.IssueGatherGoldCommand(units, mine);
@@ -212,6 +223,7 @@ namespace AoE.RTS.Commands
 
             BuildingPlacementManager.AbortConstructionForUnits(units);
             AttackManager.CancelForUnits(units);
+            BoarAttackManager.CancelForUnits(units);
             GatherManager.CancelForUnits(units);
             FoodGatherManager.CancelForUnits(units);
             MineralGatherManager.IssueGatherStoneCommand(units, mine);
@@ -254,7 +266,49 @@ namespace AoE.RTS.Commands
             GatherManager.CancelForUnits(selectedUnits);
             FoodGatherManager.CancelForUnits(selectedUnits);
             MineralGatherManager.CancelForUnits(selectedUnits);
+            BoarAttackManager.CancelForUnits(selectedUnits);
             AttackManager.IssueAttack(attackers, targetUnit);
+        }
+    }
+
+    public sealed class AttackBoarCommand : IGameCommand
+    {
+        readonly List<Unit> selectedUnits;
+        readonly BoarResource boar;
+        readonly List<Unit> attackers = new List<Unit>();
+
+        public string DebugName => "AttackBoar";
+
+        public AttackBoarCommand(IReadOnlyList<Unit> selectedUnits, BoarResource boar)
+        {
+            this.selectedUnits = GameCommandLists.CopyUnits(selectedUnits);
+            this.boar = boar;
+        }
+
+        public void Execute()
+        {
+            if (boar == null || boar.IsDead || boar.IsDepleted || selectedUnits.Count == 0)
+                return;
+
+            attackers.Clear();
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit == null || !unit.CanAttack)
+                    continue;
+
+                attackers.Add(unit);
+            }
+
+            if (attackers.Count == 0)
+                return;
+
+            BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
+            GatherManager.CancelForUnits(selectedUnits);
+            FoodGatherManager.CancelForUnits(selectedUnits);
+            MineralGatherManager.CancelForUnits(selectedUnits);
+            AttackManager.CancelForUnits(selectedUnits);
+            BoarAttackManager.IssueAttack(attackers, boar);
         }
     }
 
@@ -294,6 +348,7 @@ namespace AoE.RTS.Commands
             GatherManager.CancelForUnits(selectedUnits);
             FoodGatherManager.CancelForUnits(selectedUnits);
             MineralGatherManager.CancelForUnits(selectedUnits);
+            BoarAttackManager.CancelForUnits(selectedUnits);
             AttackManager.IssueAttack(attackers, targetBuilding);
         }
     }

@@ -23,6 +23,7 @@ namespace AoE.RTS.EditorTools
         const string DefaultBerryBushDataPath = GameAssetPaths.DefaultBerryBushData;
         const string DefaultDeerDataPath = GameAssetPaths.DefaultDeerData;
         const string DefaultSheepDataPath = GameAssetPaths.DefaultSheepData;
+        const string DefaultBoarDataPath = GameAssetPaths.DefaultBoarData;
         const string DefaultGoldMineDataPath = GameAssetPaths.DefaultGoldMineData;
         const string DefaultStoneMineDataPath = GameAssetPaths.DefaultStoneMineData;
         const string DefaultHouseDataPath = GameAssetPaths.DefaultHouseData;
@@ -740,6 +741,26 @@ namespace AoE.RTS.EditorTools
             return data;
         }
 
+        public static FoodNodeData EnsureDefaultBoarData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/ResourceData"))
+                AssetDatabase.CreateFolder("Assets/Data", "ResourceData");
+
+            FoodNodeData existing = AssetDatabase.LoadAssetAtPath<FoodNodeData>(DefaultBoarDataPath);
+            if (existing != null)
+                return existing;
+
+            FoodNodeData data = ScriptableObject.CreateInstance<FoodNodeData>();
+            data.displayName = "Boar";
+            data.initialFood = 340f;
+            data.defaultColor = new Color(0.35f, 0.35f, 0.38f);
+            AssetDatabase.CreateAsset(data, DefaultBoarDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
         public static GameObject CreateDeer(FoodNodeData deerData, Vector3 position)
         {
             const float height = 2f;
@@ -822,6 +843,48 @@ namespace AoE.RTS.EditorTools
             EditorUtility.SetDirty(sheepObject);
 
             return sheepObject;
+        }
+
+        public static GameObject CreateBoar(FoodNodeData boarData, Vector3 position)
+        {
+            const float height = 1.8f;
+            const float radius = 0.75f;
+            const float groundClearance = 0.05f;
+
+            Vector3 worldPosition = new Vector3(
+                position.x,
+                height * 0.5f + groundClearance,
+                position.z);
+
+            GameObject boarObject = new GameObject("Boar");
+            boarObject.layer = LayerMask.NameToLayer(GameLayers.ResourceLayerName);
+            boarObject.transform.position = worldPosition;
+
+            CapsuleCollider collider = boarObject.AddComponent<CapsuleCollider>();
+            collider.height = height;
+            collider.radius = radius;
+
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            visual.name = "Visual";
+            visual.transform.SetParent(boarObject.transform, false);
+            visual.transform.localScale = new Vector3(radius * 2f, height * 0.5f, radius * 2f);
+            Object.DestroyImmediate(visual.GetComponent<Collider>());
+
+            Renderer renderer = visual.GetComponent<Renderer>();
+            if (renderer != null && boarData != null)
+            {
+                Material material = SceneMaterialFactory.CreateLitMaterial(boarData.defaultColor);
+                renderer.sharedMaterial = material;
+            }
+
+            BoarResource boar = boarObject.AddComponent<BoarResource>();
+            SerializedObject serializedBoar = new SerializedObject(boar);
+            serializedBoar.FindProperty("data").objectReferenceValue = boarData;
+            serializedBoar.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(boar);
+            EditorUtility.SetDirty(boarObject);
+
+            return boarObject;
         }
 
         public static MineralNodeData EnsureDefaultGoldMineData()

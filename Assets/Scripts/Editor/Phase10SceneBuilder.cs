@@ -92,6 +92,12 @@ namespace AoE.RTS.EditorTools
             new Vector3(9f, 0f, 3f)
         };
 
+        static readonly Vector3[] PlayerBoarPositions =
+        {
+            new Vector3(4f, 0f, 11f),
+            new Vector3(-4f, 0f, 9f)
+        };
+
         static readonly Vector3[] CpuDeerPositions =
         {
             new Vector3(-4f, 0f, -26f),
@@ -140,6 +146,7 @@ namespace AoE.RTS.EditorTools
             FoodNodeData berryBushData = Phase1SceneBuilder.EnsureDefaultBerryBushData();
             FoodNodeData deerData = Phase1SceneBuilder.EnsureDefaultDeerData();
             FoodNodeData sheepData = Phase1SceneBuilder.EnsureDefaultSheepData();
+            FoodNodeData boarData = Phase1SceneBuilder.EnsureDefaultBoarData();
             MineralNodeData goldMineData = Phase1SceneBuilder.EnsureDefaultGoldMineData();
             MineralNodeData stoneMineData = Phase1SceneBuilder.EnsureDefaultStoneMineData();
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
@@ -163,6 +170,7 @@ namespace AoE.RTS.EditorTools
             CreateTrees(treeData);
             CreateBerryBushes(berryBushData);
             CreateHuntableAnimals(deerData, sheepData);
+            CreateBoars(boarData);
             CreateMineralMines(goldMineData, stoneMineData);
             CreateCpuVillagers(villagerData);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
@@ -232,13 +240,59 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added SelectionInfoPanelView. Save the scene (Ctrl+S) if needed.");
         }
 
+        [MenuItem("AoE/Add Boars (Phase10)", true)]
+        static bool ValidateAddBoars() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Boars (Phase10)")]
+        public static void AddBoarsToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            Phase1SceneBuilder.EnsureLayers();
+            FoodNodeData boarData = Phase1SceneBuilder.EnsureDefaultBoarData();
+            EnsureBoarManagers();
+
+            BoarResource[] existing = Object.FindObjectsByType<BoarResource>();
+            for (int i = 0; i < existing.Length; i++)
+                Object.DestroyImmediate(existing[i].gameObject);
+
+            CreateBoars(boarData);
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added Boars to the open scene. Save the scene (Ctrl+S) if needed.");
+        }
+
+        static void EnsureBoarManagers()
+        {
+            if (Object.FindAnyObjectByType<BoarAggroManager>() == null)
+            {
+                GameObject systems = GameObject.Find("Systems");
+                Transform parent = systems != null ? systems.transform : null;
+                GameObject aggroObject = new GameObject("BoarAggroManager");
+                if (parent != null)
+                    aggroObject.transform.SetParent(parent);
+                aggroObject.AddComponent<BoarAggroManager>();
+            }
+
+            if (Object.FindAnyObjectByType<BoarAttackManager>() == null)
+            {
+                GameObject systems = GameObject.Find("Systems");
+                Transform parent = systems != null ? systems.transform : null;
+                GameObject attackObject = new GameObject("BoarAttackManager");
+                if (parent != null)
+                    attackObject.transform.SetParent(parent);
+                attackObject.AddComponent<BoarAttackManager>();
+            }
+        }
+
         static void RemoveExistingHuntableAnimals()
         {
-            DeerResource[] deer = Object.FindObjectsByType<DeerResource>(FindObjectsSortMode.None);
+            DeerResource[] deer = Object.FindObjectsByType<DeerResource>();
             for (int i = 0; i < deer.Length; i++)
                 Object.DestroyImmediate(deer[i].gameObject);
 
-            SheepResource[] sheep = Object.FindObjectsByType<SheepResource>(FindObjectsSortMode.None);
+            SheepResource[] sheep = Object.FindObjectsByType<SheepResource>();
             for (int i = 0; i < sheep.Length; i++)
                 Object.DestroyImmediate(sheep[i].gameObject);
         }
@@ -288,6 +342,12 @@ namespace AoE.RTS.EditorTools
 
             for (int i = 0; i < CpuSheepPositions.Length; i++)
                 Phase1SceneBuilder.CreateSheep(sheepData, CpuSheepPositions[i]);
+        }
+
+        static void CreateBoars(FoodNodeData boarData)
+        {
+            for (int i = 0; i < PlayerBoarPositions.Length; i++)
+                Phase1SceneBuilder.CreateBoar(boarData, PlayerBoarPositions[i]);
         }
 
         static void CreateMineralMines(MineralNodeData goldMineData, MineralNodeData stoneMineData)
@@ -361,6 +421,14 @@ namespace AoE.RTS.EditorTools
             GameObject attackManagerObject = new GameObject("AttackManager");
             attackManagerObject.transform.SetParent(systems.transform);
             attackManagerObject.AddComponent<AttackManager>();
+
+            GameObject boarAggroManagerObject = new GameObject("BoarAggroManager");
+            boarAggroManagerObject.transform.SetParent(systems.transform);
+            boarAggroManagerObject.AddComponent<BoarAggroManager>();
+
+            GameObject boarAttackManagerObject = new GameObject("BoarAttackManager");
+            boarAttackManagerObject.transform.SetParent(systems.transform);
+            boarAttackManagerObject.AddComponent<BoarAttackManager>();
 
             GameObject populationManagerObject = new GameObject("PopulationManager");
             populationManagerObject.transform.SetParent(systems.transform);

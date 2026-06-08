@@ -1,6 +1,6 @@
 # Phase 26 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜25 完了（PoC + Foundation + M2 Economy + M2.5 Phase 21〜25）  
 > **マイルストン:** M2.5 Economy Polish  
 > **ロードマップ:** [04_M2_5_ECONOMY_POLISH_PHASES.md](../04_M2_5_ECONOMY_POLISH_PHASES.md)  
@@ -76,20 +76,20 @@ Phase 25 で Selection Info Panel が完成。Phase 26 は **Boar（反撃する
 
 ### AoE2 参考（MVP スコープ）
 
-- Boar は **Food を持つ**（狩りで減る — Deer と同型）
+- Boar は **HP あり**（生きている間 Info Panel: HP + Attack）
 - **殴られると反撃** — 近接で Hunter / Militia にダメージ
-- **Militia** は Boar を攻撃できる（村民より安全）
-- 村民は狩れるが **被ダメージリスク** あり
-- Boar 枯渇（Food 0）で採取不可・灰色化
+- **Militia** は Boar を攻撃 → **HP 減少** → 死亡
+- 村民は狩れるが **被ダメージリスク** あり（狩り = HP ダメージ → 死体から Food 搬入）
+- Boar 死亡後 Food 0 で採取不可・灰色化
 
 ### 変更後のフロー（村民）
 
 ```
 村民 → Boar 右クリック
     ↓
-MoveToBoar → Hunt（TakeFood）— 初回 Hunt から Boar 反撃開始
+MoveToBoar → Hunt（ApplyHuntDamage）— 初回 Hunt から Boar 反撃開始
     ↓
-（被ダメージしながらも）MoveToDeposit → TC 搬入 → リピート（Phase 21）
+Boar 死亡 → 死体から TakeFood → MoveToDeposit → TC 搬入 → リピート
 ```
 
 ### 変更後のフロー（Militia）
@@ -97,12 +97,12 @@ MoveToBoar → Hunt（TakeFood）— 初回 Hunt から Boar 反撃開始
 ```
 Militia → Boar 右クリック
     ↓
-AttackManager 相当で Boar にダメージ（Food / HP プールを減らす）
+AttackManager 相当で Boar の **HP** を削る
     ↓
-Boar 反撃 → Militia が Boar を仕留め → Food 残量 0 で終了
+Boar 反撃 → Militia が Boar を仕留め → 死体に Food → 村民が搬入可
 ```
 
-**MVP 方針:** Boar の「肉」= `RemainingFood`（Deer 同型）。**攻撃ダメージも `TakeFood` または専用 `ApplyDamage` で同一プールを減らす**（HP と Food を二重管理しない）。
+**MVP 方針:** Boar は **HP（戦闘）と Food（死体）を分離**。Militia / 村民の狩りは **HP を削る** → 死亡後に `remainingFood = initialFood` の死体から `TakeFood`。Deer / Sheep は Phase 24 通り Food 直減り（Phase 28 で統一検討）。
 
 ---
 
@@ -112,8 +112,9 @@ Boar 反撃 → Militia が Boar を仕留め → Food 残量 0 で終了
 
 - `IHuntableFoodResource` 実装（Deer コピー拡張）
 - 追加: **反撃用 stat** — `attack` / `attackRange` / `attackCooldown`（SerializeField or FoodNodeData 拡張）
-- `TakeFood` 呼び出し時に **Aggro 対象**（狩り中の Unit）を登録
-- `ApplyAttackDamage(float)` — Militia 攻撃用（内部は Food プール減少 + 反撃トリガー）
+- `ApplyHuntDamage` — 村民狩り（HP 減少 + 反撃トリガー）
+- `ApplyAttackDamage` — Militia 攻撃（HP 減少 + 反撃トリガー）
+- 死亡時 `remainingFood = initialFood`、Aggro 解除
 - 枯渇時 `UpdateVisual` 灰色化
 
 ### 2. `DefaultBoar.asset` — `FoodNodeData`
@@ -260,10 +261,10 @@ case BoarResource boar:
 
 - [ ] **Boar** — 村民右クリック → 狩り → TC 搬入 → Food 増加
 - [ ] **反撃** — 狩り中 Boar が村民にダメージ（HP 減少）
-- [ ] **Militia** — Boar 右クリック → 攻撃 → Boar Food 減少
+- [ ] **Militia** — Boar **右クリック** → **HP 減少** → 死亡
 - [ ] **枯渇** — Food 0 で灰色化 / 採取・攻撃不可
 - [ ] **採取リピート** — 搬入後 Boar へ復帰（Phase 21 回帰）
-- [ ] **Info Panel** — Boar 左クリック → Food + Attack 表示
+- [ ] **Info Panel** — 生きている Boar 左クリック → HP + Attack / 死体 → Food
 - [ ] Deer / Sheep / Berry / Farm / 4 資源 / Info Panel 回帰
 - [ ] Console エラーなし
 - [ ] `docs/IMPLEMENTATION_STATUS.md` / `04_M2_5` Phase 26 を ✅
@@ -273,9 +274,9 @@ case BoarResource boar:
 ## ⑩ テスト手順（Play チェックリスト）
 
 1. `AoE → Setup Phase10 Scene`（または Boar 追加）→ Play
-2. **村民 → Boar 右クリック** — 狩り開始 → Food 増加、**村民 HP が減る**
-3. **Militia → Boar 右クリック** — 攻撃 → Boar Food 減少、Militia HP も減る可能性
-4. **Info Panel** — Boar 左クリック → Food / Attack 表示
+2. **村民 → Boar 右クリック** — 狩り開始 → Boar HP 減少・反撃で **村民 HP 減少** → 死亡後 Food 搬入
+3. **Militia → Boar 右クリック** — 攻撃 → **Boar HP 減少**（左クリックで Panel 確認）
+4. **Info Panel** — 生きている Boar 左クリック → HP / Attack、死体 → Food
 5. **リピート** — 1 村民で複数往復
 6. **枯渇** — Food 0 まで → 灰色化
 7. Deer / Sheep / Berry / Selection Info Panel 回帰

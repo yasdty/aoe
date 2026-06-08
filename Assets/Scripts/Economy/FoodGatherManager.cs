@@ -302,8 +302,23 @@ namespace AoE.RTS.Economy
             for (int i = huntJobs.Count - 1; i >= 0; i--)
             {
                 if (huntJobs[i].unit == unit)
+                {
+                    ClearBoarHunter(huntJobs[i]);
                     huntJobs.RemoveAt(i);
+                }
             }
+        }
+
+        static void ClearBoarHunter(HuntGatherJob job)
+        {
+            if (job.animalBehaviour is BoarResource boar)
+                boar.ClearActiveHunter(job.unit);
+        }
+
+        static void SyncBoarHunter(HuntGatherJob job)
+        {
+            if (job.animalBehaviour is BoarResource boar)
+                boar.SetActiveHunter(job.unit);
         }
 
         void TickFarmJobs(float fixedDeltaTime)
@@ -622,10 +637,12 @@ namespace AoE.RTS.Economy
         {
             if (job.carriedFood > 0f && ProductionManager.GetTownCenterForTeam(job.unit.Team) != null)
             {
+                ClearBoarHunter(job);
                 BeginHuntMoveToDeposit(ref job, index);
                 return;
             }
 
+            ClearBoarHunter(job);
             job.unit.ClearMoveTarget();
             if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
                 huntJobs.RemoveAt(index);
@@ -645,6 +662,7 @@ namespace AoE.RTS.Economy
             {
                 job.unit.ClearMoveTarget();
                 job.state = HuntGatherState.Hunt;
+                SyncBoarHunter(job);
                 if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
                     huntJobs[index] = job;
                 return;
@@ -659,22 +677,46 @@ namespace AoE.RTS.Economy
             IHuntableFoodResource animal = job.animalBehaviour as IHuntableFoodResource;
             if (!IsHuntTargetValid(animal))
             {
+                ClearBoarHunter(job);
                 FinishHuntJobWithoutTarget(ref job, index);
                 return;
             }
+
+            SyncBoarHunter(job);
 
             float request = GatherRate * deltaTime;
             float room = CarryCapacity - job.carriedFood;
-            float taken = animal.TakeFood(Mathf.Min(request, room));
-            job.carriedFood += taken;
+
+            if (job.animalBehaviour is BoarResource boar)
+            {
+                if (boar.IsDead)
+                {
+                    float taken = boar.TakeFood(Mathf.Min(request, room));
+                    job.carriedFood += taken;
+                }
+                else
+                {
+                    boar.ApplyHuntDamage(request, job.unit);
+                }
+            }
+            else
+            {
+                float taken = animal.TakeFood(Mathf.Min(request, room));
+                job.carriedFood += taken;
+            }
 
             if (!IsHuntTargetValid(animal))
             {
+                ClearBoarHunter(job);
                 FinishHuntJobWithoutTarget(ref job, index);
                 return;
             }
 
-            if (job.carriedFood >= CarryCapacity || animal.IsDepleted)
+            bool readyToDeposit = job.carriedFood >= CarryCapacity || animal.IsDepleted;
+            if (job.animalBehaviour is BoarResource huntingBoar && !huntingBoar.IsDead)
+                readyToDeposit = false;
+
+            if (readyToDeposit)
                 BeginHuntMoveToDeposit(ref job, index);
             else if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
                 huntJobs[index] = job;

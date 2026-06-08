@@ -45,7 +45,7 @@ namespace AoE.RTS.Units
                 if (isDead)
                     return UnitState.Dead;
 
-                if (AttackManager.IsUnitAttacking(this))
+                if (AttackManager.IsUnitAttacking(this) || BoarAttackManager.IsUnitAttackingBoar(this))
                     return UnitState.Attack;
 
                 if (HasMoveTarget)
@@ -150,6 +150,7 @@ namespace AoE.RTS.Units
             MineralGatherManager.CancelForUnit(this);
             BuildingPlacementManager.AbortConstructionForUnit(this);
             AttackManager.CancelJobsForUnit(this);
+            BoarAttackManager.CancelJobsForUnit(this);
             SelectionManager.HandleUnitDied(this);
             UnitManager.Unregister(this);
 
@@ -235,7 +236,7 @@ namespace AoE.RTS.Units
                 color = data != null ? data.defaultColor : Color.white;
             }
 
-            if (IsAlive && AttackManager.IsUnitAttacking(this))
+            if (IsAlive && (AttackManager.IsUnitAttacking(this) || BoarAttackManager.IsUnitAttackingBoar(this)))
             {
                 Color attackTint = new Color(0.95f, 0.45f, 0.2f);
                 color = Color.Lerp(color, attackTint, 0.55f);

@@ -293,6 +293,13 @@ namespace AoE.RTS.Selection
                 return true;
             }
 
+            BoarResource boar = hit.collider.GetComponentInParent<BoarResource>();
+            if (boar != null)
+            {
+                SetResourceSelection(boar);
+                return true;
+            }
+
             GoldMineResource goldMine = hit.collider.GetComponentInParent<GoldMineResource>();
             if (goldMine != null)
             {
@@ -430,6 +437,16 @@ namespace AoE.RTS.Selection
                     return;
                 }
 
+                BoarResource boar = hit.collider.GetComponentInParent<BoarResource>();
+                if (boar != null && !boar.IsDepleted)
+                {
+                    if (!boar.IsDead)
+                        TryIssueAttackBoarCommand(boar);
+                    if (HasNonCombatSelectedUnits())
+                        CommandQueue.Enqueue(new HuntFoodCommand(selectedUnits, boar));
+                    return;
+                }
+
                 BerryBushResource bush = hit.collider.GetComponentInParent<BerryBushResource>();
                 if (bush != null && !bush.IsDepleted)
                 {
@@ -494,6 +511,40 @@ namespace AoE.RTS.Selection
 
             CommandQueue.Enqueue(new AttackUnitCommand(selectedUnits, targetUnit));
             return true;
+        }
+
+        bool TryIssueAttackBoarCommand(BoarResource boar)
+        {
+            if (boar == null || boar.IsDead)
+                return false;
+
+            attackCommandBuffer.Clear();
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit == null || !unit.CanAttack)
+                    continue;
+
+                attackCommandBuffer.Add(unit);
+            }
+
+            if (attackCommandBuffer.Count == 0)
+                return false;
+
+            CommandQueue.Enqueue(new AttackBoarCommand(selectedUnits, boar));
+            return true;
+        }
+
+        bool HasNonCombatSelectedUnits()
+        {
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit != null && !unit.CanAttack)
+                    return true;
+            }
+
+            return false;
         }
 
         bool TryIssueGatherFarmCommand(Farm farm)

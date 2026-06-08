@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 25 完了（Selection Info Panel）。**M2.5 進行中。次: Phase 26（Boar）。**
+> **最終更新:** Phase 26 完了（Boar 反撃狩り HP/Food 分離）。**M2.5 進行中。次: Phase 27（Mill）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) / [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) / [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) / [06_M3_MILITARY_PHASES.md](06_M3_MILITARY_PHASES.md)
@@ -60,7 +60,7 @@
 | 23 | Mining Camp（Gold/Stone Drop-off） | `Phase10.unity` | ✅ 実装済み |
 | 24 | Hunting（Deer / Sheep） | `Phase10.unity` | ✅ 実装済み |
 | 25 | Selection Info Panel | `Phase10.unity` | ✅ 実装済み |
-| 26 | Boar（反撃狩り） | `Phase10.unity` | ⬜ 未着手 |
+| 26 | Boar（反撃狩り） | `Phase10.unity` | ✅ 実装済み |
 | 27 | Mill（Food Drop-off） | `Phase10.unity` | ⬜ 未着手 |
 | 28 | Sheep Herding + Animal Locomotion | `Phase10.unity` | ⬜ 未着手 |
 | 29 | Militia Basic Aggro | `Phase10.unity` | ⬜ 未着手 |
@@ -82,7 +82,7 @@
 
 **Milestone 2 Economy:** ✅ 完了（Phase 17〜20 — Wood / Food / Gold / Stone）
 
-**Milestone 2.5 Economy Polish:** 進行中（Phase 21〜25 ✅ — Phase 26〜30 未着手）
+**Milestone 2.5 Economy Polish:** 進行中（Phase 21〜26 ✅ — Phase 27〜30 未着手）
 
 **Milestone 2.6 RTS UX:** ⬜ 未着手（Phase 31〜34 — ユニット生産キュー・Idle・Rally・Control Group）
 
@@ -133,7 +133,7 @@
 | Idle Villager 表示・選択 | ❌ | **Phase 32（M2.6）** |
 | Rally Point（集合地点） | ❌ | **Phase 33（M2.6）** |
 | 選択詳細パネル（HP / 攻撃 / 資源残量） | ✅ | Phase 25 — `SelectionInfoPanelView` |
-| 資源ノード左クリック選択 | ✅ | Phase 25 — Tree / Berry / Deer / Sheep / Mine |
+| 資源ノード左クリック選択 | ✅ | Phase 25 — Tree / Berry / Deer / Sheep / Boar / Mine |
 
 ### Movement
 
@@ -158,7 +158,7 @@
 | Berry Bush 採集 | ✅ | `FoodGatherManager` + `GatherFoodCommand` |
 | Farm 採集 | ✅ | `FoodGatherManager` + `GatherFarmFoodCommand` |
 | Farm 1 村民制限 | ✅ | Phase 22 — `FoodGatherManager.IsFarmOccupiedByOther` |
-| 狩り（Deer / Sheep / Boar） | △ | Phase 24 ✅ Deer/Sheep（静止）— Boar Phase 26 / 羊誘導 Phase 28 |
+| 狩り（Deer / Sheep / Boar） | △ | Phase 24 ✅ Deer/Sheep（Food 直減）— Phase 26 ✅ Boar（HP→死体Food）— 羊誘導 Phase 28 |
 | Gold 採集 | ✅ | `MineralGatherManager` + `GatherGoldCommand` |
 | Stone 採集 | ✅ | `MineralGatherManager` + `GatherStoneCommand` |
 | TownCenter への搬入 | ✅ | チーム別 TC |
@@ -970,7 +970,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 1 資源・3 建築・1 兵種・1 CPU の **垂直スライス** |
 | 何が一番足りない？ | 多資源・時代・兵種・本格 UI |
-| 次に何を作るべき？ | **M2.5 Phase 26 Boar** — [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) |
+| 次に何を作るべき？ | **M2.5 Phase 27 Mill** — [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) |
 | プレイ用シーンは？ | **`Phase10.unity`** |
 | 自軍は自動反撃？ | **しない**（Phase 29 で簡易 Militia Aggro 予定） |
 | 性能ベンチマークは？ | **未計測（TBD）** — §Performance Benchmark 参照 |

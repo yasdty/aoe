@@ -299,6 +299,7 @@ namespace AoE.RTS.Combat
                 GatherManager.CancelForUnits(gatherCancelBuffer);
                 FoodGatherManager.CancelForUnits(gatherCancelBuffer);
                 MineralGatherManager.CancelForUnits(gatherCancelBuffer);
+                BoarAttackManager.CancelForUnits(gatherCancelBuffer);
                 RemoveJobsForAttacker(attacker);
                 instance.activeJobs.Add(new AttackJob
                 {
@@ -329,6 +330,7 @@ namespace AoE.RTS.Combat
                 GatherManager.CancelForUnits(gatherCancelBuffer);
                 FoodGatherManager.CancelForUnits(gatherCancelBuffer);
                 MineralGatherManager.CancelForUnits(gatherCancelBuffer);
+                BoarAttackManager.CancelForUnits(gatherCancelBuffer);
                 RemoveJobsForAttacker(attacker);
                 instance.activeJobs.Add(new AttackJob
                 {
