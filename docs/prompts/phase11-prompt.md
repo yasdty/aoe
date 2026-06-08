@@ -2,8 +2,8 @@
 
 > **状態:** ✅ 完了  
 > **前提:** Phase 1〜10.5 完了（PoC + Visual Placeholder）  
-> **ロードマップ:** [FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md)  
-> **使い方:** `@CONSTITUTION.md` と `@docs/RTS_IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。
+> **ロードマップ:** [02_M1_FOUNDATION_PHASES.md](../02_M1_FOUNDATION_PHASES.md)  
+> **使い方:** `@CONSTITUTION.md` と `@docs/IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。
 
 ---
 
@@ -16,7 +16,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜10.5 は完了済み。P
 
 ## ① Foundation 方針（必読・遵守）
 
-[FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md) の最重要方針を厳守:
+[02_M1_FOUNDATION_PHASES.md](../02_M1_FOUNDATION_PHASES.md) の最重要方針を厳守:
 
 - **AoE 機能を増やさない** — Archer / Food / Age Up 等は禁止
 - **small diff** — 1 Phase = 1 目的（勝敗のみ）
@@ -84,7 +84,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜10.5 は完了済み。P
 5. **Victory / Defeat UI** — OnGUI オーバーレイ（既存 HUD と同パターン）
 6. **ゲーム終了時の入力停止** — 選択・移動・攻撃・建築・生産を無効化
 7. **`Phase10SceneBuilder` 更新** — `GameSessionManager`（名称は任意）を Systems に追加
-8. **README / `docs/FOUNDATION_PHASES.md` 更新** — Phase 11 完了を明記
+8. **README / `docs/02_M1_FOUNDATION_PHASES.md` 更新** — Phase 11 完了を明記
 
 ### 勝利 / 敗北条件（MVP — 厳守）
 
@@ -249,7 +249,7 @@ public static bool IsGameOver => state != Playing;
 - [ ] **Player TC 破壊 → DEFEAT 表示** + ゲーム操作停止
 - [ ] 勝敗後も **Console エラーなし**（Null 参照なし）
 - [ ] **Phase 10 コアループ** — 勝敗前の採集・建築・生産・戦闘・CPU が壊れていない
-- [ ] `docs/FOUNDATION_PHASES.md` Phase 11 を ✅ に更新
+- [ ] `docs/02_M1_FOUNDATION_PHASES.md` Phase 11 を ✅ に更新
 
 ---
 

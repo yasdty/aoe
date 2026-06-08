@@ -122,7 +122,7 @@ Idle
 | 4-3 | Villager 状態 + `GatherManager` Tick（Gather / Carry / Deposit） |
 | 4-4 | `SelectionManager` 拡張（木への右クリック Gather 命令） |
 | 4-5 | `Phase4SceneBuilder`（TC + Trees + 開始 Villager 0〜1） |
-| 4-6 | `README.md` / `docs/PHASES.md` 更新 |
+| 4-6 | `README.md` / `docs/01_M0_POC_PHASES.md` 更新 |
 
 各サブステップ後に Play 可能な状態を維持すること。
 

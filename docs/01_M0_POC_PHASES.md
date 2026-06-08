@@ -1,4 +1,8 @@
-# AoE RTS Engine — Phase ロードマップ
+# AoE RTS Engine — Milestone 0: PoC Phase ロードマップ（Phase 1〜10.5）
+
+> **Milestone:** M0 — PoC（Proof of Concept）  
+> **次に読む:** [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md)（Phase 11〜16）  
+> **実装状況:** [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)
 
 [CONSTITUTION.md](../CONSTITUTION.md) に基づく、Phase 1〜10 の概要。  
 **進め方:** MVP → 動作確認 → 次 Phase。Phase を飛ばさない。
@@ -298,7 +302,7 @@ House 破壊時の cap 減少、建築 Wood 返金・建築再開
 
 PoC 完了後は **AoE 機能追加より RTS Engine 基盤** を優先。
 
-**詳細・プロンプト:** [FOUNDATION_PHASES.md](FOUNDATION_PHASES.md)（Phase 11〜16。本ファイルとは別管理）
+**詳細・プロンプト:** [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md)（Phase 11〜16）
 
 ---
 

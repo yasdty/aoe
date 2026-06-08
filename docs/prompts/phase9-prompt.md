@@ -148,7 +148,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜8 は完了済み。Phas
 | 9-7 | House 完成時 `AddHousing(builder.Team, ...)` |
 | 9-8 | `SelectionManager` — CPU TC / Barracks / House 選択不可 |
 | 9-9 | `CpuEconomyAiManager` — 上記 AI ルール |
-| 9-10 | `Phase9SceneBuilder` + README / `docs/PHASES.md` 更新 |
+| 9-10 | `Phase9SceneBuilder` + README / `docs/01_M0_POC_PHASES.md` 更新 |
 
 ---
 

@@ -128,7 +128,7 @@ House 出現（Building レイヤー、Collider あり）
 | 5-4 | `BuildingPlacementManager` — 配置確定・建築 Tick・House 生成 |
 | 5-5 | Villager 移動 → 現場到達 → 建築待機 |
 | 5-6 | `BuildHousePanelView`（OnGUI）+ `SelectionManager` 最小拡張 |
-| 5-7 | `Phase5SceneBuilder` + README / `docs/PHASES.md` 更新 |
+| 5-7 | `Phase5SceneBuilder` + README / `docs/01_M0_POC_PHASES.md` 更新 |
 
 各サブステップ後に Play 可能な状態を維持すること。**5-0 は最初に着手推奨**（UX 改善が独立しているため）。
 

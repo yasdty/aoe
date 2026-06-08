@@ -133,7 +133,7 @@ UnitManager.Unregister → Destroy(gameObject)
 | 8-6 | `SelectionManager` — 死亡ユニットを選択リストから除外 |
 | 8-7 | `UnitHpBarView` または選択パネル拡張 — HP 表示 |
 | 8-8 | 攻撃中の最小ビジュアル（色・MaterialPropertyBlock） |
-| 8-9 | `Phase8SceneBuilder` + README / `docs/PHASES.md` 更新 |
+| 8-9 | `Phase8SceneBuilder` + README / `docs/01_M0_POC_PHASES.md` 更新 |
 
 ---
 

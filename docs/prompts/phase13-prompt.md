@@ -2,8 +2,8 @@
 
 > **状態:** ✅ 完了  
 > **前提:** Phase 1〜12 完了（PoC + Foundation Phase 11〜12）  
-> **ロードマップ:** [FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md)  
-> **使い方:** `@CONSTITUTION.md` と `@docs/RTS_IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。
+> **ロードマップ:** [02_M1_FOUNDATION_PHASES.md](../02_M1_FOUNDATION_PHASES.md)  
+> **使い方:** `@CONSTITUTION.md` と `@docs/IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。
 
 ---
 
@@ -16,7 +16,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜12 は完了済み。Pha
 
 ## ① Foundation 方針（必読・遵守）
 
-[FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md) の最重要方針を厳守:
+[02_M1_FOUNDATION_PHASES.md](../02_M1_FOUNDATION_PHASES.md) の最重要方針を厳守:
 
 - **AoE 機能を増やさない** — Archer / Food / Age Up 等は禁止
 - **small diff** — 1 Phase = 1 目的（Benchmark のみ）
@@ -56,7 +56,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜12 は完了済み。Pha
 | GC 計測 | **なし** |
 | 大量ユニット負荷試験 | **手動** — TC 生産を繰り返すのみ |
 | 専用 Benchmark シーン | **なし** |
-| `RTS_IMPLEMENTATION_STATUS.md` §Performance Benchmark | **TBD / 未計測** |
+| `IMPLEMENTATION_STATUS.md` §Performance Benchmark | **TBD / 未計測** |
 
 主要ファイル（**実装前に必ず開いて読む**）:
 
@@ -65,7 +65,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜12 は完了済み。Pha
 - `Assets/Scripts/Editor/Phase10SceneBuilder.cs`（Setup メニューパターン）
 - `Assets/Scripts/Editor/Phase1SceneBuilder.cs`（地面・カメラ・Unit 生成参考）
 - `Assets/Scripts/Selection/GameTimeHudView.cs` または `ResourceHudView.cs`（OnGUI 参考）
-- `docs/RTS_IMPLEMENTATION_STATUS.md` — §Performance Benchmark
+- `docs/IMPLEMENTATION_STATUS.md` — §Performance Benchmark
 - `Assets/Scenes/Phase10.unity`
 
 ---
@@ -81,7 +81,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜12 は完了済み。Pha
 3. **`BenchmarkSpawner`** — 指定数の Villager / Militia を `UnitPool.Rent` 経由で一括配置
 4. **`BenchmarkMetricsView`**（名称任意）— FPS / avg frame ms / GC alloc（フレーム or 秒）を OnGUI 表示
 5. **規模プリセット** — 50 / 100 / 200 / 500 / 800（キーまたは OnGUI ボタン）
-6. **README / `docs/FOUNDATION_PHASES.md` / `RTS_IMPLEMENTATION_STATUS.md` 更新**
+6. **README / `docs/02_M1_FOUNDATION_PHASES.md` / `IMPLEMENTATION_STATUS.md` 更新**
 
 ### Benchmark シーン構成（MVP）
 
@@ -126,7 +126,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜12 は完了済み。Pha
 | 13-2 | `BenchmarkSpawner` — UnitPool 経由一括スポーン + クリア |
 | 13-3 | `BenchmarkSceneBuilder` — 地面・カメラ・Systems・UI |
 | 13-4 | 規模プリセット 50〜800 + Play 確認 |
-| 13-5 | README / FOUNDATION_PHASES / RTS_IMPLEMENTATION_STATUS 更新 |
+| 13-5 | README / 02_M1_FOUNDATION_PHASES / IMPLEMENTATION_STATUS 更新 |
 
 ---
 
@@ -181,7 +181,7 @@ FPS: 58.2  |  Frame: 17.2 ms  |  GC/frame: 0.1 KB
 Units: 200  |  [50] [100] [200] [500] [800] [Clear]
 ```
 
-### RTS_IMPLEMENTATION_STATUS 更新
+### IMPLEMENTATION_STATUS 更新
 
 §Performance Benchmark の TBD 表に、Benchmark シーンでの初回計測値（Editor）を記載。
 
@@ -204,7 +204,7 @@ Units: 200  |  [50] [100] [200] [500] [800] [Clear]
 - [ ] スポーンは **`UnitPool.Rent` 経由**（Destroy 乱立なし）
 - [ ] `Phase10.unity` — Victory / Defeat / Pool / コアループが **Phase 12 同様に動作**
 - [ ] Console に **Null 参照・例外なし**
-- [ ] `docs/FOUNDATION_PHASES.md` Phase 13 を ✅ に更新
+- [ ] `docs/02_M1_FOUNDATION_PHASES.md` Phase 13 を ✅ に更新
 
 ---
 

@@ -112,7 +112,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜5 は完了済み。Phas
 | 6-3 | `House` 完成時 `PopulationManager.AddHousing(5)`（`CompleteConstruction` から呼ぶ） |
 | 6-4 | `ProductionManager` / `TownCenter` — 上限時生産拒否 |
 | 6-5 | `ResourceHudView` または `PopulationHudView` — Pop 表示 |
-| 6-6 | `Phase6SceneBuilder` + README / `docs/PHASES.md` 更新 |
+| 6-6 | `Phase6SceneBuilder` + README / `docs/01_M0_POC_PHASES.md` 更新 |
 
 ---
 

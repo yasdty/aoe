@@ -165,7 +165,7 @@ Militia 選択 → 敵 Unit 右クリック
 | 7-6 | Barracks 生産（`ProductionManager` 拡張 or 専用 Manager）+ UI |
 | 7-7 | `AttackManager` + `UnitManager` から Tick 呼び出し |
 | 7-8 | `SelectionManager` — 右クリック攻撃命令 |
-| 7-9 | `Phase7SceneBuilder`（敵 Unit 配置）+ README / `docs/PHASES.md` 更新 |
+| 7-9 | `Phase7SceneBuilder`（敵 Unit 配置）+ README / `docs/01_M0_POC_PHASES.md` 更新 |
 
 各サブステップ後に Play 可能な状態を維持すること。
 

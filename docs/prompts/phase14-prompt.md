@@ -2,8 +2,8 @@
 
 > **状態:** ✅ 完了  
 > **前提:** Phase 1〜13 完了（PoC + Foundation Phase 11〜13）  
-> **ロードマップ:** [FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md)  
-> **使い方:** `@CONSTITUTION.md` と `@docs/RTS_IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。
+> **ロードマップ:** [02_M1_FOUNDATION_PHASES.md](../02_M1_FOUNDATION_PHASES.md)  
+> **使い方:** `@CONSTITUTION.md` と `@docs/IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。
 
 ---
 
@@ -16,7 +16,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜13 は完了済み。Pha
 
 ## ① Foundation 方針（必読・遵守）
 
-[FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md) の最重要方針を厳守:
+[02_M1_FOUNDATION_PHASES.md](../02_M1_FOUNDATION_PHASES.md) の最重要方針を厳守:
 
 - **AoE 機能を増やさない** — Archer / Food / Age Up 等は禁止
 - **small diff** — 1 Phase = 1 目的（Spatial Hash のみ）
@@ -56,7 +56,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜13 は完了済み。Pha
 | 矩形選択 | `SelectionManager.ApplyBoxSelection` — 全 Unit をスクリーン投影判定 | O(n) |
 | Tree キャッシュ | `FindObjectsByType<TreeResource>()` — シーン全体検索（起動時キャッシュ） | 初回 O(t) |
 
-**Spatial Hash 未導入** — [RTS_IMPLEMENTATION_STATUS.md](../RTS_IMPLEMENTATION_STATUS.md) §10「リスト線形探索」がボトルネック候補として記載済み。
+**Spatial Hash 未導入** — [IMPLEMENTATION_STATUS.md](../IMPLEMENTATION_STATUS.md) §10「リスト線形探索」がボトルネック候補として記載済み。
 
 主要ファイル（**実装前に必ず開いて読む**）:
 
@@ -82,7 +82,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜13 は完了済み。Pha
 3. **クエリ API** — 最近傍 Unit（チームフィルタ）、半径内 Unit、最近傍 Tree、矩形内 Unit（選択用）
 4. **既存 FindNearest 置き換え** — 下記「必須置き換え一覧」
 5. **`SpatialHashGrid` を Systems に配置**（または static Manager）
-6. **README / `docs/FOUNDATION_PHASES.md` 更新**
+6. **README / `docs/02_M1_FOUNDATION_PHASES.md` 更新**
 
 ### 必須置き換え一覧（MVP）
 
@@ -218,7 +218,7 @@ spatialObject.AddComponent<UnitSpatialIndex>();
 - [ ] **Phase10** — 採集・CPU 攻撃波・矩形選択・Victory / Defeat が動作
 - [ ] **Benchmark 800** — クラッシュ / 例外なし
 - [ ] Console に **Null 参照・二重 Register エラーなし**
-- [ ] `docs/FOUNDATION_PHASES.md` Phase 14 を ✅ に更新
+- [ ] `docs/02_M1_FOUNDATION_PHASES.md` Phase 14 を ✅ に更新
 
 ---
 

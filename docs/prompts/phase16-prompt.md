@@ -2,8 +2,8 @@
 
 > **状態:** ✅ 完了  
 > **前提:** Phase 1〜15 完了（PoC + Foundation Phase 11〜15）  
-> **ロードマップ:** [FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md)  
-> **使い方:** `@CONSTITUTION.md` と `@docs/RTS_IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。
+> **ロードマップ:** [02_M1_FOUNDATION_PHASES.md](../02_M1_FOUNDATION_PHASES.md)  
+> **使い方:** `@CONSTITUTION.md` と `@docs/IMPLEMENTATION_STATUS.md` と `Assets/Scripts/` を添付したうえで、以下を Agent へ貼り付け。
 
 ---
 
@@ -16,7 +16,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜15 は完了済み。Pha
 
 ## ① Foundation 方針（必読・遵守）
 
-[FOUNDATION_PHASES.md](../FOUNDATION_PHASES.md) の最重要方針を厳守:
+[02_M1_FOUNDATION_PHASES.md](../02_M1_FOUNDATION_PHASES.md) の最重要方針を厳守:
 
 - **AoE 機能を増やさない** — Archer / Food / Age Up 等は禁止
 - **small diff** — 1 Phase = 1 目的（Command Queue のみ）
@@ -114,7 +114,7 @@ Fixed Tick Simulation（Phase 15 既存）
 4. **入口の置き換え** — 上記 5 入口が **Manager を直接呼ばず** `CommandQueue.Enqueue(...)` のみ
 5. **`CommandLog`（MVP 軽量版）** — `SimulationTick.CurrentTick` 付きで記録（**再生は Phase 16 範囲外**）
 6. **`Phase10SceneBuilder`** — Systems に `CommandQueue` 追加
-7. **README / `docs/FOUNDATION_PHASES.md` 更新**
+7. **README / `docs/02_M1_FOUNDATION_PHASES.md` 更新**
 
 ### Command 種別（MVP — 必須）
 
@@ -292,7 +292,7 @@ commandQueueObject.AddComponent<CommandQueue>();
 - [ ] **Selection / Camera / 建築ゴースト** は可変フレームのまま
 - [ ] **Phase10** — 採集・建築・生産・CPU 攻撃波・Victory / Defeat が **Phase 15 同様に動作**
 - [ ] Console に **Null 参照・例外なし**
-- [ ] `docs/FOUNDATION_PHASES.md` Phase 16 を ✅ に更新
+- [ ] `docs/02_M1_FOUNDATION_PHASES.md` Phase 16 を ✅ に更新
 
 ---
 

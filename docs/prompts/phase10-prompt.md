@@ -77,7 +77,7 @@ Low-Spec RTS（AoE2 インスパイア）。**Phase 1〜9 は完了済み。Phas
 3. **`Barracks` / `BarracksProductionManager` の Team 対応** — Phase 9 と同様に CPU Wood / Pop を参照
 4. **`CpuMilitaryAiManager`**（または `CpuEconomyAiManager` 拡張 — **小 diff 優先**）
 5. **Phase10 シーン** — `AoE → Setup Phase10 Scene` → `Assets/Scenes/Phase10.unity`
-6. **README / `docs/PHASES.md` 更新** — Phase 10 完了、最終プロトタイプ到達点を明記
+6. **README / `docs/01_M0_POC_PHASES.md` 更新** — Phase 10 完了、最終プロトタイプ到達点を明記
 
 ### CPU 軍事 AI（MVP ルール）
 
