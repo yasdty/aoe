@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 32 実装（Idle Unit UX）。**M2.6 進行中。次: Phase 33（Rally Point）。**
+> **最終更新:** Phase 33 実装（Rally Point）。**M2.6 進行中。次: Phase 34（Control Groups）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) / [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) / [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) / [06_M3_MILITARY_PHASES.md](06_M3_MILITARY_PHASES.md)
@@ -67,7 +67,7 @@
 | 30 | CPU 4 Resources | `Phase10.unity` | ✅ 実装済み |
 | 31 | Unit Production Queue（TC / Barracks） | `Phase10.unity` | ✅ 実装済み |
 | 32 | Idle Unit UX | `Phase10.unity` | ✅ 実装済み |
-| 33 | Rally Point | `Phase10.unity` | ⬜ 未着手（M2.6） |
+| 33 | Rally Point | `Phase10.unity` | ✅ 実装済み |
 | 34 | Control Groups | `Phase10.unity` | ⬜ 未着手（M2.6） |
 | 35 | Archer（遠距離） | `Phase10.unity` | ⬜ 未着手（M3） |
 | 36 | Spearman | `Phase10.unity` | ⬜ 未着手（M3） |
@@ -84,7 +84,7 @@
 
 **Milestone 2.5 Economy Polish:** ✅ 完了（Phase 21〜30）
 
-**Milestone 2.6 RTS UX:** 🔄 進行中（Phase 31〜32 ✅ / Phase 33〜34 未着手）
+**Milestone 2.6 RTS UX:** 🔄 進行中（Phase 31〜33 ✅ / Phase 34 未着手）
 
 **Milestone 3 Military:** ⬜ 未着手（Phase 35〜40）
 
@@ -132,7 +132,7 @@
 | ホットキーグループ（Ctrl+数字） | ❌ | **Phase 34（M2.6）** |
 | Idle Villager 表示・選択 | ✅ | Phase 32 — HUD カウント + `.` / Shift+. |
 | 待機軍 `,` 選択 | ✅ | Phase 32 — 次の待機 Militia |
-| Rally Point（集合地点） | ❌ | **Phase 33（M2.6）** |
+| Rally Point（集合地点） | ✅ | Phase 33 — TC / Barracks 右クリック設定 + Spawn 後適用 |
 | 選択詳細パネル（HP / 攻撃 / 資源残量） | ✅ | Phase 25 — `SelectionInfoPanelView` |
 | 資源ノード左クリック選択 | ✅ | Phase 25 — Tree / Berry / Deer / Sheep / Boar / Mine |
 
@@ -971,7 +971,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 1 資源・3 建築・1 兵種・1 CPU の **垂直スライス** |
 | 何が一番足りない？ | 多資源・時代・兵種・本格 UI |
-| 次に何を作るべき？ | **M2.6 Phase 33 Rally Point** — [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) |
+| 次に何を作るべき？ | **M2.6 Phase 34 Control Groups** — [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) |
 | プレイ用シーンは？ | **`Phase10.unity`** |
 | 自軍は自動反撃？ | **する**（Phase 29 — 待機 Militia が近接敵を自動攻撃。Move 中はしない） |
 | 性能ベンチマークは？ | **未計測（TBD）** — §Performance Benchmark 参照 |

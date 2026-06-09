@@ -81,6 +81,7 @@ namespace AoE.RTS.Selection
                     townCenter.GetComponent<BuildingHealth>(),
                     lines,
                     out title);
+                lines.Add(townCenter.HasRally ? "Rally: Set" : "Rally: None");
                 return true;
             }
 
@@ -92,6 +93,7 @@ namespace AoE.RTS.Selection
                     barracks.GetComponent<BuildingHealth>(),
                     lines,
                     out title);
+                lines.Add(barracks.HasRally ? "Rally: Set" : "Rally: None");
                 return true;
             }
 

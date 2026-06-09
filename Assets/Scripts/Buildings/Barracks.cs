@@ -18,10 +18,13 @@ namespace AoE.RTS.Buildings
         MaterialPropertyBlock propertyBlock;
         bool isSelected;
         int unitSpawnIndex;
+        ProductionRallyPoint rally;
 
         public PlacedBuildingData Data => data;
         public UnitTeam Team => team;
         public bool IsSelected => isSelected;
+        public ProductionRallyPoint Rally => rally;
+        public bool HasRally => rally.kind != RallyTargetKind.None;
 
         void Awake()
         {
@@ -61,6 +64,7 @@ namespace AoE.RTS.Buildings
         {
             isSelected = false;
             unitSpawnIndex = 0;
+            rally = ProductionRallyPoint.None;
             SetData(buildingData);
             SetTeam(unitTeam);
             transform.position = RuntimeBuildingFactory.ResolveWorldPosition(buildingData, groundPosition);
@@ -76,6 +80,16 @@ namespace AoE.RTS.Buildings
         {
             isSelected = selected;
             UpdateVisual();
+        }
+
+        public void SetRally(ProductionRallyPoint value)
+        {
+            rally = value;
+        }
+
+        public void ClearRally()
+        {
+            rally = ProductionRallyPoint.None;
         }
 
         public bool TryQueueMilitiaProduction()

@@ -431,4 +431,39 @@ namespace AoE.RTS.Commands
             barracks.TryQueueMilitiaProduction();
         }
     }
+
+    public sealed class SetRallyPointCommand : IGameCommand
+    {
+        readonly TownCenter townCenter;
+        readonly Barracks barracks;
+        readonly ProductionRallyPoint rally;
+
+        public string DebugName => "SetRallyPoint";
+
+        public SetRallyPointCommand(TownCenter townCenter, ProductionRallyPoint rally)
+        {
+            this.townCenter = townCenter;
+            this.barracks = null;
+            this.rally = rally;
+        }
+
+        public SetRallyPointCommand(Barracks barracks, ProductionRallyPoint rally)
+        {
+            this.townCenter = null;
+            this.barracks = barracks;
+            this.rally = rally;
+        }
+
+        public void Execute()
+        {
+            if (townCenter != null)
+            {
+                townCenter.SetRally(rally);
+                return;
+            }
+
+            if (barracks != null)
+                barracks.SetRally(rally);
+        }
+    }
 }

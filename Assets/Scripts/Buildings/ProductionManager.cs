@@ -64,10 +64,12 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
-                UnitSpawner.Spawn(
+                Unit unit = UnitSpawner.Spawn(
                     job.unitData,
                     job.townCenter.GetVillagerSpawnPosition(),
                     job.townCenter.Team);
+                if (unit != null)
+                    ProductionRallyApplier.Apply(job.townCenter, unit);
                 activeJobs.RemoveAt(i);
             }
         }

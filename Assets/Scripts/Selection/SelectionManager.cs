@@ -425,6 +425,9 @@ namespace AoE.RTS.Selection
         {
             if (selectedUnits.Count == 0)
             {
+                if (TrySetProductionRallyFromClick())
+                    return;
+
                 TryIssueSheepMoveCommand();
                 return;
             }
@@ -502,6 +505,111 @@ namespace AoE.RTS.Selection
                 return;
 
             CommandQueue.Enqueue(new MoveCommand(selectedUnits, hit.point, groupMoveSpacing));
+        }
+
+        bool TrySetProductionRallyFromClick()
+        {
+            if (mainCamera == null || input == null)
+                return false;
+
+            Ray ray = mainCamera.ScreenPointToRay(input.PointerScreenPosition);
+
+            if (selectedTownCenter != null && selectedTownCenter.Team == UnitTeam.Player)
+            {
+                if (TryBuildTownCenterRallyFromRay(ray, out ProductionRallyPoint rally))
+                {
+                    CommandQueue.Enqueue(new SetRallyPointCommand(selectedTownCenter, rally));
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (selectedBarracks != null && selectedBarracks.Team == UnitTeam.Player)
+            {
+                if (TryBuildBarracksRallyFromRay(ray, out ProductionRallyPoint rally))
+                {
+                    CommandQueue.Enqueue(new SetRallyPointCommand(selectedBarracks, rally));
+                    return true;
+                }
+
+                return false;
+            }
+
+            return false;
+        }
+
+        bool TryBuildTownCenterRallyFromRay(Ray ray, out ProductionRallyPoint rally)
+        {
+            rally = ProductionRallyPoint.None;
+
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, GameLayers.ResourceMask))
+            {
+                TreeResource tree = hit.collider.GetComponentInParent<TreeResource>();
+                if (tree != null && !tree.IsDepleted)
+                {
+                    rally = ProductionRallyPoint.FromTree(tree);
+                    return true;
+                }
+
+                BerryBushResource bush = hit.collider.GetComponentInParent<BerryBushResource>();
+                if (bush != null && !bush.IsDepleted)
+                {
+                    rally = ProductionRallyPoint.FromBerryBush(bush);
+                    return true;
+                }
+
+                GoldMineResource goldMine = hit.collider.GetComponentInParent<GoldMineResource>();
+                if (goldMine != null && !goldMine.IsDepleted)
+                {
+                    rally = ProductionRallyPoint.FromGoldMine(goldMine);
+                    return true;
+                }
+
+                StoneMineResource stoneMine = hit.collider.GetComponentInParent<StoneMineResource>();
+                if (stoneMine != null && !stoneMine.IsDepleted)
+                {
+                    rally = ProductionRallyPoint.FromStoneMine(stoneMine);
+                    return true;
+                }
+            }
+
+            if (Physics.Raycast(ray, out hit, 1000f, GameLayers.BuildingMask))
+            {
+                Farm farm = hit.collider.GetComponentInParent<Farm>();
+                if (farm != null && !farm.IsDepleted && farm.Team == UnitTeam.Player)
+                {
+                    rally = ProductionRallyPoint.FromFarm(farm);
+                    return true;
+                }
+            }
+
+            if (Physics.Raycast(ray, out hit, 1000f, GameLayers.GroundMask))
+            {
+                rally = ProductionRallyPoint.FromGround(hit.point);
+                return true;
+            }
+
+            return false;
+        }
+
+        bool TryBuildBarracksRallyFromRay(Ray ray, out ProductionRallyPoint rally)
+        {
+            rally = ProductionRallyPoint.None;
+
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, GameLayers.GroundMask))
+            {
+                rally = ProductionRallyPoint.FromGround(hit.point);
+                return true;
+            }
+
+            if (Physics.Raycast(ray, out hit, 1000f, GameLayers.ResourceMask | GameLayers.BuildingMask))
+            {
+                rally = ProductionRallyPoint.FromGround(hit.point);
+                return true;
+            }
+
+            return false;
         }
 
         bool TryIssueSheepMoveCommand()

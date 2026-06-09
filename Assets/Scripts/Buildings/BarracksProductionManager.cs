@@ -64,10 +64,12 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
-                UnitSpawner.Spawn(
+                Unit unit = UnitSpawner.Spawn(
                     job.unitData,
                     job.barracks.GetUnitSpawnPosition(),
                     job.barracks.Team);
+                if (unit != null)
+                    ProductionRallyApplier.Apply(job.barracks, unit);
                 activeJobs.RemoveAt(i);
             }
         }

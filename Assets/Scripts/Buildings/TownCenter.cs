@@ -17,10 +17,13 @@ namespace AoE.RTS.Buildings
         Renderer cachedRenderer;
         MaterialPropertyBlock propertyBlock;
         bool isSelected;
+        ProductionRallyPoint rally;
 
         public BuildingData Data => data;
         public UnitTeam Team => team;
         public bool IsSelected => isSelected;
+        public ProductionRallyPoint Rally => rally;
+        public bool HasRally => rally.kind != RallyTargetKind.None;
 
         void Awake()
         {
@@ -76,6 +79,16 @@ namespace AoE.RTS.Buildings
         {
             isSelected = selected;
             UpdateVisual();
+        }
+
+        public void SetRally(ProductionRallyPoint value)
+        {
+            rally = value;
+        }
+
+        public void ClearRally()
+        {
+            rally = ProductionRallyPoint.None;
         }
 
         public bool TryQueueVillagerProduction()
