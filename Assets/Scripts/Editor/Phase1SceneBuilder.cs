@@ -32,7 +32,9 @@ namespace AoE.RTS.EditorTools
         const string DefaultMiningCampDataPath = GameAssetPaths.DefaultMiningCampData;
         const string DefaultMillDataPath = GameAssetPaths.DefaultMillData;
         const string DefaultBarracksDataPath = GameAssetPaths.DefaultBarracksData;
+        const string DefaultArcheryRangeDataPath = GameAssetPaths.DefaultArcheryRangeData;
         const string MilitiaDataPath = GameAssetPaths.MilitiaData;
+        const string ArcherDataPath = GameAssetPaths.ArcherData;
         const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
 
         public static bool EnsureEditModeForSceneSetup()
@@ -657,6 +659,94 @@ namespace AoE.RTS.EditorTools
             return data;
         }
 
+        public static UnitData EnsureArcherData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/UnitData"))
+                AssetDatabase.CreateFolder("Assets/Data", "UnitData");
+
+            UnitData existing = AssetDatabase.LoadAssetAtPath<UnitData>(ArcherDataPath);
+            if (existing != null)
+            {
+                bool dirty = SyncArcherStats(existing);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            UnitData data = ScriptableObject.CreateInstance<UnitData>();
+            data.displayName = "Archer";
+            SyncArcherStats(data);
+            AssetDatabase.CreateAsset(data, ArcherDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureArcheryRangeData(UnitData archerData)
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultArcheryRangeDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.ArcheryRange)
+                {
+                    existing.kind = PlacedBuildingKind.ArcheryRange;
+                    dirty = true;
+                }
+
+                if (existing.trainUnitData != archerData && archerData != null)
+                {
+                    existing.trainUnitData = archerData;
+                    dirty = true;
+                }
+
+                if (existing.woodCost != 150f) { existing.woodCost = 150f; dirty = true; }
+                if (existing.buildTime != 40f) { existing.buildTime = 40f; dirty = true; }
+                if (existing.maxHp != 300f) { existing.maxHp = 300f; dirty = true; }
+                if (existing.trainWoodCost != 25f) { existing.trainWoodCost = 25f; dirty = true; }
+                if (existing.trainFoodCost != 25f) { existing.trainFoodCost = 25f; dirty = true; }
+
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.ArcheryRange;
+            data.displayName = "Archery Range";
+            data.woodCost = 150f;
+            data.buildTime = 40f;
+            data.footprintWidth = 6f;
+            data.footprintDepth = 6f;
+            data.buildingHeight = 3.5f;
+            data.housingProvided = 0;
+            data.trainUnitData = archerData;
+            data.trainTime = 3f;
+            data.trainWoodCost = 25f;
+            data.trainFoodCost = 25f;
+            data.spawnClearance = 4f;
+            data.defaultColor = new Color(0.45f, 0.55f, 0.38f);
+            data.selectedColor = new Color(0.75f, 0.9f, 0.45f);
+            data.maxHp = 300f;
+            AssetDatabase.CreateAsset(data, DefaultArcheryRangeDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
         public static GameObject CreateTownCenter(BuildingData buildingData, Vector3 position)
         {
             const float buildingHeight = 4f;
@@ -1225,6 +1315,26 @@ namespace AoE.RTS.EditorTools
             if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
             if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
             if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            return dirty;
+        }
+
+        static bool SyncArcherStats(UnitData data)
+        {
+            bool dirty = false;
+            if (data.displayName != "Archer") { data.displayName = "Archer"; dirty = true; }
+            if (data.maxHp != 30f) { data.maxHp = 30f; dirty = true; }
+            if (data.moveSpeed != 5f) { data.moveSpeed = 5f; dirty = true; }
+            if (data.attack != 4f) { data.attack = 4f; dirty = true; }
+            if (data.armor != 0f) { data.armor = 0f; dirty = true; }
+            if (data.attackRange != 6f) { data.attackRange = 6f; dirty = true; }
+            if (data.attackCooldown != 2f) { data.attackCooldown = 2f; dirty = true; }
+            if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            if (data.defaultColor != new Color(0.25f, 0.65f, 0.35f))
+            {
+                data.defaultColor = new Color(0.25f, 0.65f, 0.35f);
+                dirty = true;
+            }
+
             return dirty;
         }
 

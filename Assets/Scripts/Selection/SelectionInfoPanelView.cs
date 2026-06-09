@@ -37,7 +37,8 @@ namespace AoE.RTS.Selection
             float panelHeight = Padding * 2f + LineHeight + lineBuffer.Count * LineHeight;
             float panelX = Margin;
             float bottomOffset = Margin;
-            if (selectionManager.SelectedTownCenter != null || selectionManager.SelectedBarracks != null)
+            if (selectionManager.SelectedTownCenter != null || selectionManager.SelectedBarracks != null
+                || selectionManager.SelectedArcheryRange != null)
                 bottomOffset += ProductionPanelReserveHeight;
 
             float panelY = Screen.height - panelHeight - bottomOffset;
@@ -94,6 +95,18 @@ namespace AoE.RTS.Selection
                     lines,
                     out title);
                 lines.Add(barracks.HasRally ? "Rally: Set" : "Rally: None");
+                return true;
+            }
+
+            ArcheryRange archeryRange = selectionManager.SelectedArcheryRange;
+            if (archeryRange != null)
+            {
+                AppendBuildingHealthInfo(
+                    archeryRange.Data != null ? archeryRange.Data.displayName : "Archery Range",
+                    archeryRange.GetComponent<BuildingHealth>(),
+                    lines,
+                    out title);
+                lines.Add(archeryRange.HasRally ? "Rally: Set" : "Rally: None");
                 return true;
             }
 

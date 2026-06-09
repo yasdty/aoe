@@ -15,6 +15,7 @@ namespace AoE.RTS.Buildings
         readonly Stack<LumberCamp> availableLumberCamps = new Stack<LumberCamp>();
         readonly Stack<MiningCamp> availableMiningCamps = new Stack<MiningCamp>();
         readonly Stack<Mill> availableMills = new Stack<Mill>();
+        readonly Stack<ArcheryRange> availableArcheryRanges = new Stack<ArcheryRange>();
 
         int houseSpawnCount;
         int houseReuseCount;
@@ -28,6 +29,8 @@ namespace AoE.RTS.Buildings
         int miningCampReuseCount;
         int millSpawnCount;
         int millReuseCount;
+        int archeryRangeSpawnCount;
+        int archeryRangeReuseCount;
 
         void Awake()
         {
@@ -44,6 +47,8 @@ namespace AoE.RTS.Buildings
             miningCampReuseCount = 0;
             millSpawnCount = 0;
             millReuseCount = 0;
+            archeryRangeSpawnCount = 0;
+            archeryRangeReuseCount = 0;
         }
 
         void OnDestroy()
@@ -66,6 +71,14 @@ namespace AoE.RTS.Buildings
                 return RuntimeBuildingFactory.CreateFreshBarracks(data, position, team);
 
             return instance.RentBarracksInternal(data, position, team);
+        }
+
+        public static ArcheryRange RentArcheryRange(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            if (instance == null)
+                return RuntimeBuildingFactory.CreateFreshArcheryRange(data, position, team);
+
+            return instance.RentArcheryRangeInternal(data, position, team);
         }
 
         public static void ReturnHouse(House house)
@@ -94,6 +107,20 @@ namespace AoE.RTS.Buildings
             }
 
             instance.ReturnBarracksInternal(barracks);
+        }
+
+        public static void ReturnArcheryRange(ArcheryRange archeryRange)
+        {
+            if (archeryRange == null)
+                return;
+
+            if (instance == null)
+            {
+                Object.Destroy(archeryRange.gameObject);
+                return;
+            }
+
+            instance.ReturnArcheryRangeInternal(archeryRange);
         }
 
         public static Farm RentFarm(PlacedBuildingData data, Vector3 position, UnitTeam team)
@@ -242,6 +269,36 @@ namespace AoE.RTS.Buildings
             barracks.transform.SetParent(transform, false);
             barracks.gameObject.SetActive(false);
             availableBarracks.Push(barracks);
+        }
+
+        ArcheryRange RentArcheryRangeInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            ArcheryRange archeryRange;
+            if (availableArcheryRanges.Count > 0)
+            {
+                archeryRange = availableArcheryRanges.Pop();
+                archeryRangeReuseCount++;
+                Debug.Log($"BuildingPool: spawn={archeryRangeSpawnCount} reuse={archeryRangeReuseCount} (ArcheryRange)");
+            }
+            else
+            {
+                archeryRange = RuntimeBuildingFactory.CreateFreshArcheryRange(data, position, team);
+                archeryRange.gameObject.SetActive(false);
+                archeryRange.transform.SetParent(transform, false);
+                archeryRangeSpawnCount++;
+                Debug.Log($"BuildingPool: spawn={archeryRangeSpawnCount} reuse={archeryRangeReuseCount} (ArcheryRange)");
+            }
+
+            archeryRange.PrepareForReuse(data, position, team);
+            archeryRange.gameObject.SetActive(true);
+            return archeryRange;
+        }
+
+        void ReturnArcheryRangeInternal(ArcheryRange archeryRange)
+        {
+            archeryRange.transform.SetParent(transform, false);
+            archeryRange.gameObject.SetActive(false);
+            availableArcheryRanges.Push(archeryRange);
         }
 
         Farm RentFarmInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)

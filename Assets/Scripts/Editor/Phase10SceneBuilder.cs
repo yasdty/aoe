@@ -184,6 +184,7 @@ namespace AoE.RTS.EditorTools
             Phase1SceneBuilder.EnsureLayers();
             UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
             UnitData militiaData = Phase1SceneBuilder.EnsureMilitiaData();
+            UnitData archerData = Phase1SceneBuilder.EnsureArcherData();
             BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
             ResourceNodeData treeData = Phase1SceneBuilder.EnsureDefaultTreeData();
             FoodNodeData berryBushData = Phase1SceneBuilder.EnsureDefaultBerryBushData();
@@ -194,6 +195,7 @@ namespace AoE.RTS.EditorTools
             MineralNodeData stoneMineData = Phase1SceneBuilder.EnsureDefaultStoneMineData();
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
             PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
+            PlacedBuildingData archeryRangeData = Phase1SceneBuilder.EnsureArcheryRangeData(archerData);
             PlacedBuildingData millData = Phase1SceneBuilder.EnsureMillData();
             Phase1SceneBuilder.EnsureFarmData();
             Phase1SceneBuilder.EnsureLumberCampData();
@@ -220,7 +222,7 @@ namespace AoE.RTS.EditorTools
             CreateCpuVillagers(villagerData);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
             Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
-            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData, millData, villagerData, militiaData);
+            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData, archeryRangeData, millData, villagerData, militiaData);
 
             Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -526,6 +528,7 @@ namespace AoE.RTS.EditorTools
             UnityEngine.Camera mainCamera,
             PlacedBuildingData houseData,
             PlacedBuildingData barracksData,
+            PlacedBuildingData archeryRangeData,
             PlacedBuildingData millData,
             UnitData villagerData,
             UnitData militiaData)
@@ -605,6 +608,10 @@ namespace AoE.RTS.EditorTools
             barracksProductionObject.transform.SetParent(systems.transform);
             barracksProductionObject.AddComponent<BarracksProductionManager>();
 
+            GameObject archeryRangeProductionObject = new GameObject("ArcheryRangeProductionManager");
+            archeryRangeProductionObject.transform.SetParent(systems.transform);
+            archeryRangeProductionObject.AddComponent<ArcheryRangeProductionManager>();
+
             GameObject resourceManagerObject = new GameObject("ResourceManager");
             resourceManagerObject.transform.SetParent(systems.transform);
             resourceManagerObject.AddComponent<ResourceManager>();
@@ -639,6 +646,7 @@ namespace AoE.RTS.EditorTools
             selectionManagerObject.AddComponent<SelectionBoxView>();
             selectionManagerObject.AddComponent<ProductionPanelView>();
             selectionManagerObject.AddComponent<BarracksPanelView>();
+            selectionManagerObject.AddComponent<ArcheryRangePanelView>();
             UnitHpBarView hpBarView = selectionManagerObject.AddComponent<UnitHpBarView>();
             SelectionInfoPanelView infoPanelView = selectionManagerObject.AddComponent<SelectionInfoPanelView>();
             ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
@@ -669,6 +677,12 @@ namespace AoE.RTS.EditorTools
             serializedBarracksPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
             serializedBarracksPanel.FindProperty("input").objectReferenceValue = inputReader;
             serializedBarracksPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            ArcheryRangePanelView archeryRangePanel = selectionManagerObject.GetComponent<ArcheryRangePanelView>();
+            SerializedObject serializedArcheryRangePanel = new SerializedObject(archeryRangePanel);
+            serializedArcheryRangePanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedArcheryRangePanel.FindProperty("input").objectReferenceValue = inputReader;
+            serializedArcheryRangePanel.ApplyModifiedPropertiesWithoutUndo();
 
             RTSCameraController cameraController = mainCamera.GetComponent<RTSCameraController>();
             SerializedObject serializedIdleSelection = new SerializedObject(idleSelection);
@@ -704,12 +718,14 @@ namespace AoE.RTS.EditorTools
             serializedPlacement.FindProperty("input").objectReferenceValue = inputReader;
             serializedPlacement.FindProperty("houseData").objectReferenceValue = houseData;
             serializedPlacement.FindProperty("barracksData").objectReferenceValue = barracksData;
+            serializedPlacement.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;
             serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
             serializedResourceHud.FindProperty("selectionManager").objectReferenceValue = selectionManager;
             serializedResourceHud.FindProperty("houseData").objectReferenceValue = houseData;
             serializedResourceHud.FindProperty("barracksData").objectReferenceValue = barracksData;
+            serializedResourceHud.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;
             serializedResourceHud.FindProperty("millData").objectReferenceValue = millData;
             serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
 
@@ -724,6 +740,7 @@ namespace AoE.RTS.EditorTools
 
             SerializedObject serializedCpuMilitary = new SerializedObject(cpuMilitary);
             serializedCpuMilitary.FindProperty("barracksData").objectReferenceValue = barracksData;
+            serializedCpuMilitary.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;
             serializedCpuMilitary.FindProperty("barracksBuildDelaySeconds").floatValue = DefaultBarracksBuildDelaySeconds;
             serializedCpuMilitary.FindProperty("attackWaveIntervalSeconds").floatValue = DefaultAttackWaveIntervalSeconds;
             serializedCpuMilitary.ApplyModifiedPropertiesWithoutUndo();

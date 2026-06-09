@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 35 完了（M2.7 Sandbox）。**次: M3 Phase 36 Archery Range + Archer。**
+> **最終更新:** Phase 36 完了（M3 Archery Range + Archer）。**次: Phase 37 Spearman。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md)
@@ -70,7 +70,7 @@
 | 33 | Rally Point | `Phase10.unity` | ✅ 実装済み |
 | 34 | Control Groups | `Phase10.unity` | ✅ 実装済み |
 | 35 | Phase10 Sandbox | `Phase10.unity` | ✅ 実装済み |
-| 36 | Archery Range + Archer | `Phase10.unity` | ⬜ 未着手（M3） |
+| 36 | Archery Range + Archer | `Phase10.unity` | ✅ 実装済み |
 | 37 | Spearman | `Phase10.unity` | ⬜ 未着手（M3） |
 | 38 | Stable + Cavalry | `Phase10.unity` | ⬜ 未着手（M3） |
 | 39 | Counter System | `Phase10.unity` | ⬜ 未着手（M3） |
@@ -106,7 +106,7 @@
 
 **Milestone 2.7 Sandbox:** ✅ 完了（Phase 35）
 
-**Milestone 3 Military:** ⬜ 未着手（Phase 36〜41）
+**Milestone 3 Military:** 🔄 進行中（Phase 36 ✅ / Phase 37〜41 未着手）
 
 **Milestone 4 AoE Gameplay:** ⬜ 未着手（Phase 42〜48）
 
@@ -133,14 +133,15 @@
 | 機能 | 状態 | 備考 |
 |------|------|------|
 | New Input System | ✅ | `RTSInputActions`（Editor API 生成） |
-| 左クリック選択 | ✅ | Unit / TownCenter / Barracks |
+| 左クリック選択 | ✅ | Unit / TownCenter / Barracks / Archery Range |
 | 右クリック命令 | ✅ | 木 / Berry / Farm / 移動 / 攻撃（CommandQueue 経由） |
 | ドラッグ矩形選択 | ✅ | Phase 2 以降 |
 | Shift 追加選択 | ✅ | |
 | Q キー Villager 生産 | ✅ | TownCenter 選択時 — **Q 連打でキュー追加**（最大 15） |
 | Q キー Militia 生産 | ✅ | Barracks 選択時 Q |
-| ユニット生産キュー | ✅ | TC / Barracks — FIFO 最大 15、先頭のみ Tick |
-| Esc / 右クリックで配置キャンセル | ✅ | House / Barracks 配置モード |
+| Q キー Archer 生産 | ✅ | Archery Range 選択時 Q（Phase 36） |
+| ユニット生産キュー | ✅ | TC / Barracks / Archery Range — FIFO 最大 15、先頭のみ Tick |
+| Esc / 右クリックで配置キャンセル | ✅ | House / Barracks / Archery Range 配置モード |
 | ゲームパッド | ❌ | 未対応 |
 
 ### Selection
@@ -158,7 +159,7 @@
 | ホットキーグループ（Ctrl+数字） | ✅ | Phase 34 — Ctrl+1〜9 保存 / 数字 Recall / Shift+数字追加 |
 | Idle Villager 表示・選択 | ✅ | Phase 32 — HUD カウント + `.` / Shift+. |
 | 待機軍 `,` 選択 | ✅ | Phase 32 — 次の待機 Militia |
-| Rally Point（集合地点） | ✅ | Phase 33 — TC / Barracks 右クリック設定 + Spawn 後適用 |
+| Rally Point（集合地点） | ✅ | Phase 33 — TC / Barracks / Archery Range 右クリック + Spawn 後適用 |
 | 選択詳細パネル（HP / 攻撃 / 資源残量） | ✅ | Phase 25 — `SelectionInfoPanelView` |
 | 資源ノード左クリック選択 | ✅ | Phase 25 — Tree / Berry / Deer / Sheep / Boar / Mine |
 
@@ -1020,7 +1021,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・7 建築・Militia・1 CPU — **Dark Age 垂直スライス**（全体 ~15%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | Phase 35 Play 確認 → **M3 Phase 36 Archery Range** — [07_M3](07_M3_MILITARY_PHASES.md) |
+| 次に何を作るべき？ | **M3 Phase 37 Spearman** — [07_M3](07_M3_MILITARY_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

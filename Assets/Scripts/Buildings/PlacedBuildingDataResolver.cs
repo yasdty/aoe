@@ -146,5 +146,32 @@ namespace AoE.RTS.Buildings
             cached.defaultColor = new Color(0.62f, 0.52f, 0.38f);
             return cached;
         }
+
+        public static PlacedBuildingData ResolveArcheryRange(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultArcheryRangeData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.ArcheryRange;
+            cached.displayName = "Archery Range";
+            cached.woodCost = 150f;
+            cached.buildTime = 40f;
+            cached.footprintWidth = 6f;
+            cached.footprintDepth = 6f;
+            cached.buildingHeight = 3.5f;
+            cached.housingProvided = 0;
+            cached.trainTime = 3f;
+            cached.trainWoodCost = 25f;
+            cached.trainFoodCost = 25f;
+            cached.maxHp = 300f;
+            return cached;
+        }
     }
 }

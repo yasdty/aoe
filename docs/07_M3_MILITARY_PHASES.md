@@ -50,11 +50,9 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 
 ---
 
-## Phase 36 — Archery Range + Archer ⬜
+## Phase 36 — Archery Range + Archer ✅
 
-**実装:** `ArcheryRange` 建築 / `Archer` UnitData / 射程判定 / `AttackManager` 遠距離分岐 / 弾丸 MVP（即時ヒット fallback 可）
-
-**CPU:** Barracks 後に Archery Range 建設・Archer 生産を追加
+**実装:** `ArcheryRange` 建築 / `Archer` UnitData / `ArcheryRangeProductionManager` / 射程 `AttackManager`（`UnitData.attackRange`）/ Rally / CPU Range 建設・Archer 生産
 
 **プロンプト:** [prompts/phase36-prompt.md](prompts/phase36-prompt.md)
 

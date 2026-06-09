@@ -1,0 +1,86 @@
+using AoE.RTS.Buildings;
+using AoE.RTS.Commands;
+using AoE.RTS.Core;
+using AoE.RTS.Economy;
+using AoE.RTS.Input;
+using AoE.RTS.Units;
+using UnityEngine;
+
+namespace AoE.RTS.Selection
+{
+    public class ArcheryRangePanelView : MonoBehaviour
+    {
+        [SerializeField] SelectionManager selectionManager;
+        [SerializeField] RTSInputReader input;
+
+        const float PanelWidth = 220f;
+        const float PanelHeight = 118f;
+        const float Margin = 12f;
+
+        void OnGUI()
+        {
+            if (selectionManager == null)
+                return;
+
+            ArcheryRange archeryRange = selectionManager.SelectedArcheryRange;
+            if (archeryRange == null || archeryRange.Data == null)
+                return;
+
+            PlacedBuildingData data = archeryRange.Data;
+            Rect panelRect = new Rect(Margin, Screen.height - PanelHeight - Margin, PanelWidth, PanelHeight);
+            GUI.Box(panelRect, GUIContent.none);
+
+            GUILayout.BeginArea(panelRect);
+            GUILayout.Label("Archery Range");
+
+            int queueCount = ArcheryRangeProductionManager.GetQueueCount(archeryRange);
+            bool isProducing = queueCount > 0;
+            bool queueFull = queueCount >= ArcheryRangeProductionManager.MaxQueueSize;
+            bool populationFull = !PopulationManager.CanTrainUnit();
+            bool canAffordWood = ResourceManager.Wood >= data.trainWoodCost;
+            bool canAffordFood = ResourceManager.Food >= data.trainFoodCost;
+            bool canAfford = canAffordWood && canAffordFood;
+            GUI.enabled = !queueFull && !populationFull && canAfford && !GameSessionManager.IsGameOver;
+            if (GUILayout.Button($"Create Archer (Q) ({data.trainWoodCost} Wood, {data.trainFoodCost} Food)"))
+                CommandQueue.Enqueue(new TrainArcherCommand(archeryRange));
+            GUI.enabled = true;
+
+            if (queueCount > 0)
+                GUILayout.Label($"Queue: {queueCount}");
+
+            if (queueFull)
+                GUILayout.Label("Queue full");
+            else if (populationFull)
+                GUILayout.Label("Population full");
+            else if (!canAffordWood)
+                GUILayout.Label("Need more Wood");
+            else if (!canAffordFood)
+                GUILayout.Label("Need more Food");
+
+            if (isProducing)
+            {
+                float total = ArcheryRangeProductionManager.GetTotalSeconds(archeryRange);
+                float remaining = ArcheryRangeProductionManager.GetRemainingSeconds(archeryRange);
+                float progress = total > 0f ? 1f - remaining / total : 0f;
+                GUILayout.Label($"Training... {remaining:0.0}s");
+                Rect progressRect = GUILayoutUtility.GetRect(PanelWidth - 24f, 18f);
+                GUI.HorizontalSlider(progressRect, progress, 0f, 1f);
+            }
+
+            GUILayout.EndArea();
+        }
+
+        void Update()
+        {
+            if (GameSessionManager.IsGameOver || selectionManager == null || input == null)
+                return;
+
+            ArcheryRange archeryRange = selectionManager.SelectedArcheryRange;
+            if (archeryRange == null)
+                return;
+
+            if (input.WasTrainVillagerPressedThisFrame())
+                CommandQueue.Enqueue(new TrainArcherCommand(archeryRange));
+        }
+    }
+}

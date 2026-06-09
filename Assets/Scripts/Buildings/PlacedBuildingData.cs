@@ -10,7 +10,8 @@ namespace AoE.RTS.Buildings
         Farm = 2,
         LumberCamp = 3,
         MiningCamp = 4,
-        Mill = 5
+        Mill = 5,
+        ArcheryRange = 6
     }
 
     [CreateAssetMenu(fileName = "PlacedBuildingData", menuName = "AoE/Placed Building Data")]
@@ -27,6 +28,7 @@ namespace AoE.RTS.Buildings
         public UnitData trainUnitData;
         public float trainTime = 3f;
         public float trainWoodCost = 20f;
+        public float trainFoodCost;
         public float spawnClearance = 4f;
         public Color defaultColor = new Color(0.82f, 0.62f, 0.35f);
         public Color ghostValidColor = new Color(0.4f, 0.85f, 0.45f);

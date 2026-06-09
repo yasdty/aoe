@@ -432,10 +432,31 @@ namespace AoE.RTS.Commands
         }
     }
 
+    public sealed class TrainArcherCommand : IGameCommand
+    {
+        readonly ArcheryRange archeryRange;
+
+        public string DebugName => "TrainArcher";
+
+        public TrainArcherCommand(ArcheryRange archeryRange)
+        {
+            this.archeryRange = archeryRange;
+        }
+
+        public void Execute()
+        {
+            if (archeryRange == null)
+                return;
+
+            archeryRange.TryQueueArcherProduction();
+        }
+    }
+
     public sealed class SetRallyPointCommand : IGameCommand
     {
         readonly TownCenter townCenter;
         readonly Barracks barracks;
+        readonly ArcheryRange archeryRange;
         readonly ProductionRallyPoint rally;
 
         public string DebugName => "SetRallyPoint";
@@ -444,6 +465,7 @@ namespace AoE.RTS.Commands
         {
             this.townCenter = townCenter;
             this.barracks = null;
+            this.archeryRange = null;
             this.rally = rally;
         }
 
@@ -451,6 +473,15 @@ namespace AoE.RTS.Commands
         {
             this.townCenter = null;
             this.barracks = barracks;
+            this.archeryRange = null;
+            this.rally = rally;
+        }
+
+        public SetRallyPointCommand(ArcheryRange archeryRange, ProductionRallyPoint rally)
+        {
+            this.townCenter = null;
+            this.barracks = null;
+            this.archeryRange = archeryRange;
             this.rally = rally;
         }
 
@@ -463,7 +494,13 @@ namespace AoE.RTS.Commands
             }
 
             if (barracks != null)
+            {
                 barracks.SetRally(rally);
+                return;
+            }
+
+            if (archeryRange != null)
+                archeryRange.SetRally(rally);
         }
     }
 }

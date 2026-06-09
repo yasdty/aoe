@@ -32,6 +32,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] RTSInputReader input;
         [SerializeField] PlacedBuildingData houseData;
         [SerializeField] PlacedBuildingData barracksData;
+        [SerializeField] PlacedBuildingData archeryRangeData;
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
@@ -100,11 +101,30 @@ namespace AoE.RTS.Buildings
             return false;
         }
 
+        public static bool HasActiveArcheryRangeConstructionForTeam(UnitTeam team)
+        {
+            if (instance == null)
+                return false;
+
+            for (int i = 0; i < instance.sites.Count; i++)
+            {
+                ConstructionSite site = instance.sites[i];
+                if (site.builder == null || site.builder.Team != team)
+                    continue;
+
+                if (site.data != null && site.data.kind == PlacedBuildingKind.ArcheryRange)
+                    return true;
+            }
+
+            return false;
+        }
+
         void Awake()
         {
             instance = this;
             houseData = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
+            archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
@@ -199,6 +219,33 @@ namespace AoE.RTS.Buildings
             }
 
             instance.activePlacementData = instance.barracksData;
+            instance.isPlacementModeActive = true;
+            instance.placementOpenedFrame = Time.frameCount;
+            instance.ghostObject.SetActive(true);
+            instance.RefreshGhostFromPointer();
+        }
+
+        public static void EnterArcheryRangePlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref instance.archeryRangeData);
+            if (instance.archeryRangeData == null)
+                return;
+
+            instance.stashedBuilders.Clear();
+            if (builders != null)
+            {
+                for (int i = 0; i < builders.Count; i++)
+                {
+                    Unit unit = builders[i];
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
+                        instance.stashedBuilders.Add(unit);
+                }
+            }
+
+            instance.activePlacementData = instance.archeryRangeData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.ghostObject.SetActive(true);
@@ -602,6 +649,15 @@ namespace AoE.RTS.Buildings
                 Barracks barracks = RuntimeBuildingFactory.CreateBarracks(site.data, site.position, team);
                 if (barracks != null && site.builder != null)
                     barracks.SetTeam(site.builder.Team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.ArcheryRange)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                ArcheryRange archeryRange = RuntimeBuildingFactory.CreateArcheryRange(site.data, site.position, team);
+                if (archeryRange != null && site.builder != null)
+                    archeryRange.SetTeam(site.builder.Team);
                 return;
             }
 

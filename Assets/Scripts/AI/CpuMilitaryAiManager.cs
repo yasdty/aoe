@@ -13,15 +13,19 @@ namespace AoE.RTS.AI
     {
         const float EvaluateInterval = 2f;
         const int TargetMilitiaCount = 8;
-        const int MinMilitiaForWave = 1;
+        const int TargetArcherCount = 4;
+        const int MinAttackUnitsForWave = 1;
         const float BarracksMinRadius = 10f;
         const float BarracksMaxRadius = 24f;
+        const float ArcheryRangeMinRadius = 12f;
+        const float ArcheryRangeMaxRadius = 28f;
         const UnitTeam CpuTeam = UnitTeam.Enemy;
         const UnitTeam PlayerTeam = UnitTeam.Player;
 
         static CpuMilitaryAiManager instance;
 
         [SerializeField] PlacedBuildingData barracksData;
+        [SerializeField] PlacedBuildingData archeryRangeData;
         [SerializeField] float barracksBuildDelaySeconds = 60f;
         [SerializeField] float attackWaveIntervalSeconds = 30f;
 
@@ -29,7 +33,7 @@ namespace AoE.RTS.AI
         float waveTimer;
         TownCenter cpuTownCenter;
         readonly List<Unit> unitBuffer = new List<Unit>(24);
-        readonly List<Unit> militiaAttackBuffer = new List<Unit>(16);
+        readonly List<Unit> attackWaveBuffer = new List<Unit>(16);
 
         public static CpuMilitaryAiManager Instance => instance;
         public float WaveTimerRemaining => waveTimer;
@@ -37,11 +41,13 @@ namespace AoE.RTS.AI
         public float BarracksWoodCost => barracksData != null ? barracksData.woodCost : 50f;
         public bool HasCpuBarracks => BarracksProductionManager.HasBarracksForTeam(CpuTeam);
         public bool IsBuildingCpuBarracks => BuildingPlacementManager.HasActiveBarracksConstructionForTeam(CpuTeam);
+        public bool HasCpuArcheryRange => ArcheryRangeProductionManager.HasArcheryRangeForTeam(CpuTeam);
 
         void Awake()
         {
             instance = this;
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
+            archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
         }
 
         void OnDestroy()
@@ -82,7 +88,9 @@ namespace AoE.RTS.AI
                 return;
 
             TryBuildBarracks();
+            TryBuildArcheryRange();
             TryTrainMilitia();
+            TryTrainArcher();
         }
 
         void RefreshCpuTownCenter()
@@ -124,9 +132,43 @@ namespace AoE.RTS.AI
                 Debug.Log($"[CPU Military] Barracks construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
+        void TryBuildArcheryRange()
+        {
+            if (archeryRangeData == null)
+                return;
+
+            if (!BarracksProductionManager.HasBarracksForTeam(CpuTeam))
+                return;
+
+            if (ArcheryRangeProductionManager.HasArcheryRangeForTeam(CpuTeam))
+                return;
+
+            if (BuildingPlacementManager.HasActiveConstructionForTeam(CpuTeam))
+                return;
+
+            if (ResourceManager.GetWood(CpuTeam) < archeryRangeData.woodCost)
+                return;
+
+            Unit builder = FindBuilderVillager();
+            if (builder == null)
+                return;
+
+            Vector3 center = cpuTownCenter.transform.position;
+            if (!BuildingPlacementManager.TryFindPlacementNear(
+                    center,
+                    ArcheryRangeMinRadius,
+                    ArcheryRangeMaxRadius,
+                    archeryRangeData,
+                    out Vector3 placement))
+                return;
+
+            if (BuildingPlacementManager.TryStartTeamConstruction(archeryRangeData, placement, builder))
+                Debug.Log($"[CPU Military] Archery Range construction started at {FormatTime(Time.timeSinceLevelLoad)}");
+        }
+
         void TryTrainMilitia()
         {
-            if (CountCpuMilitia() >= TargetMilitiaCount)
+            if (CountCpuUnitsByName("Militia") >= TargetMilitiaCount)
                 return;
 
             Barracks barracks = BarracksProductionManager.GetBarracksForTeam(CpuTeam);
@@ -145,26 +187,50 @@ namespace AoE.RTS.AI
             barracks.TryQueueMilitiaProduction();
         }
 
+        void TryTrainArcher()
+        {
+            if (CountCpuUnitsByName("Archer") >= TargetArcherCount)
+                return;
+
+            ArcheryRange archeryRange = ArcheryRangeProductionManager.GetArcheryRangeForTeam(CpuTeam);
+            if (archeryRange == null)
+                return;
+
+            if (!PopulationManager.CanTrainUnit(CpuTeam))
+                return;
+
+            if (archeryRange.Data == null || archeryRange.Data.trainUnitData == null)
+                return;
+
+            if (ResourceManager.GetWood(CpuTeam) < archeryRange.Data.trainWoodCost)
+                return;
+
+            if (ResourceManager.GetFood(CpuTeam) < archeryRange.Data.trainFoodCost)
+                return;
+
+            archeryRange.TryQueueArcherProduction();
+        }
+
         void LaunchAttackWave()
         {
-            CollectCpuMilitia(militiaAttackBuffer);
-            if (militiaAttackBuffer.Count < MinMilitiaForWave)
+            CollectCpuAttackUnits(attackWaveBuffer);
+            if (attackWaveBuffer.Count < MinAttackUnitsForWave)
             {
                 if (BarracksProductionManager.HasBarracksForTeam(CpuTeam))
-                    Debug.Log("[CPU Military] Attack wave skipped — no Militia");
+                    Debug.Log("[CPU Military] Attack wave skipped — no military units");
                 return;
             }
 
             Vector3 rallyPoint = cpuTownCenter != null
                 ? cpuTownCenter.transform.position
-                : militiaAttackBuffer[0].transform.position;
+                : attackWaveBuffer[0].transform.position;
 
             Unit target = UnitSpatialIndex.FindNearestUnit(rallyPoint, PlayerTeam);
             if (target != null)
             {
-                AttackManager.IssueAttack(militiaAttackBuffer, target);
+                AttackManager.IssueAttack(attackWaveBuffer, target);
                 Debug.Log(
-                    $"[CPU Military] Attack wave: {militiaAttackBuffer.Count} Militia at {FormatTime(Time.timeSinceLevelLoad)}");
+                    $"[CPU Military] Attack wave: {attackWaveBuffer.Count} units at {FormatTime(Time.timeSinceLevelLoad)}");
                 return;
             }
 
@@ -174,44 +240,59 @@ namespace AoE.RTS.AI
                 BuildingHealth playerTownCenterHealth = playerTownCenter.GetComponent<BuildingHealth>();
                 if (playerTownCenterHealth != null && playerTownCenterHealth.IsAlive)
                 {
-                    AttackManager.IssueAttack(militiaAttackBuffer, playerTownCenterHealth);
+                    AttackManager.IssueAttack(attackWaveBuffer, playerTownCenterHealth);
                     Debug.Log(
-                        $"[CPU Military] Attack wave: {militiaAttackBuffer.Count} Militia → Town Center at {FormatTime(Time.timeSinceLevelLoad)}");
+                        $"[CPU Military] Attack wave: {attackWaveBuffer.Count} units → Town Center at {FormatTime(Time.timeSinceLevelLoad)}");
                     return;
                 }
             }
 
             Vector3 advanceTarget = playerTownCenter != null
                 ? playerTownCenter.transform.position
-                : militiaAttackBuffer[0].transform.position;
+                : attackWaveBuffer[0].transform.position;
             advanceTarget.y = 1f;
-            for (int i = 0; i < militiaAttackBuffer.Count; i++)
+            for (int i = 0; i < attackWaveBuffer.Count; i++)
             {
-                Unit militia = militiaAttackBuffer[i];
-                Vector3 offsetTarget = UnitPositionOffsets.ApplyRingOffset(advanceTarget, militia, 4f);
-                militia.SetMoveTarget(offsetTarget);
+                Unit unit = attackWaveBuffer[i];
+                Vector3 offsetTarget = UnitPositionOffsets.ApplyRingOffset(advanceTarget, unit, 4f);
+                unit.SetMoveTarget(offsetTarget);
             }
 
             Debug.Log(
-                $"[CPU Military] Attack wave: {militiaAttackBuffer.Count} Militia advancing at {FormatTime(Time.timeSinceLevelLoad)}");
+                $"[CPU Military] Attack wave: {attackWaveBuffer.Count} units advancing at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
-        void CollectCpuMilitia(List<Unit> buffer)
+        void CollectCpuAttackUnits(List<Unit> buffer)
         {
             buffer.Clear();
             UnitManager.CopyUnitsTo(unitBuffer);
             for (int i = 0; i < unitBuffer.Count; i++)
             {
                 Unit unit = unitBuffer[i];
-                if (unit != null && unit.IsAlive && unit.Team == CpuTeam && unit.CanAttack)
+                if (unit == null || !unit.IsAlive || unit.Team != CpuTeam || !unit.CanAttack)
+                    continue;
+
+                string name = unit.Data != null ? unit.Data.displayName : string.Empty;
+                if (name == "Militia" || name == "Archer")
                     buffer.Add(unit);
             }
         }
 
-        int CountCpuMilitia()
+        int CountCpuUnitsByName(string displayName)
         {
-            CollectCpuMilitia(militiaAttackBuffer);
-            return militiaAttackBuffer.Count;
+            int count = 0;
+            UnitManager.CopyUnitsTo(unitBuffer);
+            for (int i = 0; i < unitBuffer.Count; i++)
+            {
+                Unit unit = unitBuffer[i];
+                if (unit == null || !unit.IsAlive || unit.Team != CpuTeam)
+                    continue;
+
+                if (unit.Data != null && unit.Data.displayName == displayName)
+                    count++;
+            }
+
+            return count;
         }
 
         Unit FindBuilderVillager()

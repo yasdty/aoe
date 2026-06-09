@@ -38,6 +38,11 @@ namespace AoE.RTS.Buildings
             return BuildingPool.RentMill(data, position, team);
         }
 
+        public static ArcheryRange CreateArcheryRange(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return BuildingPool.RentArcheryRange(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -81,6 +86,29 @@ namespace AoE.RTS.Buildings
             barracks.SetData(data);
             barracks.SetTeam(team);
             return barracks;
+        }
+
+        public static ArcheryRange CreateFreshArcheryRange(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject archeryRangeObject = EntityVisualBuilder.CreateBuildingShell(
+                "ArcheryRange",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.Barracks);
+
+            ApplySharedMaterialIfMissingRendererTint(archeryRangeObject);
+            ConfigureBuildingHealth(archeryRangeObject, data.maxHp, data.armor, team);
+
+            ArcheryRange archeryRange = archeryRangeObject.AddComponent<ArcheryRange>();
+            archeryRange.SetData(data);
+            archeryRange.SetTeam(team);
+            return archeryRange;
         }
 
         public static Farm CreateFreshFarm(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
