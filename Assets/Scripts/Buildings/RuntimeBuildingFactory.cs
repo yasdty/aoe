@@ -33,6 +33,11 @@ namespace AoE.RTS.Buildings
             return BuildingPool.RentMiningCamp(data, position, team);
         }
 
+        public static Mill CreateMill(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return BuildingPool.RentMill(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -142,6 +147,28 @@ namespace AoE.RTS.Buildings
             MiningCamp miningCamp = miningCampObject.AddComponent<MiningCamp>();
             miningCamp.SetData(data);
             return miningCamp;
+        }
+
+        public static Mill CreateFreshMill(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject millObject = EntityVisualBuilder.CreateBuildingShell(
+                "Mill",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
+
+            ApplySharedMaterialIfMissingRendererTint(millObject);
+            ConfigureBuildingHealth(millObject, data.maxHp, data.armor, team);
+
+            Mill mill = millObject.AddComponent<Mill>();
+            mill.SetData(data);
+            return mill;
         }
 
         public static Vector3 ResolveWorldPosition(PlacedBuildingData data, Vector3 position)

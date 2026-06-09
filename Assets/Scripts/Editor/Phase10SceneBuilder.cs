@@ -151,9 +151,11 @@ namespace AoE.RTS.EditorTools
             MineralNodeData stoneMineData = Phase1SceneBuilder.EnsureDefaultStoneMineData();
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
             PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
+            PlacedBuildingData millData = Phase1SceneBuilder.EnsureMillData();
             Phase1SceneBuilder.EnsureFarmData();
             Phase1SceneBuilder.EnsureLumberCampData();
             Phase1SceneBuilder.EnsureMiningCampData();
+            Phase1SceneBuilder.EnsureMillData();
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
             if (inputActions == null)
             {
@@ -175,7 +177,7 @@ namespace AoE.RTS.EditorTools
             CreateCpuVillagers(villagerData);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
             Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
-            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData, villagerData, militiaData);
+            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData, millData, villagerData, militiaData);
 
             Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -376,6 +378,7 @@ namespace AoE.RTS.EditorTools
             UnityEngine.Camera mainCamera,
             PlacedBuildingData houseData,
             PlacedBuildingData barracksData,
+            PlacedBuildingData millData,
             UnitData villagerData,
             UnitData militiaData)
         {
@@ -521,6 +524,7 @@ namespace AoE.RTS.EditorTools
             serializedResourceHud.FindProperty("selectionManager").objectReferenceValue = selectionManager;
             serializedResourceHud.FindProperty("houseData").objectReferenceValue = houseData;
             serializedResourceHud.FindProperty("barracksData").objectReferenceValue = barracksData;
+            serializedResourceHud.FindProperty("millData").objectReferenceValue = millData;
             serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedCpuEconomy = new SerializedObject(cpuEconomy);

@@ -14,6 +14,7 @@ namespace AoE.RTS.Buildings
         readonly Stack<Farm> availableFarms = new Stack<Farm>();
         readonly Stack<LumberCamp> availableLumberCamps = new Stack<LumberCamp>();
         readonly Stack<MiningCamp> availableMiningCamps = new Stack<MiningCamp>();
+        readonly Stack<Mill> availableMills = new Stack<Mill>();
 
         int houseSpawnCount;
         int houseReuseCount;
@@ -25,6 +26,8 @@ namespace AoE.RTS.Buildings
         int lumberCampReuseCount;
         int miningCampSpawnCount;
         int miningCampReuseCount;
+        int millSpawnCount;
+        int millReuseCount;
 
         void Awake()
         {
@@ -39,6 +42,8 @@ namespace AoE.RTS.Buildings
             lumberCampReuseCount = 0;
             miningCampSpawnCount = 0;
             miningCampReuseCount = 0;
+            millSpawnCount = 0;
+            millReuseCount = 0;
         }
 
         void OnDestroy()
@@ -155,6 +160,28 @@ namespace AoE.RTS.Buildings
             }
 
             instance.ReturnMiningCampInternal(miningCamp);
+        }
+
+        public static Mill RentMill(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            if (instance == null)
+                return RuntimeBuildingFactory.CreateFreshMill(data, position, team);
+
+            return instance.RentMillInternal(data, position, team);
+        }
+
+        public static void ReturnMill(Mill mill)
+        {
+            if (mill == null)
+                return;
+
+            if (instance == null)
+            {
+                Object.Destroy(mill.gameObject);
+                return;
+            }
+
+            instance.ReturnMillInternal(mill);
         }
 
         House RentHouseInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
@@ -305,6 +332,36 @@ namespace AoE.RTS.Buildings
             miningCamp.transform.SetParent(transform, false);
             miningCamp.gameObject.SetActive(false);
             availableMiningCamps.Push(miningCamp);
+        }
+
+        Mill RentMillInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            Mill mill;
+            if (availableMills.Count > 0)
+            {
+                mill = availableMills.Pop();
+                millReuseCount++;
+                Debug.Log($"BuildingPool: spawn={millSpawnCount} reuse={millReuseCount} (Mill)");
+            }
+            else
+            {
+                mill = RuntimeBuildingFactory.CreateFreshMill(data, position, team);
+                mill.gameObject.SetActive(false);
+                mill.transform.SetParent(transform, false);
+                millSpawnCount++;
+                Debug.Log($"BuildingPool: spawn={millSpawnCount} reuse={millReuseCount} (Mill)");
+            }
+
+            mill.PrepareForReuse(data, position, team);
+            mill.gameObject.SetActive(true);
+            return mill;
+        }
+
+        void ReturnMillInternal(Mill mill)
+        {
+            mill.transform.SetParent(transform, false);
+            mill.gameObject.SetActive(false);
+            availableMills.Push(mill);
         }
     }
 }

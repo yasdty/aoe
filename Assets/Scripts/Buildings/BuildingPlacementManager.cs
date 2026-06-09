@@ -35,6 +35,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
+        [SerializeField] PlacedBuildingData millData;
 
         PlacedBuildingData activePlacementData;
 
@@ -107,6 +108,7 @@ namespace AoE.RTS.Buildings
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
+            millData = PlacedBuildingDataResolver.ResolveMill(ref millData);
             if (mainCamera == null)
                 mainCamera = UnityEngine.Camera.main;
             if (input == null)
@@ -278,6 +280,33 @@ namespace AoE.RTS.Buildings
             }
 
             instance.activePlacementData = instance.miningCampData;
+            instance.isPlacementModeActive = true;
+            instance.placementOpenedFrame = Time.frameCount;
+            instance.ghostObject.SetActive(true);
+            instance.RefreshGhostFromPointer();
+        }
+
+        public static void EnterMillPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.millData = PlacedBuildingDataResolver.ResolveMill(ref instance.millData);
+            if (instance.millData == null)
+                return;
+
+            instance.stashedBuilders.Clear();
+            if (builders != null)
+            {
+                for (int i = 0; i < builders.Count; i++)
+                {
+                    Unit unit = builders[i];
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
+                        instance.stashedBuilders.Add(unit);
+                }
+            }
+
+            instance.activePlacementData = instance.millData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.ghostObject.SetActive(true);
@@ -594,6 +623,13 @@ namespace AoE.RTS.Buildings
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
                 RuntimeBuildingFactory.CreateMiningCamp(site.data, site.position, team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.Mill)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                RuntimeBuildingFactory.CreateMill(site.data, site.position, team);
                 return;
             }
 

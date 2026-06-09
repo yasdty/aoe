@@ -161,6 +161,10 @@ namespace AoE.RTS.Selection
             if (miningCamp != null && miningCamp.Data != null)
                 return miningCamp.Data.displayName;
 
+            Mill mill = health.GetComponent<Mill>();
+            if (mill != null && mill.Data != null)
+                return mill.Data.displayName;
+
             return "Building";
         }
 

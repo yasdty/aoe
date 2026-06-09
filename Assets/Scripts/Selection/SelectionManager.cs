@@ -260,6 +260,13 @@ namespace AoE.RTS.Selection
                 return true;
             }
 
+            Mill mill = hit.collider.GetComponentInParent<Mill>();
+            if (mill != null && mill.Team == UnitTeam.Player)
+            {
+                SetPlacedBuildingSelection(mill.GetComponent<BuildingHealth>());
+                return true;
+            }
+
             return false;
         }
 

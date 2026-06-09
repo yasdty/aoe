@@ -124,5 +124,27 @@ namespace AoE.RTS.Buildings
             cached.defaultColor = new Color(0.45f, 0.48f, 0.52f);
             return cached;
         }
+
+        public static PlacedBuildingData ResolveMill(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultMillData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.Mill;
+            cached.displayName = "Mill";
+            cached.woodCost = 100f;
+            cached.buildTime = 6f;
+            cached.housingProvided = 0;
+            cached.maxHp = 400f;
+            cached.defaultColor = new Color(0.62f, 0.52f, 0.38f);
+            return cached;
+        }
     }
 }

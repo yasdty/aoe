@@ -579,13 +579,10 @@ namespace AoE.RTS.Economy
             if (unit == null)
                 return Vector3.zero;
 
-            TownCenter townCenter = ProductionManager.GetTownCenterForTeam(unit.Team);
-            if (townCenter == null)
-                return Vector3.zero;
+            if (MillRegistry.TryGetNearestFoodDepositPosition(unit, DepositStandRadius, out Vector3 position))
+                return position;
 
-            Vector3 center = townCenter.transform.position;
-            center.y = 1f;
-            return UnitPositionOffsets.ApplyRingOffset(center, unit, DepositStandRadius);
+            return Vector3.zero;
         }
 
         void TickHuntJobs(float fixedDeltaTime)

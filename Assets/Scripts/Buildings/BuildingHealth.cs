@@ -95,6 +95,13 @@ namespace AoE.RTS.Buildings
                 return;
             }
 
+            Mill mill = GetComponent<Mill>();
+            if (mill != null)
+            {
+                BuildingPool.ReturnMill(mill);
+                return;
+            }
+
             Destroy(gameObject);
         }
 
