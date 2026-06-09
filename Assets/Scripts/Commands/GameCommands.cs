@@ -176,6 +176,28 @@ namespace AoE.RTS.Commands
         }
     }
 
+    public sealed class SheepMoveCommand : IGameCommand
+    {
+        readonly SheepResource sheep;
+        readonly Vector3 destination;
+
+        public string DebugName => "SheepMove";
+
+        public SheepMoveCommand(SheepResource sheep, Vector3 destination)
+        {
+            this.sheep = sheep;
+            this.destination = destination;
+        }
+
+        public void Execute()
+        {
+            if (sheep == null || sheep.IsDepleted || sheep.IsNeutral)
+                return;
+
+            sheep.SetMoveTarget(destination);
+        }
+    }
+
     public sealed class GatherGoldCommand : IGameCommand
     {
         readonly List<Unit> units;

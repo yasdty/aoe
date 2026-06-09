@@ -28,7 +28,13 @@ namespace AoE.RTS.Economy
 
         void OnEnable()
         {
+            DeerRegistry.Register(this);
             UpdateVisual();
+        }
+
+        void OnDisable()
+        {
+            DeerRegistry.Unregister(this);
         }
 
         public void SetData(FoodNodeData nodeData)

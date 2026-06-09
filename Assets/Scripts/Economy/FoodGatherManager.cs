@@ -235,6 +235,20 @@ namespace AoE.RTS.Economy
             }
         }
 
+        public static bool IsAnimalBeingHunted(MonoBehaviour animal)
+        {
+            if (instance == null || animal == null)
+                return false;
+
+            for (int i = 0; i < instance.huntJobs.Count; i++)
+            {
+                if (instance.huntJobs[i].animalBehaviour == animal)
+                    return true;
+            }
+
+            return false;
+        }
+
         public static void IssueHuntCommand(IReadOnlyList<Unit> units, IHuntableFoodResource animal)
         {
             if (instance == null || animal == null || animal.IsDepleted)
@@ -247,6 +261,9 @@ namespace AoE.RTS.Economy
             {
                 Unit unit = units[i];
                 if (unit == null || unit.CanAttack)
+                    continue;
+
+                if (animal is SheepResource sheep && !sheep.CanBeHuntedBy(unit.Team))
                     continue;
 
                 if (ProductionManager.GetTownCenterForTeam(unit.Team) == null)

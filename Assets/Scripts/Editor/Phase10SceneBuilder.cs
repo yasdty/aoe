@@ -205,6 +205,8 @@ namespace AoE.RTS.EditorTools
 
             RemoveExistingHuntableAnimals();
             CreateHuntableAnimals(deerData, sheepData);
+            ResetAllSheepToNeutral();
+            EnsureAnimalManagers();
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             Debug.Log("Added Deer/Sheep to the open scene. Save the scene (Ctrl+S) if needed.");
@@ -288,6 +290,70 @@ namespace AoE.RTS.EditorTools
             }
         }
 
+        [MenuItem("AoE/Reset Sheep to Neutral (Phase10)", true)]
+        static bool ValidateResetSheepToNeutral() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Reset Sheep to Neutral (Phase10)")]
+        public static void ResetSheepToNeutralInOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            ResetAllSheepToNeutral();
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Reset all Sheep to Neutral. Save the scene (Ctrl+S) if needed.");
+        }
+
+        [MenuItem("AoE/Add Animal Locomotion (Phase10)", true)]
+        static bool ValidateAddAnimalLocomotion() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Animal Locomotion (Phase10)")]
+        public static void AddAnimalLocomotionToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            EnsureAnimalManagers();
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added AnimalDiscoveryManager + PassiveAnimalLocomotionManager. Save the scene (Ctrl+S) if needed.");
+        }
+
+        static void EnsureAnimalManagers()
+        {
+            if (Object.FindAnyObjectByType<AnimalDiscoveryManager>() == null)
+            {
+                GameObject systems = GameObject.Find("Systems");
+                Transform parent = systems != null ? systems.transform : null;
+                GameObject discoveryObject = new GameObject("AnimalDiscoveryManager");
+                if (parent != null)
+                    discoveryObject.transform.SetParent(parent);
+                discoveryObject.AddComponent<AnimalDiscoveryManager>();
+            }
+
+            if (Object.FindAnyObjectByType<PassiveAnimalLocomotionManager>() == null)
+            {
+                GameObject systems = GameObject.Find("Systems");
+                Transform parent = systems != null ? systems.transform : null;
+                GameObject locomotionObject = new GameObject("PassiveAnimalLocomotionManager");
+                if (parent != null)
+                    locomotionObject.transform.SetParent(parent);
+                locomotionObject.AddComponent<PassiveAnimalLocomotionManager>();
+            }
+        }
+
+        static void ResetAllSheepToNeutral()
+        {
+            SheepResource[] sheep = Object.FindObjectsByType<SheepResource>();
+            for (int i = 0; i < sheep.Length; i++)
+            {
+                if (sheep[i] == null)
+                    continue;
+
+                sheep[i].ResetToNeutral();
+                EditorUtility.SetDirty(sheep[i]);
+            }
+        }
+
         static void RemoveExistingHuntableAnimals()
         {
             DeerResource[] deer = Object.FindObjectsByType<DeerResource>();
@@ -344,6 +410,8 @@ namespace AoE.RTS.EditorTools
 
             for (int i = 0; i < CpuSheepPositions.Length; i++)
                 Phase1SceneBuilder.CreateSheep(sheepData, CpuSheepPositions[i]);
+
+            ResetAllSheepToNeutral();
         }
 
         static void CreateBoars(FoodNodeData boarData)
@@ -432,6 +500,14 @@ namespace AoE.RTS.EditorTools
             GameObject boarAttackManagerObject = new GameObject("BoarAttackManager");
             boarAttackManagerObject.transform.SetParent(systems.transform);
             boarAttackManagerObject.AddComponent<BoarAttackManager>();
+
+            GameObject animalDiscoveryManagerObject = new GameObject("AnimalDiscoveryManager");
+            animalDiscoveryManagerObject.transform.SetParent(systems.transform);
+            animalDiscoveryManagerObject.AddComponent<AnimalDiscoveryManager>();
+
+            GameObject passiveAnimalLocomotionManagerObject = new GameObject("PassiveAnimalLocomotionManager");
+            passiveAnimalLocomotionManagerObject.transform.SetParent(systems.transform);
+            passiveAnimalLocomotionManagerObject.AddComponent<PassiveAnimalLocomotionManager>();
 
             GameObject populationManagerObject = new GameObject("PopulationManager");
             populationManagerObject.transform.SetParent(systems.transform);

@@ -186,6 +186,7 @@ namespace AoE.RTS.Selection
                     break;
                 case SheepResource sheep:
                     title = "Sheep";
+                    lines.Add(sheep.IsNeutral ? "Owner: Neutral" : $"Owner: {sheep.OwnerTeam}");
                     lines.Add($"Food: {Mathf.FloorToInt(sheep.RemainingFood)}");
                     break;
                 case BoarResource boar:

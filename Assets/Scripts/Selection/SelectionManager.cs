@@ -424,7 +424,10 @@ namespace AoE.RTS.Selection
         void HandleMoveCommand()
         {
             if (selectedUnits.Count == 0)
+            {
+                TryIssueSheepMoveCommand();
                 return;
+            }
 
             Ray ray = mainCamera.ScreenPointToRay(input.PointerScreenPosition);
 
@@ -438,7 +441,7 @@ namespace AoE.RTS.Selection
                 }
 
                 SheepResource sheep = hit.collider.GetComponentInParent<SheepResource>();
-                if (sheep != null && !sheep.IsDepleted)
+                if (sheep != null && !sheep.IsDepleted && CanHuntSheepWithSelection(sheep))
                 {
                     CommandQueue.Enqueue(new HuntFoodCommand(selectedUnits, sheep));
                     return;
@@ -499,6 +502,40 @@ namespace AoE.RTS.Selection
                 return;
 
             CommandQueue.Enqueue(new MoveCommand(selectedUnits, hit.point, groupMoveSpacing));
+        }
+
+        bool TryIssueSheepMoveCommand()
+        {
+            if (selectedResource is not SheepResource sheep || sheep.IsDepleted || sheep.IsNeutral)
+                return false;
+
+            if (sheep.OwnerTeam != UnitTeam.Player)
+                return false;
+
+            Ray ray = mainCamera.ScreenPointToRay(input.PointerScreenPosition);
+            if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, GameLayers.GroundMask))
+                return false;
+
+            CommandQueue.Enqueue(new SheepMoveCommand(sheep, hit.point));
+            return true;
+        }
+
+        bool CanHuntSheepWithSelection(SheepResource sheep)
+        {
+            if (sheep == null || sheep.IsNeutral)
+                return false;
+
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit == null || unit.CanAttack)
+                    continue;
+
+                if (sheep.CanBeHuntedBy(unit.Team))
+                    return true;
+            }
+
+            return false;
         }
 
         bool TryIssueAttackCommand(Unit targetUnit)
