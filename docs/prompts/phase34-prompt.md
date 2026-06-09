@@ -1,6 +1,6 @@
 # Phase 34 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 実装済み（Play 確認待ち）  
 > **前提:** Phase 1〜33 完了（PoC + Foundation + M2 Economy + M2.5 + M2.6 Phase 31〜33）  
 > **マイルストン:** M2.6 RTS UX（**最終 Phase**）  
 > **ロードマップ:** [05_M2_6_RTS_UX_PHASES.md](../05_M2_6_RTS_UX_PHASES.md)  
@@ -276,4 +276,4 @@ for each unit in units:
 
 Phase 34 のみ実装。**Phase10 マップ拡張 / M3 Phase 35** に触れない。
 
-**M2.6 全 Phase 完了後:** [05_M2_6_RTS_UX_PHASES.md](../05_M2_6_RTS_UX_PHASES.md) の「Phase10 サンドボックス拡張」→ M3 Phase 35 へ。
+**M2.6 全 Phase 完了後:** [06_M2_7_SANDBOX_PHASES.md](../06_M2_7_SANDBOX_PHASES.md) Phase 35 → M3 Phase 36 へ。

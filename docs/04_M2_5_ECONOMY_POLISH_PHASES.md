@@ -3,7 +3,7 @@
 > **Milestone:** M2.5 — Economy Polish（AoE2 経済ループの完成）  
 > **前提:** [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md)（Phase 17〜20）完了  
 > **実装状況:** [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)  
-> **前:** M2 Economy（Phase 17〜20） / **次:** [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md)（Phase 31〜34）→ [06_M3_MILITARY_PHASES.md](06_M3_MILITARY_PHASES.md)（Phase 35〜40）
+> **前:** M2 Economy（Phase 17〜20） / **次:** [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md)（Phase 31〜34）→ [06_M2_7](06_M2_7_SANDBOX_PHASES.md)（35）→ [07_M3](07_M3_MILITARY_PHASES.md)（36〜41）
 
 > **番号変更（2026-06）:** Phase 25 に **Selection Info Panel**、Phase 28 に **Sheep Herding + 動物徘徊** を挿入。旧 Phase 25〜28（Boar / Mill / Aggro / CPU）は **+1〜+2** 繰り下げ。M2.6 は **31〜34**、M3 は **35〜40** へ。
 

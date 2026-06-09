@@ -592,6 +592,8 @@ namespace AoE.RTS.EditorTools
             ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
             IdleUnitSelectionController idleSelection = selectionManagerObject.AddComponent<IdleUnitSelectionController>();
             IdleUnitHudView idleHud = selectionManagerObject.AddComponent<IdleUnitHudView>();
+            ControlGroupManager controlGroupManager = selectionManagerObject.AddComponent<ControlGroupManager>();
+            ControlGroupInputController controlGroupInput = selectionManagerObject.AddComponent<ControlGroupInputController>();
             selectionManagerObject.AddComponent<CpuHudView>();
             selectionManagerObject.AddComponent<GameTimeHudView>();
             selectionManagerObject.AddComponent<VictoryDefeatHudView>();
@@ -626,6 +628,16 @@ namespace AoE.RTS.EditorTools
             SerializedObject serializedIdleHud = new SerializedObject(idleHud);
             serializedIdleHud.FindProperty("idleSelectionController").objectReferenceValue = idleSelection;
             serializedIdleHud.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedControlGroup = new SerializedObject(controlGroupManager);
+            serializedControlGroup.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedControlGroup.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedControlGroupInput = new SerializedObject(controlGroupInput);
+            serializedControlGroupInput.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedControlGroupInput.FindProperty("controlGroupManager").objectReferenceValue = controlGroupManager;
+            serializedControlGroupInput.FindProperty("input").objectReferenceValue = inputReader;
+            serializedControlGroupInput.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedHpBar = new SerializedObject(hpBarView);
             serializedHpBar.FindProperty("selectionManager").objectReferenceValue = selectionManager;

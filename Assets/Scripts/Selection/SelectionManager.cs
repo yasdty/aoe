@@ -83,6 +83,7 @@ namespace AoE.RTS.Selection
                 return;
 
             instance.selectedUnits.Remove(unit);
+            ControlGroupManager.HandleUnitDied(unit);
         }
 
         void Update()
@@ -806,6 +807,25 @@ namespace AoE.RTS.Selection
             {
                 Unit unit = units[i];
                 if (!IsPlayerUnit(unit))
+                    continue;
+
+                selectedUnits.Add(unit);
+                unit.SetSelected(true);
+            }
+        }
+
+        public void SelectUnitsAdditive(IReadOnlyList<Unit> units)
+        {
+            if (units == null || units.Count == 0)
+                return;
+
+            ClearBuildingSelection();
+            ClearInfoSelection();
+
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (!IsPlayerUnit(unit) || selectedUnits.Contains(unit))
                     continue;
 
                 selectedUnits.Add(unit);
