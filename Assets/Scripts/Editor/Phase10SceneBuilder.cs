@@ -20,12 +20,14 @@ namespace AoE.RTS.EditorTools
     public static class Phase10SceneBuilder
     {
         const string ScenePath = "Assets/Scenes/Phase10.unity";
-        const float DefaultAttackWaveIntervalSeconds = 30f;
-        const float DefaultBarracksBuildDelaySeconds = 60f;
+        const float DefaultAttackWaveIntervalSeconds = 50f;
+        const float DefaultBarracksBuildDelaySeconds = 90f;
 
         static readonly Vector3 PlayerTownCenterPosition = Vector3.zero;
-        static readonly Vector3 CpuTownCenterPosition = new Vector3(0f, 0f, -35f);
-        static readonly Vector3 CameraFocus = new Vector3(0f, 0f, -17f);
+        static readonly Vector3 CpuTownCenterPosition = new Vector3(0f, 0f, -60f);
+        static readonly Vector3 CameraFocus = new Vector3(0f, 0f, -30f);
+        static readonly Vector3 SandboxGroundScale = new Vector3(18f, 1f, 18f);
+        static readonly Vector3 SandboxGroundPosition = new Vector3(0f, 0f, -30f);
 
         static readonly Vector3[] TreePositions =
         {
@@ -44,90 +46,130 @@ namespace AoE.RTS.EditorTools
             new Vector3(-18f, 0f, 2f),
             new Vector3(4f, 0f, -8f),
             new Vector3(-6f, 0f, -6f),
-            new Vector3(0f, 0f, -14f),
-            new Vector3(10f, 0f, -22f),
-            new Vector3(-12f, 0f, -20f),
-            new Vector3(6f, 0f, -28f),
-            new Vector3(-8f, 0f, -30f),
-            new Vector3(0f, 0f, -32f),
-            new Vector3(14f, 0f, -34f),
-            new Vector3(-14f, 0f, -36f),
-            new Vector3(8f, 0f, -40f),
-            new Vector3(-6f, 0f, -42f),
-            new Vector3(0f, 0f, -24f),
-            new Vector3(-20f, 0f, -28f),
-            new Vector3(20f, 0f, -26f)
+            new Vector3(16f, 0f, 6f),
+            new Vector3(-12f, 0f, 16f),
+            new Vector3(20f, 0f, 4f),
+            new Vector3(-22f, 0f, 6f),
+            new Vector3(10f, 0f, 20f),
+            new Vector3(-8f, 0f, 20f),
+            new Vector3(24f, 0f, -4f),
+            new Vector3(-18f, 0f, -4f),
+            new Vector3(2f, 0f, 18f),
+            new Vector3(-4f, 0f, -14f),
+            new Vector3(0f, 0f, -18f),
+            new Vector3(10f, 0f, -24f),
+            new Vector3(-12f, 0f, -22f),
+            new Vector3(6f, 0f, -32f),
+            new Vector3(-8f, 0f, -34f),
+            new Vector3(0f, 0f, -36f),
+            new Vector3(14f, 0f, -38f),
+            new Vector3(-14f, 0f, -40f),
+            new Vector3(8f, 0f, -44f),
+            new Vector3(-6f, 0f, -46f),
+            new Vector3(0f, 0f, -48f),
+            new Vector3(12f, 0f, -52f),
+            new Vector3(-12f, 0f, -54f),
+            new Vector3(8f, 0f, -58f),
+            new Vector3(-8f, 0f, -56f),
+            new Vector3(16f, 0f, -62f),
+            new Vector3(-16f, 0f, -64f),
+            new Vector3(6f, 0f, -68f),
+            new Vector3(-6f, 0f, -70f),
+            new Vector3(0f, 0f, -72f),
+            new Vector3(14f, 0f, -66f),
+            new Vector3(-14f, 0f, -68f),
+            new Vector3(10f, 0f, -74f),
+            new Vector3(-10f, 0f, -76f)
         };
 
         static readonly Vector3[] CpuVillagerPositions =
         {
-            new Vector3(-5f, 1f, -30f),
-            new Vector3(5f, 1f, -30f),
-            new Vector3(0f, 1f, -40f)
+            new Vector3(-5f, 1f, -55f),
+            new Vector3(5f, 1f, -55f),
+            new Vector3(0f, 1f, -68f)
         };
 
         static readonly Vector3[] PlayerBerryBushPositions =
         {
             new Vector3(10f, 0f, 6f),
             new Vector3(-8f, 0f, 8f),
-            new Vector3(6f, 0f, -6f)
+            new Vector3(6f, 0f, -6f),
+            new Vector3(12f, 0f, 4f),
+            new Vector3(-10f, 0f, 5f)
         };
 
         static readonly Vector3[] CpuBerryBushPositions =
         {
-            new Vector3(-6f, 0f, -28f),
-            new Vector3(6f, 0f, -32f),
-            new Vector3(0f, 0f, -38f)
+            new Vector3(-8f, 0f, -53f),
+            new Vector3(8f, 0f, -57f),
+            new Vector3(0f, 0f, -63f),
+            new Vector3(-10f, 0f, -58f),
+            new Vector3(10f, 0f, -62f)
         };
 
         static readonly Vector3[] PlayerDeerPositions =
         {
             new Vector3(7f, 0f, 8f),
             new Vector3(-6f, 0f, 7f),
-            new Vector3(5f, 0f, 5f)
+            new Vector3(5f, 0f, 5f),
+            new Vector3(8f, 0f, 10f)
         };
 
         static readonly Vector3[] PlayerSheepPositions =
         {
             new Vector3(-2f, 0f, 10f),
-            new Vector3(9f, 0f, 3f)
+            new Vector3(9f, 0f, 3f),
+            new Vector3(-4f, 0f, 12f)
         };
 
         static readonly Vector3[] PlayerBoarPositions =
         {
             new Vector3(4f, 0f, 11f),
-            new Vector3(-4f, 0f, 9f)
+            new Vector3(-4f, 0f, 9f),
+            new Vector3(6f, 0f, 12f)
+        };
+
+        static readonly Vector3[] CpuBoarPositions =
+        {
+            new Vector3(-5f, 0f, -55f),
+            new Vector3(5f, 0f, -61f)
         };
 
         static readonly Vector3[] CpuDeerPositions =
         {
-            new Vector3(-4f, 0f, -26f),
-            new Vector3(4f, 0f, -34f)
+            new Vector3(-6f, 0f, -51f),
+            new Vector3(6f, 0f, -59f),
+            new Vector3(0f, 0f, -65f)
         };
 
         static readonly Vector3[] CpuSheepPositions =
         {
-            new Vector3(0f, 0f, -42f)
+            new Vector3(0f, 0f, -67f),
+            new Vector3(5f, 0f, -64f)
         };
 
         static readonly Vector3[] PlayerGoldMinePositions =
         {
-            new Vector3(16f, 0f, 12f)
+            new Vector3(16f, 0f, 12f),
+            new Vector3(20f, 0f, 18f)
         };
 
         static readonly Vector3[] PlayerStoneMinePositions =
         {
-            new Vector3(-16f, 0f, 12f)
+            new Vector3(-16f, 0f, 12f),
+            new Vector3(-20f, 0f, 18f)
         };
 
         static readonly Vector3[] CpuGoldMinePositions =
         {
-            new Vector3(8f, 0f, -30f)
+            new Vector3(10f, 0f, -55f),
+            new Vector3(18f, 0f, -70f)
         };
 
         static readonly Vector3[] CpuStoneMinePositions =
         {
-            new Vector3(-8f, 0f, -32f)
+            new Vector3(-10f, 0f, -57f),
+            new Vector3(-18f, 0f, -72f)
         };
 
         [MenuItem("AoE/Setup Phase10 Scene", true)]
@@ -167,7 +209,7 @@ namespace AoE.RTS.EditorTools
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             Phase1SceneBuilder.CreateLighting();
-            Phase1SceneBuilder.CreateGround();
+            CreateSandboxGround();
             GameObject playerTownCenter = Phase1SceneBuilder.CreateTownCenter(townCenterData, PlayerTownCenterPosition);
             GameObject cpuTownCenter = CreateCpuTownCenter(townCenterData);
             CreateTrees(treeData);
@@ -442,10 +484,20 @@ namespace AoE.RTS.EditorTools
             ResetAllSheepToNeutral();
         }
 
+        static void CreateSandboxGround()
+        {
+            GameObject ground = Phase1SceneBuilder.CreateGround();
+            ground.transform.localScale = SandboxGroundScale;
+            ground.transform.position = SandboxGroundPosition;
+        }
+
         static void CreateBoars(FoodNodeData boarData)
         {
             for (int i = 0; i < PlayerBoarPositions.Length; i++)
                 Phase1SceneBuilder.CreateBoar(boarData, PlayerBoarPositions[i]);
+
+            for (int i = 0; i < CpuBoarPositions.Length; i++)
+                Phase1SceneBuilder.CreateBoar(boarData, CpuBoarPositions[i]);
         }
 
         static void CreateMineralMines(MineralNodeData goldMineData, MineralNodeData stoneMineData)

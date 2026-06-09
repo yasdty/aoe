@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** ロードマップ再編（M2.7〜M6）。Phase 34 実装済み。**次: Phase 35（M2.7 Sandbox）。**
+> **最終更新:** Phase 35 完了（M2.7 Sandbox）。**次: M3 Phase 36 Archery Range + Archer。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md)
@@ -69,7 +69,7 @@
 | 32 | Idle Unit UX | `Phase10.unity` | ✅ 実装済み |
 | 33 | Rally Point | `Phase10.unity` | ✅ 実装済み |
 | 34 | Control Groups | `Phase10.unity` | ✅ 実装済み |
-| 35 | Phase10 Sandbox | `Phase10.unity` | ⬜ 未着手（M2.7） |
+| 35 | Phase10 Sandbox | `Phase10.unity` | ✅ 実装済み |
 | 36 | Archery Range + Archer | `Phase10.unity` | ⬜ 未着手（M3） |
 | 37 | Spearman | `Phase10.unity` | ⬜ 未着手（M3） |
 | 38 | Stable + Cavalry | `Phase10.unity` | ⬜ 未着手（M3） |
@@ -104,7 +104,7 @@
 
 **Milestone 2.6 RTS UX:** ✅ 完了（Phase 31〜34）
 
-**Milestone 2.7 Sandbox:** ⬜ 未着手（Phase 35）
+**Milestone 2.7 Sandbox:** ✅ 完了（Phase 35）
 
 **Milestone 3 Military:** ⬜ 未着手（Phase 36〜41）
 
@@ -518,7 +518,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **市場** | 資源交易 | ❌ | M4 Phase 45 |
 | **テクノロジー** | Dark→Imperial | ❌ | M4 Phase 42〜43 |
 | **マルチプレイ** | LAN/オンライン | ❌（基盤 30〜40%） | M6 Phase 54〜58 |
-| **マップ** | ランダムマップ | 固定 Plane（狭い） | M2.7 Phase 35 |
+| **マップ** | ランダムマップ | 固定 Plane（Phase 35 で拡大） | ✅ Sandbox / ランダムは M8 |
 | **勝敗** | 征服・遺跡等 | TC 破壊 ✅ | 拡張フック定義済み |
 | **リプレイ** | あり | CommandLog のみ △ | M6 Phase 57 |
 | **UI** | 本格 HUD・ミニマップ | OnGUI MVP ✅ | M5 Phase 49〜51 |
@@ -681,7 +681,7 @@ Phase 11 以降の候補（優先度順）。
 | P1 | 採取リピート + Drop-off + 狩り + 選択 UI | ✅ M2.5 |
 | P1 | RTS UX（キュー・Idle・Rally・Control Group） | ✅ M2.6 |
 | P1 | CPU 4 資源経済 | ✅ Phase 30 |
-| P1 | Phase10 サンドボックス拡張 | ⬜ M2.7 Phase 35 |
+| P1 | Phase10 サンドボックス拡張 | ✅ Phase 35 |
 | P1 | 弓兵・騎兵・相性（Archery Range / Stable） | ⬜ M3 Phase 36〜41 |
 | P1 | 本格 HUD + ミニマップ | ⬜ M5 Phase 49〜51 |
 | P1 | Benchmark 数値記録 | △ シーンあり / FPS 表 TBD |
@@ -1020,7 +1020,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・7 建築・Militia・1 CPU — **Dark Age 垂直スライス**（全体 ~15%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 35 Sandbox（M2.7）** → M3 Phase 36 — [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) |
+| 次に何を作るべき？ | Phase 35 Play 確認 → **M3 Phase 36 Archery Range** — [07_M3](07_M3_MILITARY_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

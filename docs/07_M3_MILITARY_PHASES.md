@@ -56,7 +56,7 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 
 **CPU:** Barracks 後に Archery Range 建設・Archer 生産を追加
 
-**プロンプト:** [prompts/phase36-prompt.md](prompts/phase36-prompt.md)（未作成）
+**プロンプト:** [prompts/phase36-prompt.md](prompts/phase36-prompt.md)
 
 ---
 

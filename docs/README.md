@@ -11,7 +11,7 @@
 | 03 | [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) | 17〜20 | **Milestone 2 — Economy** ✅ 完了 |
 | 04 | [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) | 21〜30 | **Milestone 2.5 — Economy Polish** ✅ 完了 |
 | 05 | [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) | 31〜34 | **Milestone 2.6 — RTS UX** ✅ 完了 |
-| 06 | [06_M2_7_SANDBOX_PHASES.md](06_M2_7_SANDBOX_PHASES.md) | 35 | **Milestone 2.7 — Sandbox** ⬜ 未着手 |
+| 06 | [06_M2_7_SANDBOX_PHASES.md](06_M2_7_SANDBOX_PHASES.md) | 35 | **Milestone 2.7 — Sandbox** ✅ 完了 |
 | 07 | [07_M3_MILITARY_PHASES.md](07_M3_MILITARY_PHASES.md) | 36〜41 | **Milestone 3 — Military** ⬜ 未着手 |
 | 08 | [08_M4_GAMEPLAY_PHASES.md](08_M4_GAMEPLAY_PHASES.md) | 42〜48 | **Milestone 4 — AoE Gameplay** ⬜ 未着手 |
 | 09 | [09_M5_VISUAL_UI_PHASES.md](09_M5_VISUAL_UI_PHASES.md) | 49〜53 | **Milestone 5 — Visual / UI** ⬜ 未着手 |
@@ -49,7 +49,7 @@
 | M2 Economy | `03_M2_ECONOMY_PHASES.md` | 17〜20 | ✅ 完了 |
 | M2.5 Economy Polish | `04_M2_5_ECONOMY_POLISH_PHASES.md` | 21〜30 | ✅ 完了 |
 | M2.6 RTS UX | `05_M2_6_RTS_UX_PHASES.md` | 31〜34 | ✅ 完了 |
-| M2.7 Sandbox | `06_M2_7_SANDBOX_PHASES.md` | 35 | ⬜ 未着手 |
+| M2.7 Sandbox | `06_M2_7_SANDBOX_PHASES.md` | 35 | ✅ 完了 |
 | M3 Military | `07_M3_MILITARY_PHASES.md` | 36〜41 | ⬜ 未着手 |
 | M4 AoE Gameplay | `08_M4_GAMEPLAY_PHASES.md` | 42〜48 | ⬜ 未着手 |
 | M5 Visual / UI | `09_M5_VISUAL_UI_PHASES.md` | 49〜53 | ⬜ 未着手 |
