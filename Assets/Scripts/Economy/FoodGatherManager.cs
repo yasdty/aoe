@@ -290,8 +290,6 @@ namespace AoE.RTS.Economy
                 instance.RemoveJobForUnit(units[i]);
         }
 
-        static readonly List<Unit> singleUnitCancelBuffer = new List<Unit>(1);
-
         public static void CancelForUnit(Unit unit)
         {
             if (unit == null)
@@ -301,6 +299,34 @@ namespace AoE.RTS.Economy
             singleUnitCancelBuffer.Add(unit);
             CancelForUnits(singleUnitCancelBuffer);
         }
+
+        public static bool IsUnitGathering(Unit unit)
+        {
+            if (instance == null || unit == null)
+                return false;
+
+            for (int i = 0; i < instance.jobs.Count; i++)
+            {
+                if (instance.jobs[i].unit == unit)
+                    return true;
+            }
+
+            for (int i = 0; i < instance.farmJobs.Count; i++)
+            {
+                if (instance.farmJobs[i].unit == unit)
+                    return true;
+            }
+
+            for (int i = 0; i < instance.huntJobs.Count; i++)
+            {
+                if (instance.huntJobs[i].unit == unit)
+                    return true;
+            }
+
+            return false;
+        }
+
+        static readonly List<Unit> singleUnitCancelBuffer = new List<Unit>(1);
 
         void RemoveJobForUnit(Unit unit)
         {

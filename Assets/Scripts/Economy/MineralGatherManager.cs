@@ -139,6 +139,26 @@ namespace AoE.RTS.Economy
             CancelForUnits(singleUnitCancelBuffer);
         }
 
+        public static bool IsUnitGathering(Unit unit)
+        {
+            if (instance == null || unit == null)
+                return false;
+
+            for (int i = 0; i < instance.goldJobs.Count; i++)
+            {
+                if (instance.goldJobs[i].unit == unit)
+                    return true;
+            }
+
+            for (int i = 0; i < instance.stoneJobs.Count; i++)
+            {
+                if (instance.stoneJobs[i].unit == unit)
+                    return true;
+            }
+
+            return false;
+        }
+
         void RemoveJobForUnit(Unit unit)
         {
             for (int i = goldJobs.Count - 1; i >= 0; i--)

@@ -101,7 +101,7 @@ namespace AoE.RTS.AI
             if (BarracksProductionManager.HasBarracksForTeam(CpuTeam))
                 return;
 
-            if (BuildingPlacementManager.HasActiveBarracksConstructionForTeam(CpuTeam))
+            if (BuildingPlacementManager.HasActiveConstructionForTeam(CpuTeam))
                 return;
 
             if (ResourceManager.GetWood(CpuTeam) < barracksData.woodCost)
@@ -121,7 +121,7 @@ namespace AoE.RTS.AI
                 return;
 
             if (BuildingPlacementManager.TryStartTeamConstruction(barracksData, placement, builder))
-                Debug.Log($"CPU Barracks construction started at {FormatTime(Time.timeSinceLevelLoad)}");
+                Debug.Log($"[CPU Military] Barracks construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
         void TryTrainMilitia()
@@ -152,7 +152,11 @@ namespace AoE.RTS.AI
         {
             CollectCpuMilitia(militiaAttackBuffer);
             if (militiaAttackBuffer.Count < MinMilitiaForWave)
+            {
+                if (BarracksProductionManager.HasBarracksForTeam(CpuTeam))
+                    Debug.Log("[CPU Military] Attack wave skipped — no Militia");
                 return;
+            }
 
             Vector3 rallyPoint = cpuTownCenter != null
                 ? cpuTownCenter.transform.position
@@ -163,7 +167,7 @@ namespace AoE.RTS.AI
             {
                 AttackManager.IssueAttack(militiaAttackBuffer, target);
                 Debug.Log(
-                    $"CPU attack wave at {FormatTime(Time.timeSinceLevelLoad)}: {militiaAttackBuffer.Count} Militia");
+                    $"[CPU Military] Attack wave: {militiaAttackBuffer.Count} Militia at {FormatTime(Time.timeSinceLevelLoad)}");
                 return;
             }
 
@@ -175,7 +179,7 @@ namespace AoE.RTS.AI
                 {
                     AttackManager.IssueAttack(militiaAttackBuffer, playerTownCenterHealth);
                     Debug.Log(
-                        $"CPU attack wave at {FormatTime(Time.timeSinceLevelLoad)}: {militiaAttackBuffer.Count} Militia → Town Center");
+                        $"[CPU Military] Attack wave: {militiaAttackBuffer.Count} Militia → Town Center at {FormatTime(Time.timeSinceLevelLoad)}");
                     return;
                 }
             }
@@ -192,7 +196,7 @@ namespace AoE.RTS.AI
             }
 
             Debug.Log(
-                $"CPU attack wave at {FormatTime(Time.timeSinceLevelLoad)}: {militiaAttackBuffer.Count} Militia advancing");
+                $"[CPU Military] Attack wave: {militiaAttackBuffer.Count} Militia advancing at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
         void CollectCpuMilitia(List<Unit> buffer)

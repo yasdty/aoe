@@ -636,6 +636,11 @@ namespace AoE.RTS.EditorTools
 
             SerializedObject serializedCpuEconomy = new SerializedObject(cpuEconomy);
             serializedCpuEconomy.FindProperty("houseData").objectReferenceValue = houseData;
+            serializedCpuEconomy.FindProperty("millData").objectReferenceValue = millData;
+            PlacedBuildingData miningCampData = Phase1SceneBuilder.EnsureMiningCampData();
+            PlacedBuildingData farmData = Phase1SceneBuilder.EnsureFarmData();
+            serializedCpuEconomy.FindProperty("miningCampData").objectReferenceValue = miningCampData;
+            serializedCpuEconomy.FindProperty("farmData").objectReferenceValue = farmData;
             serializedCpuEconomy.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedCpuMilitary = new SerializedObject(cpuMilitary);

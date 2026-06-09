@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 29 実装（Militia Basic Aggro）。**M2.5 進行中。次: Phase 30（CPU 4 Resources）。**
+> **最終更新:** Phase 30 実装（CPU 4 Resources + AI 競合解消）。**M2.5 完了。次: M2.6 Phase 31（Production Queue）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) / [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) / [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) / [06_M3_MILITARY_PHASES.md](06_M3_MILITARY_PHASES.md)
@@ -64,7 +64,7 @@
 | 27 | Mill（Food Drop-off） | `Phase10.unity` | ✅ 実装済み |
 | 28 | Sheep Herding + Animal Locomotion | `Phase10.unity` | ✅ 実装済み |
 | 29 | Militia Basic Aggro | `Phase10.unity` | ✅ 実装済み |
-| 30 | CPU 4 Resources | `Phase10.unity` | ⬜ 未着手 |
+| 30 | CPU 4 Resources | `Phase10.unity` | ✅ 実装済み |
 | 31 | Unit Production Queue（TC / Barracks） | `Phase10.unity` | ⬜ 未着手（M2.6） |
 | 32 | Idle Unit UX | `Phase10.unity` | ⬜ 未着手（M2.6） |
 | 33 | Rally Point | `Phase10.unity` | ⬜ 未着手（M2.6） |
@@ -82,7 +82,7 @@
 
 **Milestone 2 Economy:** ✅ 完了（Phase 17〜20 — Wood / Food / Gold / Stone）
 
-**Milestone 2.5 Economy Polish:** 進行中（Phase 21〜29 ✅ — Phase 30 未着手）
+**Milestone 2.5 Economy Polish:** ✅ 完了（Phase 21〜30）
 
 **Milestone 2.6 RTS UX:** ⬜ 未着手（Phase 31〜34 — ユニット生産キュー・Idle・Rally・Control Group）
 
@@ -217,7 +217,7 @@
 |------|------|------|
 | CPU 経済 AI | ✅ | `CpuEconomyAiManager`（2 秒評価間隔） |
 | CPU Villager 木採集自動割当 | ✅ | |
-| CPU 4 資源経済 | ❌ | **Phase 30（M2.5）** — Berry/Farm/Gold/Stone 未対応 |
+| CPU 4 資源経済 | ✅ | Phase 30 — Berry/Hunt/Gold/Stone + Mill/Mining Camp/Farm、`CpuAiCoordination` |
 | CPU House 建築 | ✅ | Wood 余裕・Pop 逼迫時 |
 | CPU Villager 増産 | ✅ | 目標 6 体 |
 | CPU 軍事 AI | ✅ | `CpuMilitaryAiManager` |
@@ -945,7 +945,7 @@ AoE2 フル機能 ████░░░░░░░░░░░░░░░░  
 
 ```
 Assets/Scripts/
-  AI/           CpuEconomyAiManager, CpuMilitaryAiManager
+  AI/           CpuAiCoordination, CpuEconomyAiManager, CpuMilitaryAiManager
   Buildings/    TC, House, Barracks, Placement, Production
   Camera/       RTSCameraController
   Combat/       AttackManager, UnitAggroManager, BoarAttackManager
@@ -970,7 +970,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 1 資源・3 建築・1 兵種・1 CPU の **垂直スライス** |
 | 何が一番足りない？ | 多資源・時代・兵種・本格 UI |
-| 次に何を作るべき？ | **M2.5 Phase 30 CPU 4 Resources** — [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) |
+| 次に何を作るべき？ | **M2.6 Phase 31 Unit Production Queue** — [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) |
 | プレイ用シーンは？ | **`Phase10.unity`** |
 | 自軍は自動反撃？ | **する**（Phase 29 — 待機 Militia が近接敵を自動攻撃。Move 中はしない） |
 | 性能ベンチマークは？ | **未計測（TBD）** — §Performance Benchmark 参照 |
