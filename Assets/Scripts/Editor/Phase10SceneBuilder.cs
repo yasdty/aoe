@@ -610,6 +610,7 @@ namespace AoE.RTS.EditorTools
             BarracksPanelView barracksPanel = selectionManagerObject.GetComponent<BarracksPanelView>();
             SerializedObject serializedBarracksPanel = new SerializedObject(barracksPanel);
             serializedBarracksPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedBarracksPanel.FindProperty("input").objectReferenceValue = inputReader;
             serializedBarracksPanel.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedHpBar = new SerializedObject(hpBarView);

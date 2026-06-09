@@ -355,9 +355,6 @@ namespace AoE.RTS.AI
             if (!PopulationManager.CanTrainUnit(CpuAiCoordination.CpuTeam))
                 return;
 
-            if (ProductionManager.IsProducing(cpuTownCenter))
-                return;
-
             cpuTownCenter.TryQueueVillagerProduction();
         }
 

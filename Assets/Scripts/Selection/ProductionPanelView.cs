@@ -14,7 +14,7 @@ namespace AoE.RTS.Selection
         [SerializeField] RTSInputReader input;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 88f;
+        const float PanelHeight = 104f;
         const float Margin = 12f;
 
         void OnGUI()
@@ -32,18 +32,25 @@ namespace AoE.RTS.Selection
             GUILayout.BeginArea(panelRect);
             GUILayout.Label("Town Center");
 
-            bool isProducing = ProductionManager.IsProducing(townCenter);
+            int queueCount = ProductionManager.GetQueueCount(townCenter);
+            bool isProducing = queueCount > 0;
+            bool queueFull = queueCount >= ProductionManager.MaxQueueSize;
             bool populationFull = !PopulationManager.CanTrainUnit();
             float foodCost = townCenter.Data != null ? townCenter.Data.villagerFoodCost : 0f;
             bool canAffordFood = ResourceManager.GetFood(UnitTeam.Player) >= foodCost;
-            GUI.enabled = !isProducing && !populationFull && canAffordFood && !GameSessionManager.IsGameOver;
+            GUI.enabled = !queueFull && !populationFull && canAffordFood && !GameSessionManager.IsGameOver;
             if (GUILayout.Button($"Create Villager (Q) ({foodCost} Food)"))
                 CommandQueue.Enqueue(new TrainVillagerCommand(townCenter));
             GUI.enabled = true;
 
-            if (populationFull && !isProducing)
+            if (queueCount > 0)
+                GUILayout.Label($"Queue: {queueCount}");
+
+            if (queueFull)
+                GUILayout.Label("Queue full");
+            else if (populationFull)
                 GUILayout.Label("Population full");
-            else if (!canAffordFood && !isProducing)
+            else if (!canAffordFood)
                 GUILayout.Label("Need more Food");
 
             if (isProducing)

@@ -8,6 +8,8 @@ namespace AoE.RTS.Buildings
 {
     public class ProductionManager : MonoBehaviour, ISimulationTickable
     {
+        public const int MaxQueueSize = 15;
+
         struct ProductionJob
         {
             public TownCenter townCenter;
@@ -52,6 +54,9 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
+                if (!IsHeadJobIndex(i))
+                    continue;
+
                 job.remainingSeconds -= fixedDeltaTime;
                 if (job.remainingSeconds > 0f)
                 {
@@ -65,6 +70,18 @@ namespace AoE.RTS.Buildings
                     job.townCenter.Team);
                 activeJobs.RemoveAt(i);
             }
+        }
+
+        bool IsHeadJobIndex(int index)
+        {
+            TownCenter townCenter = activeJobs[index].townCenter;
+            for (int j = 0; j < index; j++)
+            {
+                if (activeJobs[j].townCenter == townCenter)
+                    return false;
+            }
+
+            return true;
         }
 
         public static void Register(TownCenter townCenter)
@@ -109,7 +126,7 @@ namespace AoE.RTS.Buildings
             if (instance == null || townCenter == null || unitData == null || trainSeconds <= 0f)
                 return false;
 
-            if (IsProducing(townCenter))
+            if (GetQueueCount(townCenter) >= MaxQueueSize)
                 return false;
 
             if (!PopulationManager.CanTrainUnit(townCenter.Team))
@@ -130,16 +147,22 @@ namespace AoE.RTS.Buildings
 
         public static bool IsProducing(TownCenter townCenter)
         {
-            if (instance == null || townCenter == null)
-                return false;
+            return GetQueueCount(townCenter) > 0;
+        }
 
+        public static int GetQueueCount(TownCenter townCenter)
+        {
+            if (instance == null || townCenter == null)
+                return 0;
+
+            int count = 0;
             for (int i = 0; i < instance.activeJobs.Count; i++)
             {
                 if (instance.activeJobs[i].townCenter == townCenter)
-                    return true;
+                    count++;
             }
 
-            return false;
+            return count;
         }
 
         public static float GetRemainingSeconds(TownCenter townCenter)

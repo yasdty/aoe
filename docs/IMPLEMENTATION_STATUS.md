@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 30 実装（CPU 4 Resources + AI 競合解消）。**M2.5 完了。次: M2.6 Phase 31（Production Queue）。**
+> **最終更新:** Phase 31 実装（Unit Production Queue）。**M2.6 着手。次: Phase 32（Idle Unit UX）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [01_M0_POC_PHASES.md](01_M0_POC_PHASES.md) / [02_M1_FOUNDATION_PHASES.md](02_M1_FOUNDATION_PHASES.md) / [03_M2_ECONOMY_PHASES.md](03_M2_ECONOMY_PHASES.md) / [04_M2_5_ECONOMY_POLISH_PHASES.md](04_M2_5_ECONOMY_POLISH_PHASES.md) / [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) / [06_M3_MILITARY_PHASES.md](06_M3_MILITARY_PHASES.md)
@@ -65,7 +65,7 @@
 | 28 | Sheep Herding + Animal Locomotion | `Phase10.unity` | ✅ 実装済み |
 | 29 | Militia Basic Aggro | `Phase10.unity` | ✅ 実装済み |
 | 30 | CPU 4 Resources | `Phase10.unity` | ✅ 実装済み |
-| 31 | Unit Production Queue（TC / Barracks） | `Phase10.unity` | ⬜ 未着手（M2.6） |
+| 31 | Unit Production Queue（TC / Barracks） | `Phase10.unity` | ✅ 実装済み |
 | 32 | Idle Unit UX | `Phase10.unity` | ⬜ 未着手（M2.6） |
 | 33 | Rally Point | `Phase10.unity` | ⬜ 未着手（M2.6） |
 | 34 | Control Groups | `Phase10.unity` | ⬜ 未着手（M2.6） |
@@ -84,7 +84,7 @@
 
 **Milestone 2.5 Economy Polish:** ✅ 完了（Phase 21〜30）
 
-**Milestone 2.6 RTS UX:** ⬜ 未着手（Phase 31〜34 — ユニット生産キュー・Idle・Rally・Control Group）
+**Milestone 2.6 RTS UX:** 🔄 進行中（Phase 31 ✅ / Phase 32〜34 未着手）
 
 **Milestone 3 Military:** ⬜ 未着手（Phase 35〜40）
 
@@ -111,9 +111,9 @@
 | 右クリック命令 | ✅ | 木 / Berry / Farm / 移動 / 攻撃（CommandQueue 経由） |
 | ドラッグ矩形選択 | ✅ | Phase 2 以降 |
 | Shift 追加選択 | ✅ | |
-| Q キー Villager 生産 | ✅ | TownCenter 選択時（**1 体のみ** — キューなし） |
-| Q キー Militia 生産 | ❌ | **Phase 31** — Barracks 選択時 Q |
-| ユニット生産キュー | ❌ | **Phase 31** — 現状 `IsProducing` で 1 ジョブのみ |
+| Q キー Villager 生産 | ✅ | TownCenter 選択時 — **Q 連打でキュー追加**（最大 15） |
+| Q キー Militia 生産 | ✅ | Barracks 選択時 Q |
+| ユニット生産キュー | ✅ | TC / Barracks — FIFO 最大 15、先頭のみ Tick |
 | Esc / 右クリックで配置キャンセル | ✅ | House / Barracks 配置モード |
 | ゲームパッド | ❌ | 未対応 |
 
@@ -238,8 +238,8 @@
 | Stone 表示 | ✅ | `ResourceHudView` / `CpuHudView` |
 | CPU Wood / Pop | ✅ | `CpuHudView`（Phase 9/10） |
 | ゲーム時間・波カウントダウン | ✅ | `GameTimeHudView`（Phase 10） |
-| TC / Barracks 生産パネル | ✅ | OnGUI ボタン（Barracks は Q なし） |
-| 生産キュー UI | ❌ | **Phase 31** |
+| TC / Barracks 生産パネル | ✅ | OnGUI — Q キー + `Queue: N` 表示 |
+| 生産キュー UI | ✅ | Phase 31 — 先頭プログレス + キュー長 |
 | Idle カウント HUD | ❌ | **Phase 32** |
 | 選択詳細パネル | ✅ | Phase 25 |
 | 本格 UI（uGUI / UI Toolkit） | ❌ | すべて OnGUI MVP |
@@ -358,7 +358,7 @@ CpuEconomyAiManager / CpuMilitaryAiManager（直接 Manager 呼び出し）
 | **関連データ** | `BuildingData`（TC）, `PlacedBuildingData`（House, Barracks, Farm, LumberCamp） |
 | **データフロー** | HUD ボタン → 配置モード → クリック確定 → ConstructionSite → 完成時 Factory で建築生成 / Pop 加算 |
 
-**生産キュー:** TC・Barracks とも **1 スロット**
+**生産キュー:** TC・Barracks とも **FIFO 最大 15**（Phase 31 — 先頭ジョブのみ Tick、追加時 Spend）
 
 ---
 
@@ -810,7 +810,7 @@ PopulationManager
 
 ```
 CpuEconomyAiManager
-├─ ProductionManager                   GetTownCenterForTeam, IsProducing
+├─ ProductionManager                   GetTownCenterForTeam, GetQueueCount, IsProducing
 ├─ GatherManager                       IssueGatherCommand
 ├─ ResourceManager                     GetWood
 ├─ PopulationManager                   GetCurrentPopulation, GetMaxPopulation, CanTrainUnit
@@ -821,7 +821,7 @@ CpuEconomyAiManager
 
 CpuMilitaryAiManager
 ├─ ProductionManager                   GetTownCenterForTeam
-├─ BarracksProductionManager           HasBarracksForTeam, GetBarracksForTeam, IsProducing
+├─ BarracksProductionManager           HasBarracksForTeam, GetBarracksForTeam, GetQueueCount, IsProducing
 ├─ BuildingPlacementManager            HasActiveBarracksConstructionForTeam, TryFindPlacementNear,
 │                                    TryStartTeamConstruction, IsUnitBuilding
 ├─ ResourceManager                     GetWood
@@ -970,7 +970,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 1 資源・3 建築・1 兵種・1 CPU の **垂直スライス** |
 | 何が一番足りない？ | 多資源・時代・兵種・本格 UI |
-| 次に何を作るべき？ | **M2.6 Phase 31 Unit Production Queue** — [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) |
+| 次に何を作るべき？ | **M2.6 Phase 32 Idle Unit UX** — [05_M2_6_RTS_UX_PHASES.md](05_M2_6_RTS_UX_PHASES.md) |
 | プレイ用シーンは？ | **`Phase10.unity`** |
 | 自軍は自動反撃？ | **する**（Phase 29 — 待機 Militia が近接敵を自動攻撃。Move 中はしない） |
 | 性能ベンチマークは？ | **未計測（TBD）** — §Performance Benchmark 参照 |

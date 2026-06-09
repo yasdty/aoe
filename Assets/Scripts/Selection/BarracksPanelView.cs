@@ -2,6 +2,7 @@ using AoE.RTS.Buildings;
 using AoE.RTS.Commands;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
+using AoE.RTS.Input;
 using UnityEngine;
 
 namespace AoE.RTS.Selection
@@ -9,9 +10,10 @@ namespace AoE.RTS.Selection
     public class BarracksPanelView : MonoBehaviour
     {
         [SerializeField] SelectionManager selectionManager;
+        [SerializeField] RTSInputReader input;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 88f;
+        const float PanelHeight = 104f;
         const float Margin = 12f;
 
         void OnGUI()
@@ -30,17 +32,24 @@ namespace AoE.RTS.Selection
             GUILayout.BeginArea(panelRect);
             GUILayout.Label("Barracks");
 
-            bool isProducing = BarracksProductionManager.IsProducing(barracks);
+            int queueCount = BarracksProductionManager.GetQueueCount(barracks);
+            bool isProducing = queueCount > 0;
+            bool queueFull = queueCount >= BarracksProductionManager.MaxQueueSize;
             bool populationFull = !PopulationManager.CanTrainUnit();
             bool canAfford = ResourceManager.Wood >= data.trainWoodCost;
-            GUI.enabled = !isProducing && !populationFull && canAfford && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button($"Create Militia ({data.trainWoodCost} Wood)"))
+            GUI.enabled = !queueFull && !populationFull && canAfford && !GameSessionManager.IsGameOver;
+            if (GUILayout.Button($"Create Militia (Q) ({data.trainWoodCost} Wood)"))
                 CommandQueue.Enqueue(new TrainMilitiaCommand(barracks));
             GUI.enabled = true;
 
-            if (populationFull && !isProducing)
+            if (queueCount > 0)
+                GUILayout.Label($"Queue: {queueCount}");
+
+            if (queueFull)
+                GUILayout.Label("Queue full");
+            else if (populationFull)
                 GUILayout.Label("Population full");
-            else if (!canAfford && !isProducing)
+            else if (!canAfford)
                 GUILayout.Label("Need more Wood");
 
             if (isProducing)
@@ -54,6 +63,19 @@ namespace AoE.RTS.Selection
             }
 
             GUILayout.EndArea();
+        }
+
+        void Update()
+        {
+            if (GameSessionManager.IsGameOver || selectionManager == null || input == null)
+                return;
+
+            Barracks barracks = selectionManager.SelectedBarracks;
+            if (barracks == null)
+                return;
+
+            if (input.WasTrainVillagerPressedThisFrame())
+                CommandQueue.Enqueue(new TrainMilitiaCommand(barracks));
         }
     }
 }

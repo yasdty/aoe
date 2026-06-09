@@ -142,9 +142,6 @@ namespace AoE.RTS.AI
             if (ResourceManager.GetWood(CpuTeam) < barracks.Data.trainWoodCost)
                 return;
 
-            if (BarracksProductionManager.IsProducing(barracks))
-                return;
-
             barracks.TryQueueMilitiaProduction();
         }
 

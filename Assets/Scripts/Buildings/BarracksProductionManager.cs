@@ -8,6 +8,8 @@ namespace AoE.RTS.Buildings
 {
     public class BarracksProductionManager : MonoBehaviour, ISimulationTickable
     {
+        public const int MaxQueueSize = 15;
+
         struct ProductionJob
         {
             public Barracks barracks;
@@ -52,6 +54,9 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
+                if (!IsHeadJobIndex(i))
+                    continue;
+
                 job.remainingSeconds -= fixedDeltaTime;
                 if (job.remainingSeconds > 0f)
                 {
@@ -65,6 +70,18 @@ namespace AoE.RTS.Buildings
                     job.barracks.Team);
                 activeJobs.RemoveAt(i);
             }
+        }
+
+        bool IsHeadJobIndex(int index)
+        {
+            Barracks barracks = activeJobs[index].barracks;
+            for (int j = 0; j < index; j++)
+            {
+                if (activeJobs[j].barracks == barracks)
+                    return false;
+            }
+
+            return true;
         }
 
         public static void Register(Barracks barracks)
@@ -114,7 +131,7 @@ namespace AoE.RTS.Buildings
             if (instance == null || barracks == null || unitData == null || trainSeconds <= 0f)
                 return false;
 
-            if (IsProducing(barracks))
+            if (GetQueueCount(barracks) >= MaxQueueSize)
                 return false;
 
             if (!PopulationManager.CanTrainUnit(barracks.Team))
@@ -135,16 +152,22 @@ namespace AoE.RTS.Buildings
 
         public static bool IsProducing(Barracks barracks)
         {
-            if (instance == null || barracks == null)
-                return false;
+            return GetQueueCount(barracks) > 0;
+        }
 
+        public static int GetQueueCount(Barracks barracks)
+        {
+            if (instance == null || barracks == null)
+                return 0;
+
+            int count = 0;
             for (int i = 0; i < instance.activeJobs.Count; i++)
             {
                 if (instance.activeJobs[i].barracks == barracks)
-                    return true;
+                    count++;
             }
 
-            return false;
+            return count;
         }
 
         public static float GetRemainingSeconds(Barracks barracks)
