@@ -13,6 +13,7 @@ namespace AoE.RTS.AI
     {
         const float EvaluateInterval = 2f;
         const int TargetMilitiaCount = 8;
+        const int TargetSpearmanCount = 4;
         const int TargetArcherCount = 4;
         const int MinAttackUnitsForWave = 1;
         const float BarracksMinRadius = 10f;
@@ -90,6 +91,7 @@ namespace AoE.RTS.AI
             TryBuildBarracks();
             TryBuildArcheryRange();
             TryTrainMilitia();
+            TryTrainSpearman();
             TryTrainArcher();
         }
 
@@ -187,6 +189,30 @@ namespace AoE.RTS.AI
             barracks.TryQueueMilitiaProduction();
         }
 
+        void TryTrainSpearman()
+        {
+            if (CountCpuUnitsByName("Spearman") >= TargetSpearmanCount)
+                return;
+
+            Barracks barracks = BarracksProductionManager.GetBarracksForTeam(CpuTeam);
+            if (barracks == null)
+                return;
+
+            if (!PopulationManager.CanTrainUnit(CpuTeam))
+                return;
+
+            if (barracks.Data == null || barracks.Data.secondaryTrainUnitData == null)
+                return;
+
+            if (ResourceManager.GetWood(CpuTeam) < barracks.Data.secondaryTrainWoodCost)
+                return;
+
+            if (ResourceManager.GetFood(CpuTeam) < barracks.Data.secondaryTrainFoodCost)
+                return;
+
+            barracks.TryQueueSpearmanProduction();
+        }
+
         void TryTrainArcher()
         {
             if (CountCpuUnitsByName("Archer") >= TargetArcherCount)
@@ -273,7 +299,7 @@ namespace AoE.RTS.AI
                     continue;
 
                 string name = unit.Data != null ? unit.Data.displayName : string.Empty;
-                if (name == "Militia" || name == "Archer")
+                if (name == "Militia" || name == "Spearman" || name == "Archer")
                     buffer.Add(unit);
             }
         }

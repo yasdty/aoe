@@ -184,6 +184,7 @@ namespace AoE.RTS.EditorTools
             Phase1SceneBuilder.EnsureLayers();
             UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
             UnitData militiaData = Phase1SceneBuilder.EnsureMilitiaData();
+            UnitData spearmanData = Phase1SceneBuilder.EnsureSpearmanData();
             UnitData archerData = Phase1SceneBuilder.EnsureArcherData();
             BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
             ResourceNodeData treeData = Phase1SceneBuilder.EnsureDefaultTreeData();
@@ -194,7 +195,7 @@ namespace AoE.RTS.EditorTools
             MineralNodeData goldMineData = Phase1SceneBuilder.EnsureDefaultGoldMineData();
             MineralNodeData stoneMineData = Phase1SceneBuilder.EnsureDefaultStoneMineData();
             PlacedBuildingData houseData = Phase1SceneBuilder.EnsureHouseData();
-            PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData);
+            PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData, spearmanData);
             PlacedBuildingData archeryRangeData = Phase1SceneBuilder.EnsureArcheryRangeData(archerData);
             PlacedBuildingData millData = Phase1SceneBuilder.EnsureMillData();
             Phase1SceneBuilder.EnsureFarmData();

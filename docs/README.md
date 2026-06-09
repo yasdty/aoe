@@ -17,6 +17,7 @@
 | 09 | [09_M5_VISUAL_UI_PHASES.md](09_M5_VISUAL_UI_PHASES.md) | 49〜53 | **Milestone 5 — Visual / UI** ⬜ 未着手 |
 | 10 | [10_M6_MULTIPLAYER_FOUNDATION.md](10_M6_MULTIPLAYER_FOUNDATION.md) | 54〜58 | **Milestone 6 — Multiplayer Foundation** ⬜ 未着手 |
 | 11 | [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED_EXTENSION_DESIGN.md) | — | **意図的スコープ外の拡張設計** |
+| 12 | [12_GAMEPLAY_BALANCE_MODE.md](12_GAMEPLAY_BALANCE_MODE.md) | — | **Gameplay Balance Mode**（AoE2 正本 + Debug 短縮）— 実装は M3 完了後 |
 | — | [prompts/](prompts/) | — | 各 Phase の Agent 実行プロンプト |
 
 ---

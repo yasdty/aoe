@@ -13,7 +13,7 @@ namespace AoE.RTS.Selection
         [SerializeField] RTSInputReader input;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 104f;
+        const float PanelHeight = 148f;
         const float Margin = 12f;
 
         void OnGUI()
@@ -36,10 +36,19 @@ namespace AoE.RTS.Selection
             bool isProducing = queueCount > 0;
             bool queueFull = queueCount >= BarracksProductionManager.MaxQueueSize;
             bool populationFull = !PopulationManager.CanTrainUnit();
-            bool canAfford = ResourceManager.Wood >= data.trainWoodCost;
-            GUI.enabled = !queueFull && !populationFull && canAfford && !GameSessionManager.IsGameOver;
+            bool canAffordMilitiaWood = ResourceManager.Wood >= data.trainWoodCost;
+            bool canAffordSpearmanWood = ResourceManager.Wood >= data.secondaryTrainWoodCost;
+            bool canAffordSpearmanFood = ResourceManager.Food >= data.secondaryTrainFoodCost;
+            bool canAffordSpearman = canAffordSpearmanWood && canAffordSpearmanFood;
+
+            GUI.enabled = !queueFull && !populationFull && canAffordMilitiaWood && !GameSessionManager.IsGameOver;
             if (GUILayout.Button($"Create Militia (Q) ({data.trainWoodCost} Wood)"))
                 CommandQueue.Enqueue(new TrainMilitiaCommand(barracks));
+
+            GUI.enabled = !queueFull && !populationFull && canAffordSpearman && !GameSessionManager.IsGameOver;
+            if (GUILayout.Button(
+                    $"Create Spearman (E) ({data.secondaryTrainWoodCost} Wood, {data.secondaryTrainFoodCost} Food)"))
+                CommandQueue.Enqueue(new TrainSpearmanCommand(barracks));
             GUI.enabled = true;
 
             if (queueCount > 0)
@@ -49,8 +58,15 @@ namespace AoE.RTS.Selection
                 GUILayout.Label("Queue full");
             else if (populationFull)
                 GUILayout.Label("Population full");
-            else if (!canAfford)
-                GUILayout.Label("Need more Wood");
+            else if (!canAffordMilitiaWood && !canAffordSpearman)
+                GUILayout.Label("Need more resources");
+            else if (!canAffordSpearmanWood || !canAffordSpearmanFood)
+            {
+                if (!canAffordSpearmanWood)
+                    GUILayout.Label("Need more Wood (Spearman)");
+                else
+                    GUILayout.Label("Need more Food (Spearman)");
+            }
 
             if (isProducing)
             {
@@ -76,6 +92,9 @@ namespace AoE.RTS.Selection
 
             if (input.WasTrainVillagerPressedThisFrame())
                 CommandQueue.Enqueue(new TrainMilitiaCommand(barracks));
+
+            if (input.WasTrainSecondaryPressedThisFrame())
+                CommandQueue.Enqueue(new TrainSpearmanCommand(barracks));
         }
     }
 }

@@ -128,7 +128,8 @@ namespace AoE.RTS.Buildings
             Barracks barracks,
             UnitData unitData,
             float trainSeconds,
-            float woodCost)
+            float woodCost,
+            float foodCost = 0f)
         {
             if (instance == null || barracks == null || unitData == null || trainSeconds <= 0f)
                 return false;
@@ -136,11 +137,25 @@ namespace AoE.RTS.Buildings
             if (GetQueueCount(barracks) >= MaxQueueSize)
                 return false;
 
-            if (!PopulationManager.CanTrainUnit(barracks.Team))
+            UnitTeam team = barracks.Team;
+            if (!PopulationManager.CanTrainUnit(team))
                 return false;
 
-            if (woodCost > 0f && !ResourceManager.TrySpendWood(barracks.Team, woodCost))
+            if (woodCost > 0f && ResourceManager.GetWood(team) < woodCost)
                 return false;
+
+            if (foodCost > 0f && ResourceManager.GetFood(team) < foodCost)
+                return false;
+
+            if (woodCost > 0f && !ResourceManager.TrySpendWood(team, woodCost))
+                return false;
+
+            if (foodCost > 0f && !ResourceManager.TrySpendFood(team, foodCost))
+            {
+                if (woodCost > 0f)
+                    ResourceManager.AddWood(team, woodCost);
+                return false;
+            }
 
             instance.activeJobs.Add(new ProductionJob
             {

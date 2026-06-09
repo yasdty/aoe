@@ -432,6 +432,26 @@ namespace AoE.RTS.Commands
         }
     }
 
+    public sealed class TrainSpearmanCommand : IGameCommand
+    {
+        readonly Barracks barracks;
+
+        public string DebugName => "TrainSpearman";
+
+        public TrainSpearmanCommand(Barracks barracks)
+        {
+            this.barracks = barracks;
+        }
+
+        public void Execute()
+        {
+            if (barracks == null)
+                return;
+
+            barracks.TryQueueSpearmanProduction();
+        }
+    }
+
     public sealed class TrainArcherCommand : IGameCommand
     {
         readonly ArcheryRange archeryRange;

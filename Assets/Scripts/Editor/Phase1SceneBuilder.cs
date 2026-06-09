@@ -34,6 +34,7 @@ namespace AoE.RTS.EditorTools
         const string DefaultBarracksDataPath = GameAssetPaths.DefaultBarracksData;
         const string DefaultArcheryRangeDataPath = GameAssetPaths.DefaultArcheryRangeData;
         const string MilitiaDataPath = GameAssetPaths.MilitiaData;
+        const string SpearmanDataPath = GameAssetPaths.SpearmanData;
         const string ArcherDataPath = GameAssetPaths.ArcherData;
         const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
 
@@ -600,8 +601,11 @@ namespace AoE.RTS.EditorTools
             return data;
         }
 
-        public static PlacedBuildingData EnsureBarracksData(UnitData militiaData)
+        public static PlacedBuildingData EnsureBarracksData(UnitData militiaData, UnitData spearmanData = null)
         {
+            if (spearmanData == null)
+                spearmanData = EnsureSpearmanData();
+
             if (!AssetDatabase.IsValidFolder("Assets/Data"))
                 AssetDatabase.CreateFolder("Assets", "Data");
             if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
@@ -622,6 +626,16 @@ namespace AoE.RTS.EditorTools
                     existing.trainUnitData = militiaData;
                     dirty = true;
                 }
+
+                if (existing.secondaryTrainUnitData != spearmanData && spearmanData != null)
+                {
+                    existing.secondaryTrainUnitData = spearmanData;
+                    dirty = true;
+                }
+
+                if (existing.secondaryTrainTime != 4f) { existing.secondaryTrainTime = 4f; dirty = true; }
+                if (existing.secondaryTrainWoodCost != 25f) { existing.secondaryTrainWoodCost = 25f; dirty = true; }
+                if (existing.secondaryTrainFoodCost != 35f) { existing.secondaryTrainFoodCost = 35f; dirty = true; }
 
                 if (existing.maxHp != 200f)
                 {
@@ -650,11 +664,43 @@ namespace AoE.RTS.EditorTools
             data.trainUnitData = militiaData;
             data.trainTime = 3f;
             data.trainWoodCost = 20f;
+            data.secondaryTrainUnitData = spearmanData;
+            data.secondaryTrainTime = 4f;
+            data.secondaryTrainWoodCost = 25f;
+            data.secondaryTrainFoodCost = 35f;
             data.spawnClearance = 4f;
             data.defaultColor = new Color(0.55f, 0.35f, 0.32f);
             data.selectedColor = new Color(0.95f, 0.55f, 0.35f);
             data.maxHp = 200f;
             AssetDatabase.CreateAsset(data, DefaultBarracksDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static UnitData EnsureSpearmanData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/UnitData"))
+                AssetDatabase.CreateFolder("Assets/Data", "UnitData");
+
+            UnitData existing = AssetDatabase.LoadAssetAtPath<UnitData>(SpearmanDataPath);
+            if (existing != null)
+            {
+                bool dirty = SyncSpearmanStats(existing);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            UnitData data = ScriptableObject.CreateInstance<UnitData>();
+            data.displayName = "Spearman";
+            SyncSpearmanStats(data);
+            AssetDatabase.CreateAsset(data, SpearmanDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }
@@ -1315,6 +1361,26 @@ namespace AoE.RTS.EditorTools
             if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
             if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
             if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            return dirty;
+        }
+
+        static bool SyncSpearmanStats(UnitData data)
+        {
+            bool dirty = false;
+            if (data.displayName != "Spearman") { data.displayName = "Spearman"; dirty = true; }
+            if (data.maxHp != 45f) { data.maxHp = 45f; dirty = true; }
+            if (data.moveSpeed != 5f) { data.moveSpeed = 5f; dirty = true; }
+            if (data.attack != 3f) { data.attack = 3f; dirty = true; }
+            if (data.armor != 0f) { data.armor = 0f; dirty = true; }
+            if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
+            if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
+            if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            if (data.defaultColor != new Color(0.31f, 0.44f, 0.63f))
+            {
+                data.defaultColor = new Color(0.31f, 0.44f, 0.63f);
+                dirty = true;
+            }
+
             return dirty;
         }
 

@@ -104,6 +104,19 @@ namespace AoE.RTS.Buildings
                 data.trainWoodCost);
         }
 
+        public bool TryQueueSpearmanProduction()
+        {
+            if (data == null || data.secondaryTrainUnitData == null)
+                return false;
+
+            return BarracksProductionManager.TryQueueProduction(
+                this,
+                data.secondaryTrainUnitData,
+                data.secondaryTrainTime,
+                data.secondaryTrainWoodCost,
+                data.secondaryTrainFoodCost);
+        }
+
         public Vector3 GetUnitSpawnPosition()
         {
             const float unitGroundY = 1f;

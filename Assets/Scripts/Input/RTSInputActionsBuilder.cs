@@ -38,6 +38,9 @@ namespace AoE.RTS.Input
             map.AddAction("TrainVillager", InputActionType.Button)
                 .AddBinding("<Keyboard>/q", groups: "Keyboard&Mouse");
 
+            map.AddAction("TrainSecondary", InputActionType.Button)
+                .AddBinding("<Keyboard>/e", groups: "Keyboard&Mouse");
+
             map.AddAction("SelectNextIdleVillager", InputActionType.Button)
                 .AddBinding("<Keyboard>/period", groups: "Keyboard&Mouse");
 

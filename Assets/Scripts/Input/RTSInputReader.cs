@@ -18,6 +18,7 @@ namespace AoE.RTS.Input
         InputAction zoomAction;
         InputAction pointerAction;
         InputAction trainVillagerAction;
+        InputAction trainSecondaryAction;
         InputAction selectNextIdleVillagerAction;
         InputAction selectNextIdleMilitaryAction;
 
@@ -48,6 +49,7 @@ namespace AoE.RTS.Input
             zoomAction = map.FindAction("Zoom", true);
             pointerAction = map.FindAction("PointerPosition", true);
             trainVillagerAction = map.FindAction("TrainVillager", false);
+            trainSecondaryAction = map.FindAction("TrainSecondary", false);
             selectNextIdleVillagerAction = map.FindAction("SelectNextIdleVillager", false);
             selectNextIdleMilitaryAction = map.FindAction("SelectNextIdleMilitary", false);
         }
@@ -97,6 +99,11 @@ namespace AoE.RTS.Input
         public bool WasTrainVillagerPressedThisFrame()
         {
             return trainVillagerAction != null && trainVillagerAction.WasPressedThisFrame();
+        }
+
+        public bool WasTrainSecondaryPressedThisFrame()
+        {
+            return trainSecondaryAction != null && trainSecondaryAction.WasPressedThisFrame();
         }
 
         public bool WasSelectNextIdleVillagerPressedThisFrame()

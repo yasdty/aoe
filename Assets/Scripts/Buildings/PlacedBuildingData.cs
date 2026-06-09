@@ -29,6 +29,10 @@ namespace AoE.RTS.Buildings
         public float trainTime = 3f;
         public float trainWoodCost = 20f;
         public float trainFoodCost;
+        public UnitData secondaryTrainUnitData;
+        public float secondaryTrainTime = 3f;
+        public float secondaryTrainWoodCost = 25f;
+        public float secondaryTrainFoodCost = 35f;
         public float spawnClearance = 4f;
         public Color defaultColor = new Color(0.82f, 0.62f, 0.35f);
         public Color ghostValidColor = new Color(0.4f, 0.85f, 0.45f);

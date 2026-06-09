@@ -13,9 +13,9 @@
 
 | Phase | 名称 | 目的 | 状態 |
 |-------|------|------|------|
-| 36 | Archery Range + Archer | 弓兵建築・遠距離攻撃・弾丸 MVP | ⬜ 未着手 |
-| 37 | Spearman | Barracks 歩兵ライン拡張・対騎兵下地 | ⬜ 未着手 |
-| 38 | Stable + Cavalry | 騎兵建築・Scout 下地・高機動近接 | ⬜ 未着手 |
+| 36 | Archery Range + Archer | 弓兵建築・遠距離攻撃・弾丸 MVP | ✅ 完了 |
+| 37 | Spearman | Barracks 歩兵ライン拡張・対騎兵下地 | ✅ 完了 |
+| 38 | Stable + Cavalry + Scout | 騎兵建築・2 スロット生産・高機動近接 | ⬜ 未着手 |
 | 39 | Counter System | Melee / Pierce 装甲・ボーナスダメージ相性 | ⬜ 未着手 |
 | 40 | Stance, Aggro & Attack-Move | Stand Ground / Defensive / 攻撃移動 MVP | ⬜ 未着手 |
 | 41 | Formation | 隊列移動・軽量 Separation + CPU 軍事 AI 新兵種対応 | ⬜ 未着手 |
@@ -58,19 +58,21 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 
 ---
 
-## Phase 37 — Spearman ⬜
+## Phase 37 — Spearman ✅
 
-**実装:** Barracks から Spearman 生産。対騎兵ボーナスは Phase 39 で本格化、ここでは UnitData 下地。
+**実装:** Barracks 第 2 生産スロット / `Spearman` UnitData / Q=Militia・E=Spearman / Food+Wood キュー / CPU Spearman 生産
 
-**プロンプト:** [prompts/phase37-prompt.md](prompts/phase37-prompt.md)（未作成）
+**プロンプト:** [prompts/phase37-prompt.md](prompts/phase37-prompt.md)
 
 ---
 
-## Phase 38 — Stable + Cavalry ⬜
+## Phase 38 — Stable + Cavalry + Scout ⬜
 
-**実装:** Stable 建築 / Cavalry UnitData / 高移動速度近接。Scout は `UnitData` のみ先行でも可。
+**実装:** Stable 建築 / Cavalry + Scout 生産（Q/E）/ 高移動近接 / CPU Stable。Scout は **生産込み**（ユーザー確定）。
 
-**プロンプト:** [prompts/phase38-prompt.md](prompts/phase38-prompt.md)（未作成）
+**バランス:** MVP 暫定値（Phase 36 同型）。AoE2 正本 + Debug は [12_GAMEPLAY_BALANCE_MODE.md](12_GAMEPLAY_BALANCE_MODE.md)。
+
+**プロンプト:** [prompts/phase38-prompt.md](prompts/phase38-prompt.md)
 
 ---
 
@@ -119,3 +121,9 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 1. M2.7 完了を確認
 2. [CONSTITUTION.md](../CONSTITUTION.md) + [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)
 3. Phase 36 から順に small diff → `Phase10.unity` Play 確認
+
+---
+
+## Gameplay Balance Mode（M3 完了後）
+
+AoE2 基準コスト・建築時間を Data 正本とし、Debug モードで短縮する設計。詳細・要決定事項は [12_GAMEPLAY_BALANCE_MODE.md](12_GAMEPLAY_BALANCE_MODE.md)。

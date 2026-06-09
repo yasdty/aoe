@@ -55,6 +55,9 @@ namespace AoE.RTS.Buildings
             cached.housingProvided = 0;
             cached.trainTime = 3f;
             cached.trainWoodCost = 20f;
+            cached.secondaryTrainTime = 4f;
+            cached.secondaryTrainWoodCost = 25f;
+            cached.secondaryTrainFoodCost = 35f;
             return cached;
         }
 
