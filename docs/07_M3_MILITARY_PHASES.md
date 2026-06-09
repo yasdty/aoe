@@ -17,7 +17,7 @@
 | 37 | Spearman | Barracks 歩兵ライン拡張・対騎兵下地 | ✅ 完了 |
 | 38 | Stable + Cavalry + Scout | 騎兵建築・2 スロット生産・高機動近接 | ✅ 完了 |
 | 39 | Counter System | Melee / Pierce 装甲・ボーナスダメージ相性 | ✅ 完了 |
-| 40 | Stance, Aggro & Attack-Move | Stand Ground / Defensive / 攻撃移動 MVP | ⬜ 未着手 |
+| 40 | Stance, Aggro & Attack-Move | Stand Ground / Defensive / 攻撃移動 MVP | ✅ 完了 |
 | 41 | Formation | 隊列移動・軽量 Separation + CPU 軍事 AI 新兵種対応 | ⬜ 未着手 |
 
 **M3 完了条件:**
@@ -82,7 +82,7 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 
 ---
 
-## Phase 40 — Stance, Aggro & Attack-Move ⬜
+## Phase 40 — Stance, Aggro & Attack-Move ✅
 
 **実装:**
 
@@ -98,7 +98,7 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 
 **実装:** 隊列移動・軽量 Separation。`CpuMilitaryAiManager` 攻撃波に新兵種を混在。
 
-**プロンプト:** [prompts/phase41-prompt.md](prompts/phase41-prompt.md)（未作成）
+**プロンプト:** [prompts/phase41-prompt.md](prompts/phase41-prompt.md)
 
 ---
 

@@ -160,6 +160,15 @@ namespace AoE.RTS.Combat
             float attackRange = attacker.AttackRange;
             if (!attacker.IsNear(targetPosition, attackRange))
             {
+                if (attacker.IsStandGround)
+                {
+                    Unit staleAttacker = attacker;
+                    activeJobs.RemoveAt(index);
+                    staleAttacker.ClearMoveTarget();
+                    staleAttacker.NotifyStateChanged();
+                    return false;
+                }
+
                 if (!JobStillActive(index, attacker))
                     return false;
 

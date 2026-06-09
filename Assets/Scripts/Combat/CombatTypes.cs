@@ -12,4 +12,11 @@ namespace AoE.RTS.Combat
         Infantry,
         Cavalry
     }
+
+    public enum UnitCombatStance
+    {
+        Aggressive = 0,
+        Defensive,
+        StandGround
+    }
 }

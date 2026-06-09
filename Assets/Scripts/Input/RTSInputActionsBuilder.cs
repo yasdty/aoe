@@ -47,6 +47,9 @@ namespace AoE.RTS.Input
             map.AddAction("SelectNextIdleMilitary", InputActionType.Button)
                 .AddBinding("<Keyboard>/comma", groups: "Keyboard&Mouse");
 
+            map.AddAction("AttackMove", InputActionType.Button)
+                .AddBinding("<Keyboard>/a", groups: "Keyboard&Mouse");
+
             asset.AddControlScheme("Keyboard&Mouse")
                 .WithBindingGroup("Keyboard&Mouse")
                 .WithRequiredDevice<Keyboard>()

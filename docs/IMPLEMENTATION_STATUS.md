@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 39 ✅（M3 Counter System）。**次: Phase 40 Stance & Attack-Move。**
+> **最終更新:** Phase 40 ✅（M3 Stance & Attack-Move）。**次: Phase 41 Formation。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -74,7 +74,7 @@
 | 37 | Spearman | `Phase10.unity` | ✅ 実装済み |
 | 38 | Stable + Cavalry + Scout | `Phase10.unity` | ✅ 完了（M3） |
 | 39 | Counter System | `Phase10.unity` | ✅ 完了（M3） |
-| 40 | Stance & Attack-Move | `Phase10.unity` | ⬜ 未着手（M3） |
+| 40 | Stance & Attack-Move | `Phase10.unity` | ✅ 完了（M3） |
 | 41 | Formation | `Phase10.unity` | ⬜ 未着手（M3） |
 | 42 | Age Up | `Phase10.unity` | ⬜ 未着手（M4） |
 | 43 | Blacksmith & Tech | `Phase10.unity` | ⬜ 未着手（M4） |
@@ -106,7 +106,7 @@
 
 **Milestone 2.7 Sandbox:** ✅ 完了（Phase 35）
 
-**Milestone 3 Military:** 🔄 進行中（Phase 36〜39 ✅ / Phase 40〜41 未着手）
+**Milestone 3 Military:** 🔄 進行中（Phase 36〜40 ✅ / Phase 41 未着手）
 
 **Milestone 4 AoE Gameplay:** ⬜ 未着手（Phase 42〜48）
 
@@ -396,12 +396,14 @@ CpuEconomyAiManager / CpuMilitaryAiManager（直接 Manager 呼び出し）
 
 | 項目 | 内容 |
 |------|------|
-| **目的** | 攻撃ジョブ管理・ダメージ・接近移動 |
-| **主要クラス** | `AttackManager`, `CombatDamageResolver` |
+| **目的** | 攻撃ジョブ管理・ダメージ・接近移動・スタンス・攻撃移動 |
+| **主要クラス** | `AttackManager`, `CombatDamageResolver`, `UnitAggroManager`, `AttackMoveManager`, `UnitStancePanelView` |
 | **関連データ** | `UnitData`（attack, attackDamageType, meleeArmor, pierceArmor, armorClass, attackRange, attackCooldown） |
 | **データフロー** | `IssueAttack` → AttackJob → `CombatDamageResolver.Resolve` → ダメージ（Melee/Pierce 装甲 + ボーナス） |
 
 **ログ形式:** `[Player/CPU] 攻撃者 → [Player/CPU] 対象: 15 (3+12) (Melee) (HP x/y)` — Phase 39 Counter System
+
+**Phase 40:** `UnitCombatStance`（Aggressive / Defensive / Stand Ground）— Stand Ground = 射程内 Aggro のみ・追撃なし。攻撃移動 = **A ホールド + 右クリック地面** → `AttackMoveCommand` → 移動中も Aggro。
 
 ---
 
@@ -514,8 +516,8 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **研究** | 鍛冶屋・大学 | ❌ | M4 Phase 43 |
 | **軍事** | 歩兵・弓・騎兵・攻城等 | Militia 1 種 ✅ | M3 Phase 36〜41 |
 | **AI** | 経済・軍事・難易度 | CPU 4 資源 + Militia 波 ✅ | M3 CPU 拡張 |
-| **戦闘** | 遠近・装甲・相性 | 近接/遠距離 + Melee/Pierce 装甲 + Spearman 対騎兵 ✅（Phase 39） | M3 Phase 40〜41 |
-| **フォーメーション** | 隊列・スタンス | 移動グリッドのみ △ | M3 Phase 41 |
+| **戦闘** | 遠近・装甲・相性 | 近接/遠距離 + Melee/Pierce 装甲 + Spearman 対騎兵 ✅（Phase 39） | M3 Phase 41 |
+| **フォーメーション** | 隊列・スタンス | スタンス + 攻撃移動 ✅（Phase 40）/ 隊列 △ | M3 Phase 41 |
 | **壁** | 石壁・塔 | ❌ | M4 Phase 44 |
 | **船** | 海上戦・貿易 | ❌ | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 | **市場** | 資源交易 | ❌ | M4 Phase 45 |
@@ -1024,7 +1026,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・7 建築・Militia・1 CPU — **Dark Age 垂直スライス**（全体 ~15%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 40 Stance & Attack-Move** — [phase40-prompt](prompts/phase40-prompt.md) / [07_M3](07_M3_MILITARY_PHASES.md) |
+| 次に何を作るべき？ | **Phase 41 Formation** — [07_M3](07_M3_MILITARY_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

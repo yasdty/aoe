@@ -70,7 +70,8 @@ namespace AoE.RTS.Combat
             if (unit == null || !unit.IsAlive || !unit.CanAttack)
                 return false;
 
-            if (unit.HasMoveTarget)
+            bool attackMoving = AttackMoveManager.IsUnitAttackMoving(unit);
+            if (unit.HasMoveTarget && !attackMoving)
                 return false;
 
             if (AttackManager.IsUnitAttacking(unit))
@@ -86,6 +87,9 @@ namespace AoE.RTS.Combat
         {
             if (unit == null)
                 return MinAggroDetectRange;
+
+            if (unit.CombatStance == UnitCombatStance.StandGround)
+                return unit.AttackRange;
 
             return Mathf.Max(unit.AttackRange + AggroDetectRangeBonus, MinAggroDetectRange);
         }

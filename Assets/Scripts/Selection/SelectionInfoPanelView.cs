@@ -16,6 +16,7 @@ namespace AoE.RTS.Selection
         const float Margin = 12f;
         const float Padding = 8f;
         const float ProductionPanelReserveHeight = 96f;
+        const float StancePanelReserveHeight = 100f;
 
         readonly List<string> lineBuffer = new List<string>();
 
@@ -41,6 +42,9 @@ namespace AoE.RTS.Selection
             if (selectionManager.SelectedTownCenter != null || selectionManager.SelectedBarracks != null
                 || selectionManager.SelectedArcheryRange != null || selectionManager.SelectedStable != null)
                 bottomOffset += ProductionPanelReserveHeight;
+
+            if (HasSelectedMilitaryUnits())
+                bottomOffset += StancePanelReserveHeight;
 
             float panelY = Screen.height - panelHeight - bottomOffset;
             Rect panelRect = new Rect(panelX, panelY, PanelWidth, panelHeight);
@@ -149,10 +153,37 @@ namespace AoE.RTS.Selection
             {
                 string damageTypeLabel = unit.AttackDamageType == AttackDamageType.Pierce ? "Pierce" : "Melee";
                 lines.Add($"Attack: {unit.AttackPower:0} ({damageTypeLabel})");
+                lines.Add($"Stance: {FormatStance(unit.CombatStance)}");
             }
 
             lines.Add($"Melee Armor: {unit.MeleeArmor:0}");
             lines.Add($"Pierce Armor: {unit.PierceArmor:0}");
+        }
+
+        static string FormatStance(UnitCombatStance stance)
+        {
+            switch (stance)
+            {
+                case UnitCombatStance.Defensive:
+                    return "Defensive";
+                case UnitCombatStance.StandGround:
+                    return "Stand Ground";
+                default:
+                    return "Aggressive";
+            }
+        }
+
+        bool HasSelectedMilitaryUnits()
+        {
+            IReadOnlyList<Unit> units = selectionManager.SelectedUnits;
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (unit != null && unit.IsAlive && unit.CanAttack)
+                    return true;
+            }
+
+            return false;
         }
 
         static void AppendBuildingHealthInfo(string displayName, BuildingHealth health, List<string> lines, out string title)

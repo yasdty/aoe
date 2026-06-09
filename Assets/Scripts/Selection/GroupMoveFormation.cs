@@ -30,7 +30,7 @@ namespace AoE.RTS.Selection
             }
         }
 
-        static void GetGridDimensions(int count, out int columns, out int rows)
+        public static void GetGridDimensions(int count, out int columns, out int rows)
         {
             columns = Mathf.CeilToInt(Mathf.Sqrt(count));
             rows = Mathf.CeilToInt(count / (float)columns);

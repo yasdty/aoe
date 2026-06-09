@@ -381,6 +381,59 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added UnitAggroManager. Save the scene (Ctrl+S) if needed.");
         }
 
+        [MenuItem("AoE/Add Stance & Attack-Move (Phase40)", true)]
+        static bool ValidateAddStanceAttackMove() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Stance & Attack-Move (Phase40)")]
+        public static void AddStanceAttackMoveToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
+            if (inputActions == null)
+            {
+                Debug.LogError("Failed to create RTSInputActions. Setup aborted.");
+                return;
+            }
+
+            Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
+            EnsureAttackMoveManager();
+
+            SelectionManager selectionManager = Object.FindAnyObjectByType<SelectionManager>();
+            if (selectionManager != null)
+            {
+                UnitStancePanelView existing = selectionManager.GetComponent<UnitStancePanelView>();
+                if (existing == null)
+                {
+                    UnitStancePanelView stancePanel = selectionManager.gameObject.AddComponent<UnitStancePanelView>();
+                    SerializedObject serializedStancePanel = new SerializedObject(stancePanel);
+                    serializedStancePanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+                    serializedStancePanel.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+            else
+            {
+                Debug.LogWarning("SelectionManager not found — UnitStancePanelView was not added.");
+            }
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added AttackMoveManager + UnitStancePanelView and refreshed input actions. Save the scene (Ctrl+S) if needed.");
+        }
+
+        static void EnsureAttackMoveManager()
+        {
+            if (Object.FindAnyObjectByType<AttackMoveManager>() != null)
+                return;
+
+            GameObject systems = GameObject.Find("Systems");
+            Transform parent = systems != null ? systems.transform : null;
+            GameObject attackMoveObject = new GameObject("AttackMoveManager");
+            if (parent != null)
+                attackMoveObject.transform.SetParent(parent);
+            attackMoveObject.AddComponent<AttackMoveManager>();
+        }
+
         static void EnsureUnitAggroManager()
         {
             if (Object.FindAnyObjectByType<UnitAggroManager>() != null)
@@ -585,6 +638,10 @@ namespace AoE.RTS.EditorTools
             unitAggroManagerObject.transform.SetParent(systems.transform);
             unitAggroManagerObject.AddComponent<UnitAggroManager>();
 
+            GameObject attackMoveManagerObject = new GameObject("AttackMoveManager");
+            attackMoveManagerObject.transform.SetParent(systems.transform);
+            attackMoveManagerObject.AddComponent<AttackMoveManager>();
+
             GameObject boarAggroManagerObject = new GameObject("BoarAggroManager");
             boarAggroManagerObject.transform.SetParent(systems.transform);
             boarAggroManagerObject.AddComponent<BoarAggroManager>();
@@ -657,6 +714,7 @@ namespace AoE.RTS.EditorTools
             selectionManagerObject.AddComponent<BarracksPanelView>();
             selectionManagerObject.AddComponent<ArcheryRangePanelView>();
             selectionManagerObject.AddComponent<StablePanelView>();
+            selectionManagerObject.AddComponent<UnitStancePanelView>();
             UnitHpBarView hpBarView = selectionManagerObject.AddComponent<UnitHpBarView>();
             SelectionInfoPanelView infoPanelView = selectionManagerObject.AddComponent<SelectionInfoPanelView>();
             ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
@@ -699,6 +757,11 @@ namespace AoE.RTS.EditorTools
             serializedStablePanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
             serializedStablePanel.FindProperty("input").objectReferenceValue = inputReader;
             serializedStablePanel.ApplyModifiedPropertiesWithoutUndo();
+
+            UnitStancePanelView stancePanel = selectionManagerObject.GetComponent<UnitStancePanelView>();
+            SerializedObject serializedStancePanel = new SerializedObject(stancePanel);
+            serializedStancePanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedStancePanel.ApplyModifiedPropertiesWithoutUndo();
 
             RTSCameraController cameraController = mainCamera.GetComponent<RTSCameraController>();
             SerializedObject serializedIdleSelection = new SerializedObject(idleSelection);

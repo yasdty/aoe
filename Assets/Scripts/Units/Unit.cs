@@ -23,6 +23,7 @@ namespace AoE.RTS.Units
         bool isSelected;
         bool isDead;
         int standSlot;
+        UnitCombatStance combatStance = UnitCombatStance.Aggressive;
 
         public float CurrentHp => currentHp;
         public float MaxHp => data != null ? data.maxHp : 100f;
@@ -41,6 +42,8 @@ namespace AoE.RTS.Units
         public float AttackRange => data != null ? data.attackRange : 1.5f;
         public float AttackCooldownSeconds => data != null ? data.attackCooldown : 1f;
         public int StandSlot => standSlot;
+        public UnitCombatStance CombatStance => combatStance;
+        public bool IsStandGround => combatStance == UnitCombatStance.StandGround;
 
         public UnitState State
         {
@@ -130,6 +133,7 @@ namespace AoE.RTS.Units
             isDead = false;
             isSelected = false;
             moveTarget = null;
+            combatStance = UnitCombatStance.Aggressive;
 
             if (unitData != null)
                 data = unitData;
@@ -155,6 +159,7 @@ namespace AoE.RTS.Units
             BuildingPlacementManager.AbortConstructionForUnit(this);
             AttackManager.CancelJobsForUnit(this);
             BoarAttackManager.CancelJobsForUnit(this);
+            AttackMoveManager.CancelForUnit(this);
             SelectionManager.HandleUnitDied(this);
             UnitManager.Unregister(this);
 
@@ -165,6 +170,12 @@ namespace AoE.RTS.Units
         {
             isSelected = selected;
             UpdateVisual();
+        }
+
+        public void SetCombatStance(UnitCombatStance stance)
+        {
+            combatStance = stance;
+            NotifyStateChanged();
         }
 
         public void SetMoveTarget(Vector3 worldPosition)

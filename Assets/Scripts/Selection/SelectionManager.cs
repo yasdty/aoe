@@ -525,7 +525,10 @@ namespace AoE.RTS.Selection
             if (!Physics.Raycast(ray, out hit, 1000f, GameLayers.GroundMask))
                 return;
 
-            CommandQueue.Enqueue(new MoveCommand(selectedUnits, hit.point, groupMoveSpacing));
+            if (input.WasAttackMoveModifierHeld())
+                CommandQueue.Enqueue(new AttackMoveCommand(selectedUnits, hit.point, groupMoveSpacing));
+            else
+                CommandQueue.Enqueue(new MoveCommand(selectedUnits, hit.point, groupMoveSpacing));
         }
 
         bool TrySetProductionRallyFromClick()

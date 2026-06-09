@@ -1,6 +1,6 @@
 # Phase 40 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了（Play 確認済み）  
 > **前提:** Phase 1〜39 完了（M3 Counter System 含む）  
 > **マイルストン:** M3 Military — **Stance, Aggro & Attack-Move**  
 > **ロードマップ:** [07_M3_MILITARY_PHASES.md](../07_M3_MILITARY_PHASES.md)  
@@ -157,9 +157,9 @@ AttackMoveCommand(units, destination)
 
 ## ⑧ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 40 ✅
-- [ ] `07_M3_MILITARY_PHASES.md` — Phase 40 ✅
-- [ ] 本プロンプト — Play 確認待ち → ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 40 ✅
+- [x] `07_M3_MILITARY_PHASES.md` — Phase 40 ✅
+- [x] 本プロンプト — ✅
 
 ---
 
