@@ -318,6 +318,33 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added AnimalDiscoveryManager + PassiveAnimalLocomotionManager. Save the scene (Ctrl+S) if needed.");
         }
 
+        [MenuItem("AoE/Add Unit Aggro (Phase10)", true)]
+        static bool ValidateAddUnitAggro() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Unit Aggro (Phase10)")]
+        public static void AddUnitAggroToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            EnsureUnitAggroManager();
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added UnitAggroManager. Save the scene (Ctrl+S) if needed.");
+        }
+
+        static void EnsureUnitAggroManager()
+        {
+            if (Object.FindAnyObjectByType<UnitAggroManager>() != null)
+                return;
+
+            GameObject systems = GameObject.Find("Systems");
+            Transform parent = systems != null ? systems.transform : null;
+            GameObject aggroObject = new GameObject("UnitAggroManager");
+            if (parent != null)
+                aggroObject.transform.SetParent(parent);
+            aggroObject.AddComponent<UnitAggroManager>();
+        }
+
         static void EnsureAnimalManagers()
         {
             if (Object.FindAnyObjectByType<AnimalDiscoveryManager>() == null)
@@ -492,6 +519,10 @@ namespace AoE.RTS.EditorTools
             GameObject attackManagerObject = new GameObject("AttackManager");
             attackManagerObject.transform.SetParent(systems.transform);
             attackManagerObject.AddComponent<AttackManager>();
+
+            GameObject unitAggroManagerObject = new GameObject("UnitAggroManager");
+            unitAggroManagerObject.transform.SetParent(systems.transform);
+            unitAggroManagerObject.AddComponent<UnitAggroManager>();
 
             GameObject boarAggroManagerObject = new GameObject("BoarAggroManager");
             boarAggroManagerObject.transform.SetParent(systems.transform);
