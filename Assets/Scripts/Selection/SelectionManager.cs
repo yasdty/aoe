@@ -680,6 +680,31 @@ namespace AoE.RTS.Selection
             unit.SetSelected(true);
         }
 
+        public void SelectSingleUnit(Unit unit)
+        {
+            if (!IsPlayerUnit(unit))
+                return;
+
+            SetSelection(unit);
+        }
+
+        public void SelectUnits(IReadOnlyList<Unit> units)
+        {
+            ClearAllSelection();
+            if (units == null)
+                return;
+
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (!IsPlayerUnit(unit))
+                    continue;
+
+                selectedUnits.Add(unit);
+                unit.SetSelected(true);
+            }
+        }
+
         void SetPlacedBuildingSelection(BuildingHealth building)
         {
             ClearAllSelection();

@@ -27,6 +27,28 @@ namespace AoE.RTS.Selection
             hudHintScreenRect = Rect.zero;
         }
 
+        public static void ExpandHudPanelScreenRect(Rect guiRect)
+        {
+            Rect screenRect = GuiRectToScreenRect(guiRect);
+            if (!hasHudPanelRect)
+            {
+                hudPanelScreenRect = screenRect;
+                hasHudPanelRect = true;
+                return;
+            }
+
+            hudPanelScreenRect = UnionRects(hudPanelScreenRect, screenRect);
+        }
+
+        static Rect UnionRects(Rect a, Rect b)
+        {
+            float xMin = Mathf.Min(a.xMin, b.xMin);
+            float yMin = Mathf.Min(a.yMin, b.yMin);
+            float xMax = Mathf.Max(a.xMax, b.xMax);
+            float yMax = Mathf.Max(a.yMax, b.yMax);
+            return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
+        }
+
         public static bool IsPointerOverHud(Vector2 screenPosition)
         {
             EnsureFallbackHudRect();

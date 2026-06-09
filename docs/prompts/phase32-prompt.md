@@ -1,6 +1,6 @@
 # Phase 32 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 実装済み（Play 確認待ち）  
 > **前提:** Phase 1〜31 完了（PoC + Foundation + M2 Economy + M2.5 + M2.6 Phase 31）  
 > **マイルストン:** M2.6 RTS UX（**第 2 Phase**）  
 > **ロードマップ:** [05_M2_6_RTS_UX_PHASES.md](../05_M2_6_RTS_UX_PHASES.md)  

@@ -1,5 +1,6 @@
 using AoE.RTS.AI;
 using AoE.RTS.Buildings;
+using AoE.RTS.Camera;
 using AoE.RTS.Combat;
 using AoE.RTS.Commands;
 using AoE.RTS.Core;
@@ -589,6 +590,8 @@ namespace AoE.RTS.EditorTools
             UnitHpBarView hpBarView = selectionManagerObject.AddComponent<UnitHpBarView>();
             SelectionInfoPanelView infoPanelView = selectionManagerObject.AddComponent<SelectionInfoPanelView>();
             ResourceHudView resourceHud = selectionManagerObject.AddComponent<ResourceHudView>();
+            IdleUnitSelectionController idleSelection = selectionManagerObject.AddComponent<IdleUnitSelectionController>();
+            IdleUnitHudView idleHud = selectionManagerObject.AddComponent<IdleUnitHudView>();
             selectionManagerObject.AddComponent<CpuHudView>();
             selectionManagerObject.AddComponent<GameTimeHudView>();
             selectionManagerObject.AddComponent<VictoryDefeatHudView>();
@@ -612,6 +615,17 @@ namespace AoE.RTS.EditorTools
             serializedBarracksPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
             serializedBarracksPanel.FindProperty("input").objectReferenceValue = inputReader;
             serializedBarracksPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            RTSCameraController cameraController = mainCamera.GetComponent<RTSCameraController>();
+            SerializedObject serializedIdleSelection = new SerializedObject(idleSelection);
+            serializedIdleSelection.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedIdleSelection.FindProperty("input").objectReferenceValue = inputReader;
+            serializedIdleSelection.FindProperty("cameraController").objectReferenceValue = cameraController;
+            serializedIdleSelection.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject serializedIdleHud = new SerializedObject(idleHud);
+            serializedIdleHud.FindProperty("idleSelectionController").objectReferenceValue = idleSelection;
+            serializedIdleHud.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedHpBar = new SerializedObject(hpBarView);
             serializedHpBar.FindProperty("selectionManager").objectReferenceValue = selectionManager;

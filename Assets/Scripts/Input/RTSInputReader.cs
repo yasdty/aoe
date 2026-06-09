@@ -18,6 +18,8 @@ namespace AoE.RTS.Input
         InputAction zoomAction;
         InputAction pointerAction;
         InputAction trainVillagerAction;
+        InputAction selectNextIdleVillagerAction;
+        InputAction selectNextIdleMilitaryAction;
 
         public Vector2 CameraMove => moveCameraAction?.ReadValue<Vector2>() ?? Vector2.zero;
         public float ZoomDelta => zoomAction?.ReadValue<float>() ?? 0f;
@@ -46,6 +48,8 @@ namespace AoE.RTS.Input
             zoomAction = map.FindAction("Zoom", true);
             pointerAction = map.FindAction("PointerPosition", true);
             trainVillagerAction = map.FindAction("TrainVillager", false);
+            selectNextIdleVillagerAction = map.FindAction("SelectNextIdleVillager", false);
+            selectNextIdleMilitaryAction = map.FindAction("SelectNextIdleMilitary", false);
         }
 
         void OnEnable()
@@ -93,6 +97,16 @@ namespace AoE.RTS.Input
         public bool WasTrainVillagerPressedThisFrame()
         {
             return trainVillagerAction != null && trainVillagerAction.WasPressedThisFrame();
+        }
+
+        public bool WasSelectNextIdleVillagerPressedThisFrame()
+        {
+            return selectNextIdleVillagerAction != null && selectNextIdleVillagerAction.WasPressedThisFrame();
+        }
+
+        public bool WasSelectNextIdleMilitaryPressedThisFrame()
+        {
+            return selectNextIdleMilitaryAction != null && selectNextIdleMilitaryAction.WasPressedThisFrame();
         }
 
         static InputActionAsset TryResolveInputActions()

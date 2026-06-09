@@ -42,7 +42,9 @@ namespace AoE.RTS.EditorTools
                 || map.FindAction("MoveCamera", false) == null
                 || map.FindAction("Zoom", false) == null
                 || map.FindAction("PointerPosition", false) == null
-                || map.FindAction("TrainVillager", false) == null)
+                || map.FindAction("TrainVillager", false) == null
+                || map.FindAction("SelectNextIdleVillager", false) == null
+                || map.FindAction("SelectNextIdleMilitary", false) == null)
                 return false;
 
             return true;
