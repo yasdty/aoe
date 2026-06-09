@@ -43,6 +43,11 @@ namespace AoE.RTS.Buildings
             return BuildingPool.RentArcheryRange(data, position, team);
         }
 
+        public static Stable CreateStable(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return BuildingPool.RentStable(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -58,7 +63,7 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.House);
 
             ApplySharedMaterialIfMissingRendererTint(houseObject);
-            ConfigureBuildingHealth(houseObject, data.maxHp, data.armor, team);
+            ConfigureBuildingHealth(houseObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
 
             House house = houseObject.AddComponent<House>();
             house.SetData(data);
@@ -80,7 +85,7 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.Barracks);
 
             ApplySharedMaterialIfMissingRendererTint(barracksObject);
-            ConfigureBuildingHealth(barracksObject, data.maxHp, data.armor, team);
+            ConfigureBuildingHealth(barracksObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
 
             Barracks barracks = barracksObject.AddComponent<Barracks>();
             barracks.SetData(data);
@@ -103,12 +108,35 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.Barracks);
 
             ApplySharedMaterialIfMissingRendererTint(archeryRangeObject);
-            ConfigureBuildingHealth(archeryRangeObject, data.maxHp, data.armor, team);
+            ConfigureBuildingHealth(archeryRangeObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
 
             ArcheryRange archeryRange = archeryRangeObject.AddComponent<ArcheryRange>();
             archeryRange.SetData(data);
             archeryRange.SetTeam(team);
             return archeryRange;
+        }
+
+        public static Stable CreateFreshStable(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject stableObject = EntityVisualBuilder.CreateBuildingShell(
+                "Stable",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.Barracks);
+
+            ApplySharedMaterialIfMissingRendererTint(stableObject);
+            ConfigureBuildingHealth(stableObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
+
+            Stable stable = stableObject.AddComponent<Stable>();
+            stable.SetData(data);
+            stable.SetTeam(team);
+            return stable;
         }
 
         public static Farm CreateFreshFarm(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
@@ -126,7 +154,7 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.House);
 
             ApplySharedMaterialIfMissingRendererTint(farmObject);
-            ConfigureBuildingHealth(farmObject, data.maxHp, data.armor, team);
+            ConfigureBuildingHealth(farmObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
 
             Farm farm = farmObject.AddComponent<Farm>();
             farm.SetData(data);
@@ -148,7 +176,7 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.House);
 
             ApplySharedMaterialIfMissingRendererTint(lumberCampObject);
-            ConfigureBuildingHealth(lumberCampObject, data.maxHp, data.armor, team);
+            ConfigureBuildingHealth(lumberCampObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
 
             LumberCamp lumberCamp = lumberCampObject.AddComponent<LumberCamp>();
             lumberCamp.SetData(data);
@@ -170,7 +198,7 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.House);
 
             ApplySharedMaterialIfMissingRendererTint(miningCampObject);
-            ConfigureBuildingHealth(miningCampObject, data.maxHp, data.armor, team);
+            ConfigureBuildingHealth(miningCampObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
 
             MiningCamp miningCamp = miningCampObject.AddComponent<MiningCamp>();
             miningCamp.SetData(data);
@@ -192,7 +220,7 @@ namespace AoE.RTS.Buildings
                 PlaceholderVisualKind.House);
 
             ApplySharedMaterialIfMissingRendererTint(millObject);
-            ConfigureBuildingHealth(millObject, data.maxHp, data.armor, team);
+            ConfigureBuildingHealth(millObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
 
             Mill mill = millObject.AddComponent<Mill>();
             mill.SetData(data);
@@ -207,10 +235,15 @@ namespace AoE.RTS.Buildings
                 position.z);
         }
 
-        static void ConfigureBuildingHealth(GameObject buildingObject, float hp, float buildingArmor, UnitTeam team)
+        static void ConfigureBuildingHealth(
+            GameObject buildingObject,
+            float hp,
+            float buildingMeleeArmor,
+            float buildingPierceArmor,
+            UnitTeam team)
         {
             BuildingHealth health = buildingObject.AddComponent<BuildingHealth>();
-            health.Configure(hp, buildingArmor, team, townCenter: false);
+            health.Configure(hp, buildingMeleeArmor, buildingPierceArmor, team, townCenter: false);
         }
 
         static void ApplySharedMaterialIfMissingRendererTint(GameObject buildingObject)

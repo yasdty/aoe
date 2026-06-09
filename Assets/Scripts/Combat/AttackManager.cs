@@ -101,7 +101,6 @@ namespace AoE.RTS.Combat
             return ProcessAttackCycle(
                 job.attacker,
                 job.targetUnit.transform.position,
-                job.targetUnit.Armor,
                 job.targetUnit.Team,
                 job.targetUnit.Data?.displayName ?? "Unit",
                 job.cooldownRemaining,
@@ -136,7 +135,6 @@ namespace AoE.RTS.Combat
             return ProcessAttackCycle(
                 job.attacker,
                 standPosition,
-                building.Armor,
                 building.Team,
                 buildingName,
                 job.cooldownRemaining,
@@ -150,7 +148,6 @@ namespace AoE.RTS.Combat
         bool ProcessAttackCycle(
             Unit attacker,
             Vector3 targetPosition,
-            float targetArmor,
             UnitTeam targetTeam,
             string targetName,
             float cooldownRemaining,
@@ -195,7 +192,10 @@ namespace AoE.RTS.Combat
                 return true;
             }
 
-            float damage = Mathf.Max(1f, attacker.AttackPower - targetArmor);
+            CombatDamageBreakdown breakdown = unitTarget != null
+                ? CombatDamageResolver.Resolve(attacker, unitTarget)
+                : CombatDamageResolver.Resolve(attacker, buildingTarget);
+            float damage = breakdown.totalDamage;
             if (unitTarget != null)
                 unitTarget.TakeDamage(damage);
             else if (buildingTarget != null)
@@ -233,14 +233,14 @@ namespace AoE.RTS.Combat
                 Debug.Log(
                     $"[{FormatTeam(attacker.Team)}] {attacker.Data?.displayName ?? "Unit"} "
                     + $"→ [{FormatTeam(targetTeam)}] {targetName}: "
-                    + $"{damage:0} dmg (HP {unitTarget.CurrentHp:0}/{unitTarget.MaxHp:0})");
+                    + $"{breakdown.FormatLogSuffix()} (HP {unitTarget.CurrentHp:0}/{unitTarget.MaxHp:0})");
             }
             else if (buildingTarget != null)
             {
                 Debug.Log(
                     $"[{FormatTeam(attacker.Team)}] {attacker.Data?.displayName ?? "Unit"} "
                     + $"→ [{FormatTeam(targetTeam)}] {targetName}: "
-                    + $"{damage:0} dmg (HP {buildingTarget.CurrentHp:0}/{buildingTarget.MaxHp:0})");
+                    + $"{breakdown.FormatLogSuffix()} (HP {buildingTarget.CurrentHp:0}/{buildingTarget.MaxHp:0})");
             }
 
             return true;

@@ -9,7 +9,7 @@ namespace AoE.RTS.Buildings
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Collider))]
-    public class Barracks : MonoBehaviour
+    public class Stable : MonoBehaviour
     {
         [SerializeField] PlacedBuildingData data;
         [SerializeField] UnitTeam team = UnitTeam.Player;
@@ -34,18 +34,18 @@ namespace AoE.RTS.Buildings
 
         void OnEnable()
         {
-            BarracksProductionManager.Register(this);
+            StableProductionManager.Register(this);
             UpdateVisual();
         }
 
         void Start()
         {
-            BarracksProductionManager.Register(this);
+            StableProductionManager.Register(this);
         }
 
         void OnDisable()
         {
-            BarracksProductionManager.Unregister(this);
+            StableProductionManager.Unregister(this);
         }
 
         public void SetData(PlacedBuildingData buildingData)
@@ -92,24 +92,25 @@ namespace AoE.RTS.Buildings
             rally = ProductionRallyPoint.None;
         }
 
-        public bool TryQueueMilitiaProduction()
+        public bool TryQueueCavalryProduction()
         {
             if (data == null || data.trainUnitData == null)
                 return false;
 
-            return BarracksProductionManager.TryQueueProduction(
+            return StableProductionManager.TryQueueProduction(
                 this,
                 data.trainUnitData,
                 data.trainTime,
-                data.trainWoodCost);
+                data.trainWoodCost,
+                data.trainFoodCost);
         }
 
-        public bool TryQueueSpearmanProduction()
+        public bool TryQueueScoutProduction()
         {
             if (data == null || data.secondaryTrainUnitData == null)
                 return false;
 
-            return BarracksProductionManager.TryQueueProduction(
+            return StableProductionManager.TryQueueProduction(
                 this,
                 data.secondaryTrainUnitData,
                 data.secondaryTrainTime,
@@ -168,8 +169,8 @@ namespace AoE.RTS.Buildings
                     propertyBlock = new MaterialPropertyBlock();
 
                 Color baseColor = team == UnitTeam.Enemy
-                    ? new Color(0.55f, 0.35f, 0.45f)
-                    : (data != null ? data.defaultColor : new Color(0.55f, 0.35f, 0.32f));
+                    ? new Color(0.5f, 0.42f, 0.28f)
+                    : (data != null ? data.defaultColor : new Color(0.55f, 0.45f, 0.28f));
 
                 cachedRenderer.GetPropertyBlock(propertyBlock);
                 propertyBlock.SetColor("_BaseColor", baseColor);
@@ -183,7 +184,7 @@ namespace AoE.RTS.Buildings
 
             Color color = data != null
                 ? data.selectedColor
-                : new Color(0.95f, 0.55f, 0.35f);
+                : new Color(0.9f, 0.75f, 0.35f);
 
             cachedRenderer.GetPropertyBlock(propertyBlock);
             propertyBlock.SetColor("_BaseColor", color);
@@ -197,7 +198,7 @@ namespace AoE.RTS.Buildings
                 return;
 
 #if UNITY_EDITOR
-            data = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultBarracksData);
+            data = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultStableData);
 #endif
         }
     }

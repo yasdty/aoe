@@ -472,11 +472,52 @@ namespace AoE.RTS.Commands
         }
     }
 
+    public sealed class TrainCavalryCommand : IGameCommand
+    {
+        readonly Stable stable;
+
+        public string DebugName => "TrainCavalry";
+
+        public TrainCavalryCommand(Stable stable)
+        {
+            this.stable = stable;
+        }
+
+        public void Execute()
+        {
+            if (stable == null)
+                return;
+
+            stable.TryQueueCavalryProduction();
+        }
+    }
+
+    public sealed class TrainScoutCommand : IGameCommand
+    {
+        readonly Stable stable;
+
+        public string DebugName => "TrainScout";
+
+        public TrainScoutCommand(Stable stable)
+        {
+            this.stable = stable;
+        }
+
+        public void Execute()
+        {
+            if (stable == null)
+                return;
+
+            stable.TryQueueScoutProduction();
+        }
+    }
+
     public sealed class SetRallyPointCommand : IGameCommand
     {
         readonly TownCenter townCenter;
         readonly Barracks barracks;
         readonly ArcheryRange archeryRange;
+        readonly Stable stable;
         readonly ProductionRallyPoint rally;
 
         public string DebugName => "SetRallyPoint";
@@ -486,6 +527,7 @@ namespace AoE.RTS.Commands
             this.townCenter = townCenter;
             this.barracks = null;
             this.archeryRange = null;
+            this.stable = null;
             this.rally = rally;
         }
 
@@ -494,6 +536,7 @@ namespace AoE.RTS.Commands
             this.townCenter = null;
             this.barracks = barracks;
             this.archeryRange = null;
+            this.stable = null;
             this.rally = rally;
         }
 
@@ -502,6 +545,16 @@ namespace AoE.RTS.Commands
             this.townCenter = null;
             this.barracks = null;
             this.archeryRange = archeryRange;
+            this.stable = null;
+            this.rally = rally;
+        }
+
+        public SetRallyPointCommand(Stable stable, ProductionRallyPoint rally)
+        {
+            this.townCenter = null;
+            this.barracks = null;
+            this.archeryRange = null;
+            this.stable = stable;
             this.rally = rally;
         }
 
@@ -520,7 +573,13 @@ namespace AoE.RTS.Commands
             }
 
             if (archeryRange != null)
+            {
                 archeryRange.SetRally(rally);
+                return;
+            }
+
+            if (stable != null)
+                stable.SetRally(rally);
         }
     }
 }

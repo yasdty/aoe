@@ -176,5 +176,35 @@ namespace AoE.RTS.Buildings
             cached.maxHp = 300f;
             return cached;
         }
+
+        public static PlacedBuildingData ResolveStable(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultStableData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.Stable;
+            cached.displayName = "Stable";
+            cached.woodCost = 150f;
+            cached.buildTime = 40f;
+            cached.footprintWidth = 6f;
+            cached.footprintDepth = 6f;
+            cached.buildingHeight = 3.5f;
+            cached.housingProvided = 0;
+            cached.trainTime = 5f;
+            cached.trainWoodCost = 20f;
+            cached.trainFoodCost = 60f;
+            cached.secondaryTrainTime = 6f;
+            cached.secondaryTrainWoodCost = 0f;
+            cached.secondaryTrainFoodCost = 80f;
+            cached.maxHp = 300f;
+            return cached;
+        }
     }
 }

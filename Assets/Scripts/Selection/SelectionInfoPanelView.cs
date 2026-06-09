@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Economy;
+using AoE.RTS.Combat;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -38,7 +39,7 @@ namespace AoE.RTS.Selection
             float panelX = Margin;
             float bottomOffset = Margin;
             if (selectionManager.SelectedTownCenter != null || selectionManager.SelectedBarracks != null
-                || selectionManager.SelectedArcheryRange != null)
+                || selectionManager.SelectedArcheryRange != null || selectionManager.SelectedStable != null)
                 bottomOffset += ProductionPanelReserveHeight;
 
             float panelY = Screen.height - panelHeight - bottomOffset;
@@ -110,6 +111,18 @@ namespace AoE.RTS.Selection
                 return true;
             }
 
+            Stable stable = selectionManager.SelectedStable;
+            if (stable != null)
+            {
+                AppendBuildingHealthInfo(
+                    stable.Data != null ? stable.Data.displayName : "Stable",
+                    stable.GetComponent<BuildingHealth>(),
+                    lines,
+                    out title);
+                lines.Add(stable.HasRally ? "Rally: Set" : "Rally: None");
+                return true;
+            }
+
             BuildingHealth placedBuilding = selectionManager.SelectedPlacedBuilding;
             if (placedBuilding != null)
             {
@@ -133,10 +146,13 @@ namespace AoE.RTS.Selection
             lines.Add($"HP: {Mathf.FloorToInt(unit.CurrentHp)} / {Mathf.FloorToInt(unit.MaxHp)}");
 
             if (unit.CanAttack)
-                lines.Add($"Attack: {unit.AttackPower:0}");
+            {
+                string damageTypeLabel = unit.AttackDamageType == AttackDamageType.Pierce ? "Pierce" : "Melee";
+                lines.Add($"Attack: {unit.AttackPower:0} ({damageTypeLabel})");
+            }
 
-            if (unit.Armor > 0f)
-                lines.Add($"Armor: {unit.Armor:0}");
+            lines.Add($"Melee Armor: {unit.MeleeArmor:0}");
+            lines.Add($"Pierce Armor: {unit.PierceArmor:0}");
         }
 
         static void AppendBuildingHealthInfo(string displayName, BuildingHealth health, List<string> lines, out string title)
@@ -145,8 +161,8 @@ namespace AoE.RTS.Selection
             if (health != null)
             {
                 lines.Add($"HP: {Mathf.FloorToInt(health.CurrentHp)} / {Mathf.FloorToInt(health.MaxHp)}");
-                if (health.Armor > 0f)
-                    lines.Add($"Armor: {health.Armor:0}");
+                lines.Add($"Melee Armor: {health.MeleeArmor:0}");
+                lines.Add($"Pierce Armor: {health.PierceArmor:0}");
             }
         }
 
@@ -154,8 +170,8 @@ namespace AoE.RTS.Selection
         {
             title = ResolvePlacedBuildingName(health);
             lines.Add($"HP: {Mathf.FloorToInt(health.CurrentHp)} / {Mathf.FloorToInt(health.MaxHp)}");
-            if (health.Armor > 0f)
-                lines.Add($"Armor: {health.Armor:0}");
+            lines.Add($"Melee Armor: {health.MeleeArmor:0}");
+            lines.Add($"Pierce Armor: {health.PierceArmor:0}");
         }
 
         static string ResolvePlacedBuildingName(BuildingHealth health)

@@ -15,6 +15,7 @@ namespace AoE.RTS.Buildings
         public float spawnForwardOffset = 8f;
         public float spawnClearance = 4f;
         public float maxHp = 400f;
-        public float armor;
+        public float meleeArmor;
+        public float pierceArmor;
     }
 }

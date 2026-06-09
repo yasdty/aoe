@@ -13,6 +13,7 @@ namespace AoE.RTS.Selection
         [SerializeField] PlacedBuildingData houseData;
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData archeryRangeData;
+        [SerializeField] PlacedBuildingData stableData;
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
@@ -37,6 +38,7 @@ namespace AoE.RTS.Selection
             houseData = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
+            stableData = PlacedBuildingDataResolver.ResolveStable(ref stableData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
@@ -61,13 +63,14 @@ namespace AoE.RTS.Selection
             PlacedBuildingData house = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             PlacedBuildingData archeryRange = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
+            PlacedBuildingData stable = PlacedBuildingDataResolver.ResolveStable(ref stableData);
             PlacedBuildingData farm = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             PlacedBuildingData lumberCamp = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             PlacedBuildingData miningCamp = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
             PlacedBuildingData mill = PlacedBuildingDataResolver.ResolveMill(ref millData);
             float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + FoodLineHeight + ButtonGap
                 + GoldLineHeight + ButtonGap + StoneLineHeight + ButtonGap + PopLineHeight + ButtonGap
-                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
+                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
             Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
             GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
 
@@ -134,6 +137,18 @@ namespace AoE.RTS.Selection
             }
             y += ButtonHeight + ButtonGap;
 
+            Rect stableButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canAffordStable = ResourceManager.Wood >= stable.woodCost;
+            GUI.enabled = canAffordStable && !inPlacementMode && !gameOver;
+            if (GUI.Button(stableButtonRect, $"Build Stable ({stable.woodCost} Wood)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterStablePlacementMode(builders);
+            }
+            y += ButtonHeight + ButtonGap;
+
             Rect farmButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
             bool canAffordFarm = ResourceManager.Wood >= farm.woodCost;
             GUI.enabled = canAffordFarm && !inPlacementMode && !gameOver;
@@ -191,7 +206,7 @@ namespace AoE.RTS.Selection
             else
             {
                 GameUiInput.ClearHudHintScreenRect();
-                if (!canAffordHouse && !canAffordBarracks && !canAffordArcheryRange && !canAffordFarm && !canAffordLumberCamp && !canAffordMiningCamp && !canAffordMill)
+                if (!canAffordHouse && !canAffordBarracks && !canAffordArcheryRange && !canAffordStable && !canAffordFarm && !canAffordLumberCamp && !canAffordMiningCamp && !canAffordMill)
                 {
                     Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
                     GUI.Label(hintRect, "Need more Wood.");

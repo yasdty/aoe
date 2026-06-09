@@ -15,11 +15,15 @@ namespace AoE.RTS.AI
         const int TargetMilitiaCount = 8;
         const int TargetSpearmanCount = 4;
         const int TargetArcherCount = 4;
+        const int TargetCavalryCount = 3;
+        const int TargetScoutCount = 2;
         const int MinAttackUnitsForWave = 1;
         const float BarracksMinRadius = 10f;
         const float BarracksMaxRadius = 24f;
         const float ArcheryRangeMinRadius = 12f;
         const float ArcheryRangeMaxRadius = 28f;
+        const float StableMinRadius = 14f;
+        const float StableMaxRadius = 32f;
         const UnitTeam CpuTeam = UnitTeam.Enemy;
         const UnitTeam PlayerTeam = UnitTeam.Player;
 
@@ -27,6 +31,7 @@ namespace AoE.RTS.AI
 
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData archeryRangeData;
+        [SerializeField] PlacedBuildingData stableData;
         [SerializeField] float barracksBuildDelaySeconds = 60f;
         [SerializeField] float attackWaveIntervalSeconds = 30f;
 
@@ -43,12 +48,14 @@ namespace AoE.RTS.AI
         public bool HasCpuBarracks => BarracksProductionManager.HasBarracksForTeam(CpuTeam);
         public bool IsBuildingCpuBarracks => BuildingPlacementManager.HasActiveBarracksConstructionForTeam(CpuTeam);
         public bool HasCpuArcheryRange => ArcheryRangeProductionManager.HasArcheryRangeForTeam(CpuTeam);
+        public bool HasCpuStable => StableProductionManager.HasStableForTeam(CpuTeam);
 
         void Awake()
         {
             instance = this;
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
+            stableData = PlacedBuildingDataResolver.ResolveStable(ref stableData);
         }
 
         void OnDestroy()
@@ -90,9 +97,12 @@ namespace AoE.RTS.AI
 
             TryBuildBarracks();
             TryBuildArcheryRange();
+            TryBuildStable();
             TryTrainMilitia();
             TryTrainSpearman();
             TryTrainArcher();
+            TryTrainCavalry();
+            TryTrainScout();
         }
 
         void RefreshCpuTownCenter()
@@ -168,6 +178,40 @@ namespace AoE.RTS.AI
                 Debug.Log($"[CPU Military] Archery Range construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
+        void TryBuildStable()
+        {
+            if (stableData == null)
+                return;
+
+            if (!ArcheryRangeProductionManager.HasArcheryRangeForTeam(CpuTeam))
+                return;
+
+            if (StableProductionManager.HasStableForTeam(CpuTeam))
+                return;
+
+            if (BuildingPlacementManager.HasActiveConstructionForTeam(CpuTeam))
+                return;
+
+            if (ResourceManager.GetWood(CpuTeam) < stableData.woodCost)
+                return;
+
+            Unit builder = FindBuilderVillager();
+            if (builder == null)
+                return;
+
+            Vector3 center = cpuTownCenter.transform.position;
+            if (!BuildingPlacementManager.TryFindPlacementNear(
+                    center,
+                    StableMinRadius,
+                    StableMaxRadius,
+                    stableData,
+                    out Vector3 placement))
+                return;
+
+            if (BuildingPlacementManager.TryStartTeamConstruction(stableData, placement, builder))
+                Debug.Log($"[CPU Military] Stable construction started at {FormatTime(Time.timeSinceLevelLoad)}");
+        }
+
         void TryTrainMilitia()
         {
             if (CountCpuUnitsByName("Militia") >= TargetMilitiaCount)
@@ -237,6 +281,54 @@ namespace AoE.RTS.AI
             archeryRange.TryQueueArcherProduction();
         }
 
+        void TryTrainCavalry()
+        {
+            if (CountCpuUnitsByName("Cavalry") >= TargetCavalryCount)
+                return;
+
+            Stable stable = StableProductionManager.GetStableForTeam(CpuTeam);
+            if (stable == null)
+                return;
+
+            if (!PopulationManager.CanTrainUnit(CpuTeam))
+                return;
+
+            if (stable.Data == null || stable.Data.trainUnitData == null)
+                return;
+
+            if (ResourceManager.GetWood(CpuTeam) < stable.Data.trainWoodCost)
+                return;
+
+            if (ResourceManager.GetFood(CpuTeam) < stable.Data.trainFoodCost)
+                return;
+
+            stable.TryQueueCavalryProduction();
+        }
+
+        void TryTrainScout()
+        {
+            if (CountCpuUnitsByName("Scout") >= TargetScoutCount)
+                return;
+
+            Stable stable = StableProductionManager.GetStableForTeam(CpuTeam);
+            if (stable == null)
+                return;
+
+            if (!PopulationManager.CanTrainUnit(CpuTeam))
+                return;
+
+            if (stable.Data == null || stable.Data.secondaryTrainUnitData == null)
+                return;
+
+            if (ResourceManager.GetWood(CpuTeam) < stable.Data.secondaryTrainWoodCost)
+                return;
+
+            if (ResourceManager.GetFood(CpuTeam) < stable.Data.secondaryTrainFoodCost)
+                return;
+
+            stable.TryQueueScoutProduction();
+        }
+
         void LaunchAttackWave()
         {
             CollectCpuAttackUnits(attackWaveBuffer);
@@ -299,7 +391,7 @@ namespace AoE.RTS.AI
                     continue;
 
                 string name = unit.Data != null ? unit.Data.displayName : string.Empty;
-                if (name == "Militia" || name == "Spearman" || name == "Archer")
+                if (name == "Militia" || name == "Spearman" || name == "Archer" || name == "Cavalry" || name == "Scout")
                     buffer.Add(unit);
             }
         }

@@ -1,5 +1,6 @@
 using AoE.RTS.Buildings;
 using AoE.RTS.Camera;
+using AoE.RTS.Combat;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
@@ -33,9 +34,12 @@ namespace AoE.RTS.EditorTools
         const string DefaultMillDataPath = GameAssetPaths.DefaultMillData;
         const string DefaultBarracksDataPath = GameAssetPaths.DefaultBarracksData;
         const string DefaultArcheryRangeDataPath = GameAssetPaths.DefaultArcheryRangeData;
+        const string DefaultStableDataPath = GameAssetPaths.DefaultStableData;
         const string MilitiaDataPath = GameAssetPaths.MilitiaData;
         const string SpearmanDataPath = GameAssetPaths.SpearmanData;
         const string ArcherDataPath = GameAssetPaths.ArcherData;
+        const string CavalryDataPath = GameAssetPaths.CavalryData;
+        const string ScoutDataPath = GameAssetPaths.ScoutData;
         const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
 
         public static bool EnsureEditModeForSceneSetup()
@@ -163,7 +167,16 @@ namespace AoE.RTS.EditorTools
 
             UnitData existing = AssetDatabase.LoadAssetAtPath<UnitData>(UnitDataPath);
             if (existing != null)
+            {
+                bool dirty = SyncVillagerStats(existing);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
                 return existing;
+            }
 
             UnitData data = ScriptableObject.CreateInstance<UnitData>();
             data.displayName = "Villager";
@@ -793,6 +806,136 @@ namespace AoE.RTS.EditorTools
             return data;
         }
 
+        public static UnitData EnsureCavalryData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/UnitData"))
+                AssetDatabase.CreateFolder("Assets/Data", "UnitData");
+
+            UnitData existing = AssetDatabase.LoadAssetAtPath<UnitData>(CavalryDataPath);
+            if (existing != null)
+            {
+                bool dirty = SyncCavalryStats(existing);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            UnitData data = ScriptableObject.CreateInstance<UnitData>();
+            data.displayName = "Cavalry";
+            SyncCavalryStats(data);
+            AssetDatabase.CreateAsset(data, CavalryDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static UnitData EnsureScoutData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/UnitData"))
+                AssetDatabase.CreateFolder("Assets/Data", "UnitData");
+
+            UnitData existing = AssetDatabase.LoadAssetAtPath<UnitData>(ScoutDataPath);
+            if (existing != null)
+            {
+                bool dirty = SyncScoutStats(existing);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            UnitData data = ScriptableObject.CreateInstance<UnitData>();
+            data.displayName = "Scout";
+            SyncScoutStats(data);
+            AssetDatabase.CreateAsset(data, ScoutDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureStableData(UnitData cavalryData, UnitData scoutData)
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultStableDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.Stable)
+                {
+                    existing.kind = PlacedBuildingKind.Stable;
+                    dirty = true;
+                }
+
+                if (existing.trainUnitData != cavalryData && cavalryData != null)
+                {
+                    existing.trainUnitData = cavalryData;
+                    dirty = true;
+                }
+
+                if (existing.secondaryTrainUnitData != scoutData && scoutData != null)
+                {
+                    existing.secondaryTrainUnitData = scoutData;
+                    dirty = true;
+                }
+
+                if (existing.woodCost != 150f) { existing.woodCost = 150f; dirty = true; }
+                if (existing.buildTime != 40f) { existing.buildTime = 40f; dirty = true; }
+                if (existing.maxHp != 300f) { existing.maxHp = 300f; dirty = true; }
+                if (existing.trainTime != 5f) { existing.trainTime = 5f; dirty = true; }
+                if (existing.trainWoodCost != 20f) { existing.trainWoodCost = 20f; dirty = true; }
+                if (existing.trainFoodCost != 60f) { existing.trainFoodCost = 60f; dirty = true; }
+                if (existing.secondaryTrainTime != 6f) { existing.secondaryTrainTime = 6f; dirty = true; }
+                if (existing.secondaryTrainWoodCost != 0f) { existing.secondaryTrainWoodCost = 0f; dirty = true; }
+                if (existing.secondaryTrainFoodCost != 80f) { existing.secondaryTrainFoodCost = 80f; dirty = true; }
+
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.Stable;
+            data.displayName = "Stable";
+            data.woodCost = 150f;
+            data.buildTime = 40f;
+            data.footprintWidth = 6f;
+            data.footprintDepth = 6f;
+            data.buildingHeight = 3.5f;
+            data.housingProvided = 0;
+            data.trainUnitData = cavalryData;
+            data.trainTime = 5f;
+            data.trainWoodCost = 20f;
+            data.trainFoodCost = 60f;
+            data.secondaryTrainUnitData = scoutData;
+            data.secondaryTrainTime = 6f;
+            data.secondaryTrainWoodCost = 0f;
+            data.secondaryTrainFoodCost = 80f;
+            data.spawnClearance = 4f;
+            data.defaultColor = new Color(0.55f, 0.45f, 0.28f);
+            data.selectedColor = new Color(0.9f, 0.75f, 0.35f);
+            data.maxHp = 300f;
+            AssetDatabase.CreateAsset(data, DefaultStableDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
         public static GameObject CreateTownCenter(BuildingData buildingData, Vector3 position)
         {
             const float buildingHeight = 4f;
@@ -1357,7 +1500,7 @@ namespace AoE.RTS.EditorTools
             if (data.maxHp != 40f) { data.maxHp = 40f; dirty = true; }
             if (data.moveSpeed != 5f) { data.moveSpeed = 5f; dirty = true; }
             if (data.attack != 4f) { data.attack = 4f; dirty = true; }
-            if (data.armor != 0f) { data.armor = 0f; dirty = true; }
+            dirty |= SyncUnitCombatProfile(data, AttackDamageType.Melee, 0f, 0f, UnitArmorClass.Infantry);
             if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
             if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
             if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
@@ -1371,7 +1514,7 @@ namespace AoE.RTS.EditorTools
             if (data.maxHp != 45f) { data.maxHp = 45f; dirty = true; }
             if (data.moveSpeed != 5f) { data.moveSpeed = 5f; dirty = true; }
             if (data.attack != 3f) { data.attack = 3f; dirty = true; }
-            if (data.armor != 0f) { data.armor = 0f; dirty = true; }
+            dirty |= SyncUnitCombatProfile(data, AttackDamageType.Melee, 0f, 0f, UnitArmorClass.Infantry);
             if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
             if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
             if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
@@ -1391,7 +1534,7 @@ namespace AoE.RTS.EditorTools
             if (data.maxHp != 30f) { data.maxHp = 30f; dirty = true; }
             if (data.moveSpeed != 5f) { data.moveSpeed = 5f; dirty = true; }
             if (data.attack != 4f) { data.attack = 4f; dirty = true; }
-            if (data.armor != 0f) { data.armor = 0f; dirty = true; }
+            dirty |= SyncUnitCombatProfile(data, AttackDamageType.Pierce, 0f, 0f, UnitArmorClass.Infantry);
             if (data.attackRange != 6f) { data.attackRange = 6f; dirty = true; }
             if (data.attackCooldown != 2f) { data.attackCooldown = 2f; dirty = true; }
             if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
@@ -1404,6 +1547,55 @@ namespace AoE.RTS.EditorTools
             return dirty;
         }
 
+        static bool SyncCavalryStats(UnitData data)
+        {
+            bool dirty = false;
+            if (data.displayName != "Cavalry") { data.displayName = "Cavalry"; dirty = true; }
+            if (data.maxHp != 45f) { data.maxHp = 45f; dirty = true; }
+            if (data.moveSpeed != 7f) { data.moveSpeed = 7f; dirty = true; }
+            if (data.attack != 6f) { data.attack = 6f; dirty = true; }
+            dirty |= SyncUnitCombatProfile(data, AttackDamageType.Melee, 0f, 2f, UnitArmorClass.Cavalry);
+            if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
+            if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
+            if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            if (data.defaultColor != new Color(0.65f, 0.45f, 0.25f))
+            {
+                data.defaultColor = new Color(0.65f, 0.45f, 0.25f);
+                dirty = true;
+            }
+
+            return dirty;
+        }
+
+        static bool SyncScoutStats(UnitData data)
+        {
+            bool dirty = false;
+            if (data.displayName != "Scout") { data.displayName = "Scout"; dirty = true; }
+            if (data.maxHp != 30f) { data.maxHp = 30f; dirty = true; }
+            if (data.moveSpeed != 9f) { data.moveSpeed = 9f; dirty = true; }
+            if (data.attack != 3f) { data.attack = 3f; dirty = true; }
+            dirty |= SyncUnitCombatProfile(data, AttackDamageType.Melee, 0f, 1f, UnitArmorClass.Cavalry);
+            if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
+            if (data.attackCooldown != 1.5f) { data.attackCooldown = 1.5f; dirty = true; }
+            if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            if (data.defaultColor != new Color(0.75f, 0.6f, 0.35f))
+            {
+                data.defaultColor = new Color(0.75f, 0.6f, 0.35f);
+                dirty = true;
+            }
+
+            return dirty;
+        }
+
+        static bool SyncVillagerStats(UnitData data)
+        {
+            bool dirty = false;
+            if (data.displayName != "Villager") { data.displayName = "Villager"; dirty = true; }
+            dirty |= SyncUnitCombatProfile(data, AttackDamageType.Melee, 0f, 0f, UnitArmorClass.None);
+            if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            return dirty;
+        }
+
         static bool SyncEnemyDummyStats(UnitData data)
         {
             bool dirty = false;
@@ -1411,7 +1603,23 @@ namespace AoE.RTS.EditorTools
             if (data.maxHp != 100f) { data.maxHp = 100f; dirty = true; }
             if (data.moveSpeed != 0f) { data.moveSpeed = 0f; dirty = true; }
             if (data.attack != 0f) { data.attack = 0f; dirty = true; }
+            dirty |= SyncUnitCombatProfile(data, AttackDamageType.Melee, 0f, 0f, UnitArmorClass.None);
             if (data.team != UnitTeam.Enemy) { data.team = UnitTeam.Enemy; dirty = true; }
+            return dirty;
+        }
+
+        static bool SyncUnitCombatProfile(
+            UnitData data,
+            AttackDamageType damageType,
+            float meleeArmor,
+            float pierceArmor,
+            UnitArmorClass armorClass)
+        {
+            bool dirty = false;
+            if (data.attackDamageType != damageType) { data.attackDamageType = damageType; dirty = true; }
+            if (data.meleeArmor != meleeArmor) { data.meleeArmor = meleeArmor; dirty = true; }
+            if (data.pierceArmor != pierceArmor) { data.pierceArmor = pierceArmor; dirty = true; }
+            if (data.armorClass != armorClass) { data.armorClass = armorClass; dirty = true; }
             return dirty;
         }
     }

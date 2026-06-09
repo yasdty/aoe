@@ -15,8 +15,8 @@
 |-------|------|------|------|
 | 36 | Archery Range + Archer | 弓兵建築・遠距離攻撃・弾丸 MVP | ✅ 完了 |
 | 37 | Spearman | Barracks 歩兵ライン拡張・対騎兵下地 | ✅ 完了 |
-| 38 | Stable + Cavalry + Scout | 騎兵建築・2 スロット生産・高機動近接 | ⬜ 未着手 |
-| 39 | Counter System | Melee / Pierce 装甲・ボーナスダメージ相性 | ⬜ 未着手 |
+| 38 | Stable + Cavalry + Scout | 騎兵建築・2 スロット生産・高機動近接 | ✅ 完了 |
+| 39 | Counter System | Melee / Pierce 装甲・ボーナスダメージ相性 | ✅ 完了 |
 | 40 | Stance, Aggro & Attack-Move | Stand Ground / Defensive / 攻撃移動 MVP | ⬜ 未着手 |
 | 41 | Formation | 隊列移動・軽量 Separation + CPU 軍事 AI 新兵種対応 | ⬜ 未着手 |
 
@@ -66,21 +66,19 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 
 ---
 
-## Phase 38 — Stable + Cavalry + Scout ⬜
+## Phase 38 — Stable + Cavalry + Scout ✅
 
-**実装:** Stable 建築 / Cavalry + Scout 生産（Q/E）/ 高移動近接 / CPU Stable。Scout は **生産込み**（ユーザー確定）。
-
-**バランス:** MVP 暫定値（Phase 36 同型）。AoE2 正本 + Debug は [12_GAMEPLAY_BALANCE_MODE.md](12_GAMEPLAY_BALANCE_MODE.md)。
+**実装:** Stable 建築 / Cavalry + Scout 生産（Q/E）/ 高移動近接 / CPU Stable
 
 **プロンプト:** [prompts/phase38-prompt.md](prompts/phase38-prompt.md)
 
 ---
 
-## Phase 39 — Counter System ⬜
+## Phase 39 — Counter System ✅
 
-**実装:** `ArmorClass` / ボーナスダメージ表。Info Panel を Melee / Pierce 表示に拡張。
+**実装:** `CombatDamageResolver` / Melee+Pierce 装甲 / Spearman→Cavalry +12 ボーナス / Info Panel 拡張
 
-**プロンプト:** [prompts/phase39-prompt.md](prompts/phase39-prompt.md)（未作成）
+**プロンプト:** [prompts/phase39-prompt.md](prompts/phase39-prompt.md)
 
 ---
 
@@ -89,10 +87,10 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 **実装:**
 
 - Stand Ground / Aggressive / Defensive（OnGUI MVP → M5 で uGUI 移行）
-- 弓兵の射程内 Aggro 統合
+- 弓兵の射程内 Aggro 統合（Stand Ground = 射程内のみ）
 - **攻撃移動（A + 右クリック）** MVP — マイクロの前提
 
-**プロンプト:** [prompts/phase40-prompt.md](prompts/phase40-prompt.md)（未作成）
+**プロンプト:** [prompts/phase40-prompt.md](prompts/phase40-prompt.md)
 
 ---
 
@@ -124,6 +122,6 @@ Castle / Siege Workshop / Dock は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED
 
 ---
 
-## Gameplay Balance Mode（M3 完了後）
+## Gameplay Balance Mode（M3 完了 → Phase 42 先頭）
 
-AoE2 基準コスト・建築時間を Data 正本とし、Debug モードで短縮する設計。詳細・要決定事項は [12_GAMEPLAY_BALANCE_MODE.md](12_GAMEPLAY_BALANCE_MODE.md)。
+AoE2 基準コスト・建築時間を Data 正本とし、Debug モード（buildTime ×0.1 / cost ×0.3）で短縮。**決定済み** — [12_GAMEPLAY_BALANCE_MODE.md](12_GAMEPLAY_BALANCE_MODE.md) §6。Data 一括移行は M3 完了時、**GameplayBalance 実装は Phase 42 先頭**。

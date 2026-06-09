@@ -71,7 +71,7 @@ namespace AoE.RTS.Buildings
 
             BuildingHealth health = GetComponent<BuildingHealth>();
             if (health != null && buildingData != null)
-                health.Configure(buildingData.maxHp, buildingData.armor, unitTeam, townCenter: false);
+                health.Configure(buildingData.maxHp, buildingData.meleeArmor, buildingData.pierceArmor, unitTeam, townCenter: false);
 
             UpdateVisual();
         }

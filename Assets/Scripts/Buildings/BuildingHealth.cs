@@ -9,7 +9,8 @@ namespace AoE.RTS.Buildings
     public class BuildingHealth : MonoBehaviour
     {
         [SerializeField] float maxHp = 400f;
-        [SerializeField] float armor;
+        [SerializeField] float meleeArmor;
+        [SerializeField] float pierceArmor;
         [SerializeField] UnitTeam team = UnitTeam.Player;
         [SerializeField] bool isTownCenter;
 
@@ -18,15 +19,22 @@ namespace AoE.RTS.Buildings
 
         public float MaxHp => maxHp;
         public float CurrentHp => currentHp;
-        public float Armor => armor;
+        public float MeleeArmor => meleeArmor;
+        public float PierceArmor => pierceArmor;
         public UnitTeam Team => team;
         public bool IsTownCenter => isTownCenter;
         public bool IsAlive => currentHp > 0f;
 
-        public void Configure(float hp, float buildingArmor, UnitTeam buildingTeam, bool townCenter)
+        public void Configure(
+            float hp,
+            float buildingMeleeArmor,
+            float buildingPierceArmor,
+            UnitTeam buildingTeam,
+            bool townCenter)
         {
             maxHp = Mathf.Max(1f, hp);
-            armor = Mathf.Max(0f, buildingArmor);
+            meleeArmor = Mathf.Max(0f, buildingMeleeArmor);
+            pierceArmor = Mathf.Max(0f, buildingPierceArmor);
             team = buildingTeam;
             isTownCenter = townCenter;
             currentHp = maxHp;

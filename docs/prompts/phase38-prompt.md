@@ -1,6 +1,6 @@
 # Phase 38 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜37 完了（M3 Spearman 含む）  
 > **マイルストン:** M3 Military — **Stable + Cavalry + Scout**  
 > **ロードマップ:** [07_M3_MILITARY_PHASES.md](../07_M3_MILITARY_PHASES.md)  
@@ -118,9 +118,9 @@ AoE2 準拠で **Stable 建築**から **Cavalry（高機動近接）** と **Sc
 
 ## ⑥ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 38 ✅
-- [ ] `07_M3_MILITARY_PHASES.md` — Phase 38 ✅
-- [ ] 本プロンプト — Play 確認待ち → ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 38 ✅
+- [x] `07_M3_MILITARY_PHASES.md` — Phase 38 ✅
+- [x] 本プロンプト — ✅
 
 ---
 

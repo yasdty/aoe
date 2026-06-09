@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2caec2c85be565943b0efba47a437bbd, type: 3}
-  m_Name: SpearmanData
+  m_Name: ScoutData
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Units.UnitData
-  displayName: Spearman
-  maxHp: 45
-  moveSpeed: 5
+  displayName: Scout
+  maxHp: 30
+  moveSpeed: 9
   attack: 3
   attackDamageType: 0
   meleeArmor: 0
-  pierceArmor: 0
-  armorClass: 1
+  pierceArmor: 1
+  armorClass: 2
   attackRange: 2
-  attackCooldown: 1
+  attackCooldown: 1.5
   team: 0
-  defaultColor: {r: 0.31, g: 0.44, b: 0.63, a: 1}
+  defaultColor: {r: 0.75, g: 0.6, b: 0.35, a: 1}
   selectedColor: {r: 0.2, g: 0.85, b: 0.35, a: 1}

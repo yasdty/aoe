@@ -33,6 +33,14 @@ namespace AoE.RTS.Buildings
             ApplyRally(building.Rally, spawnedUnit);
         }
 
+        public static void Apply(Stable building, Unit spawnedUnit)
+        {
+            if (building == null || spawnedUnit == null || !spawnedUnit.IsAlive)
+                return;
+
+            ApplyRally(building.Rally, spawnedUnit);
+        }
+
         static void ApplyRally(ProductionRallyPoint rally, Unit unit)
         {
             if (rally.kind == RallyTargetKind.None)

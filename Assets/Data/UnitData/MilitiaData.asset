@@ -16,7 +16,10 @@ MonoBehaviour:
   maxHp: 40
   moveSpeed: 5
   attack: 4
-  armor: 0
+  attackDamageType: 0
+  meleeArmor: 0
+  pierceArmor: 0
+  armorClass: 1
   attackRange: 2
   attackCooldown: 1
   team: 0

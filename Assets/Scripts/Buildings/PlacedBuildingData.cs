@@ -11,7 +11,8 @@ namespace AoE.RTS.Buildings
         LumberCamp = 3,
         MiningCamp = 4,
         Mill = 5,
-        ArcheryRange = 6
+        ArcheryRange = 6,
+        Stable = 7
     }
 
     [CreateAssetMenu(fileName = "PlacedBuildingData", menuName = "AoE/Placed Building Data")]
@@ -40,7 +41,8 @@ namespace AoE.RTS.Buildings
         public Color constructionColor = new Color(0.42f, 0.4f, 0.38f);
         public Color selectedColor = new Color(0.95f, 0.85f, 0.35f);
         public float maxHp = 150f;
-        public float armor;
+        public float meleeArmor;
+        public float pierceArmor;
         public float foodCapacity;
     }
 }

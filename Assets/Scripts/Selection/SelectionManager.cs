@@ -29,6 +29,7 @@ namespace AoE.RTS.Selection
         TownCenter selectedTownCenter;
         Barracks selectedBarracks;
         ArcheryRange selectedArcheryRange;
+        Stable selectedStable;
         BuildingHealth selectedPlacedBuilding;
         Component selectedResource;
 
@@ -39,6 +40,7 @@ namespace AoE.RTS.Selection
         public TownCenter SelectedTownCenter => selectedTownCenter;
         public Barracks SelectedBarracks => selectedBarracks;
         public ArcheryRange SelectedArcheryRange => selectedArcheryRange;
+        public Stable SelectedStable => selectedStable;
         public BuildingHealth SelectedPlacedBuilding => selectedPlacedBuilding;
         public Component SelectedResource => selectedResource;
 
@@ -55,6 +57,7 @@ namespace AoE.RTS.Selection
                 return selectedTownCenter != null
                     || selectedBarracks != null
                     || selectedArcheryRange != null
+                    || selectedStable != null
                     || selectedPlacedBuilding != null
                     || selectedResource != null;
             }
@@ -236,6 +239,13 @@ namespace AoE.RTS.Selection
             if (archeryRange != null && archeryRange.Team == UnitTeam.Player)
             {
                 SetArcheryRangeSelection(archeryRange);
+                return true;
+            }
+
+            Stable stable = hit.collider.GetComponentInParent<Stable>();
+            if (stable != null && stable.Team == UnitTeam.Player)
+            {
+                SetStableSelection(stable);
                 return true;
             }
 
@@ -552,6 +562,17 @@ namespace AoE.RTS.Selection
                 if (TryBuildBarracksRallyFromRay(ray, out ProductionRallyPoint rally))
                 {
                     CommandQueue.Enqueue(new SetRallyPointCommand(selectedArcheryRange, rally));
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (selectedStable != null && selectedStable.Team == UnitTeam.Player)
+            {
+                if (TryBuildBarracksRallyFromRay(ray, out ProductionRallyPoint rally))
+                {
+                    CommandQueue.Enqueue(new SetRallyPointCommand(selectedStable, rally));
                     return true;
                 }
 
@@ -908,6 +929,13 @@ namespace AoE.RTS.Selection
             archeryRange.SetSelected(true);
         }
 
+        void SetStableSelection(Stable stable)
+        {
+            ClearAllSelection();
+            selectedStable = stable;
+            stable.SetSelected(true);
+        }
+
         void ClearTownCenterSelection()
         {
             if (selectedTownCenter != null)
@@ -935,11 +963,21 @@ namespace AoE.RTS.Selection
             }
         }
 
+        void ClearStableSelection()
+        {
+            if (selectedStable != null)
+            {
+                selectedStable.SetSelected(false);
+                selectedStable = null;
+            }
+        }
+
         void ClearBuildingSelection()
         {
             ClearTownCenterSelection();
             ClearBarracksSelection();
             ClearArcheryRangeSelection();
+            ClearStableSelection();
             selectedPlacedBuilding = null;
         }
 

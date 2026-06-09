@@ -33,7 +33,11 @@ namespace AoE.RTS.Units
         public bool HasMoveTarget => moveTarget.HasValue;
         public bool CanAttack => IsAlive && data != null && data.CanAttack;
         public float AttackPower => data != null ? data.attack : 0f;
-        public float Armor => data != null ? data.armor : 0f;
+        public AttackDamageType AttackDamageType =>
+            data != null ? data.attackDamageType : AttackDamageType.Melee;
+        public float MeleeArmor => data != null ? data.meleeArmor : 0f;
+        public float PierceArmor => data != null ? data.pierceArmor : 0f;
+        public UnitArmorClass ArmorClass => data != null ? data.armorClass : UnitArmorClass.None;
         public float AttackRange => data != null ? data.attackRange : 1.5f;
         public float AttackCooldownSeconds => data != null ? data.attackCooldown : 1f;
         public int StandSlot => standSlot;

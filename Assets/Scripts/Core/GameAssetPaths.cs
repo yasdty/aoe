@@ -14,6 +14,7 @@ namespace AoE.RTS.Core
         public const string DefaultHouseData = "Assets/Data/BuildingData/HouseData.asset";
         public const string DefaultBarracksData = "Assets/Data/BuildingData/BarracksData.asset";
         public const string DefaultArcheryRangeData = "Assets/Data/BuildingData/ArcheryRangeData.asset";
+        public const string DefaultStableData = "Assets/Data/BuildingData/StableData.asset";
         public const string DefaultFarmData = "Assets/Data/BuildingData/FarmData.asset";
         public const string DefaultLumberCampData = "Assets/Data/BuildingData/LumberCampData.asset";
         public const string DefaultMiningCampData = "Assets/Data/BuildingData/MiningCampData.asset";
@@ -21,6 +22,8 @@ namespace AoE.RTS.Core
         public const string MilitiaData = "Assets/Data/UnitData/MilitiaData.asset";
         public const string SpearmanData = "Assets/Data/UnitData/SpearmanData.asset";
         public const string ArcherData = "Assets/Data/UnitData/ArcherData.asset";
+        public const string CavalryData = "Assets/Data/UnitData/CavalryData.asset";
+        public const string ScoutData = "Assets/Data/UnitData/ScoutData.asset";
         public const string EnemyDummyData = "Assets/Data/UnitData/EnemyDummyData.asset";
     }
 }

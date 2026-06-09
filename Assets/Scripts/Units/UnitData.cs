@@ -1,3 +1,4 @@
+using AoE.RTS.Combat;
 using UnityEngine;
 
 namespace AoE.RTS.Units
@@ -9,7 +10,10 @@ namespace AoE.RTS.Units
         public float maxHp = 100f;
         public float moveSpeed = 5f;
         public float attack;
-        public float armor;
+        public AttackDamageType attackDamageType = AttackDamageType.Melee;
+        public float meleeArmor;
+        public float pierceArmor;
+        public UnitArmorClass armorClass = UnitArmorClass.None;
         public float attackRange = 1.5f;
         public float attackCooldown = 1f;
         public UnitTeam team = UnitTeam.Player;

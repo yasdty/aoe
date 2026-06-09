@@ -60,7 +60,7 @@ namespace AoE.RTS.Buildings
             if (cachedHealth == null)
                 cachedHealth = GetComponent<BuildingHealth>();
             if (cachedHealth != null && buildingData != null)
-                cachedHealth.Configure(buildingData.maxHp, buildingData.armor, unitTeam, townCenter: false);
+                cachedHealth.Configure(buildingData.maxHp, buildingData.meleeArmor, buildingData.pierceArmor, unitTeam, townCenter: false);
 
             UpdateVisual();
         }

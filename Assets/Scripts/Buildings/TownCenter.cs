@@ -39,8 +39,9 @@ namespace AoE.RTS.Buildings
                 health = gameObject.AddComponent<BuildingHealth>();
 
             float hp = data != null ? data.maxHp : 400f;
-            float buildingArmor = data != null ? data.armor : 0f;
-            health.Configure(hp, buildingArmor, team, townCenter: true);
+            float buildingMeleeArmor = data != null ? data.meleeArmor : 0f;
+            float buildingPierceArmor = data != null ? data.pierceArmor : 0f;
+            health.Configure(hp, buildingMeleeArmor, buildingPierceArmor, team, townCenter: true);
         }
 
         void OnEnable()
@@ -71,7 +72,7 @@ namespace AoE.RTS.Buildings
             team = unitTeam;
             BuildingHealth health = GetComponent<BuildingHealth>();
             if (health != null && data != null)
-                health.Configure(data.maxHp, data.armor, team, townCenter: true);
+                health.Configure(data.maxHp, data.meleeArmor, data.pierceArmor, team, townCenter: true);
             UpdateVisual();
         }
 

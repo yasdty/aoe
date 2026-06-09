@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AoE.RTS.Combat;
 using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -90,8 +91,9 @@ namespace AoE.RTS.Economy
                 job.cooldownRemaining -= fixedDeltaTime;
                 if (job.cooldownRemaining <= 0f)
                 {
-                    float damage = Mathf.Max(1f, job.boar.AttackPower - job.target.Armor);
-                    job.target.TakeDamage(damage);
+                    CombatDamageBreakdown breakdown =
+                        CombatDamageResolver.ResolveMeleeAttack(job.boar.AttackPower, job.target);
+                    job.target.TakeDamage(breakdown.totalDamage);
                     job.cooldownRemaining = job.boar.AttackCooldownSeconds;
                 }
 

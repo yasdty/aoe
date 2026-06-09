@@ -16,6 +16,7 @@ namespace AoE.RTS.Buildings
         readonly Stack<MiningCamp> availableMiningCamps = new Stack<MiningCamp>();
         readonly Stack<Mill> availableMills = new Stack<Mill>();
         readonly Stack<ArcheryRange> availableArcheryRanges = new Stack<ArcheryRange>();
+        readonly Stack<Stable> availableStables = new Stack<Stable>();
 
         int houseSpawnCount;
         int houseReuseCount;
@@ -31,6 +32,8 @@ namespace AoE.RTS.Buildings
         int millReuseCount;
         int archeryRangeSpawnCount;
         int archeryRangeReuseCount;
+        int stableSpawnCount;
+        int stableReuseCount;
 
         void Awake()
         {
@@ -49,6 +52,8 @@ namespace AoE.RTS.Buildings
             millReuseCount = 0;
             archeryRangeSpawnCount = 0;
             archeryRangeReuseCount = 0;
+            stableSpawnCount = 0;
+            stableReuseCount = 0;
         }
 
         void OnDestroy()
@@ -79,6 +84,14 @@ namespace AoE.RTS.Buildings
                 return RuntimeBuildingFactory.CreateFreshArcheryRange(data, position, team);
 
             return instance.RentArcheryRangeInternal(data, position, team);
+        }
+
+        public static Stable RentStable(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            if (instance == null)
+                return RuntimeBuildingFactory.CreateFreshStable(data, position, team);
+
+            return instance.RentStableInternal(data, position, team);
         }
 
         public static void ReturnHouse(House house)
@@ -121,6 +134,20 @@ namespace AoE.RTS.Buildings
             }
 
             instance.ReturnArcheryRangeInternal(archeryRange);
+        }
+
+        public static void ReturnStable(Stable stable)
+        {
+            if (stable == null)
+                return;
+
+            if (instance == null)
+            {
+                Object.Destroy(stable.gameObject);
+                return;
+            }
+
+            instance.ReturnStableInternal(stable);
         }
 
         public static Farm RentFarm(PlacedBuildingData data, Vector3 position, UnitTeam team)
@@ -299,6 +326,36 @@ namespace AoE.RTS.Buildings
             archeryRange.transform.SetParent(transform, false);
             archeryRange.gameObject.SetActive(false);
             availableArcheryRanges.Push(archeryRange);
+        }
+
+        Stable RentStableInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)
+        {
+            Stable stable;
+            if (availableStables.Count > 0)
+            {
+                stable = availableStables.Pop();
+                stableReuseCount++;
+                Debug.Log($"BuildingPool: spawn={stableSpawnCount} reuse={stableReuseCount} (Stable)");
+            }
+            else
+            {
+                stable = RuntimeBuildingFactory.CreateFreshStable(data, position, team);
+                stable.gameObject.SetActive(false);
+                stable.transform.SetParent(transform, false);
+                stableSpawnCount++;
+                Debug.Log($"BuildingPool: spawn={stableSpawnCount} reuse={stableReuseCount} (Stable)");
+            }
+
+            stable.PrepareForReuse(data, position, team);
+            stable.gameObject.SetActive(true);
+            return stable;
+        }
+
+        void ReturnStableInternal(Stable stable)
+        {
+            stable.transform.SetParent(transform, false);
+            stable.gameObject.SetActive(false);
+            availableStables.Push(stable);
         }
 
         Farm RentFarmInternal(PlacedBuildingData data, Vector3 position, UnitTeam team)

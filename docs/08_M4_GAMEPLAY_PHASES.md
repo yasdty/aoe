@@ -13,7 +13,7 @@
 
 | Phase | 名称 | 目的 | 状態 |
 |-------|------|------|------|
-| 42 | Age Up | 時代昇格（Dark → Feudal MVP）・建築アンロック | ⬜ 未着手 |
+| 42 | Age Up + **Gameplay Balance** | **Phase 42 先頭:** Balance Mode 実装 → 時代昇格（Dark → Feudal MVP）・建築アンロック | ⬜ 未着手 |
 | 43 | Blacksmith & Tech | 鍛冶屋 + 歩兵 UP 1 系統（例: Militia → MAA） | ⬜ 未着手 |
 | 44 | Defense | 柵 / 石壁 / 箭塔 MVP | ⬜ 未着手 |
 | 45 | Market | 資源交易 MVP | ⬜ 未着手 |
@@ -33,17 +33,23 @@
 
 ---
 
-## Phase 42 — Age Up ⬜
+## Phase 42 — Gameplay Balance + Age Up ⬜
 
-**実装:**
+**実装順（確定）:**
 
-- `AgeData` ScriptableObject — Dark / Feudal（MVP は 2 時代）
-- TC で時代昇格（資源コスト + 建築要件）
-- `BuildingData.requiredAge` で建築アンロック
+1. **Gameplay Balance Mode**（[12_GAMEPLAY_BALANCE_MODE.md](12_GAMEPLAY_BALANCE_MODE.md) §6）— Phase 42 **先頭**
+   - `GameplayBalance` — buildTime ×0.1 / cost ×0.3（全資源）
+   - `GameSessionManager` + Phase10 既定 Debug / Inspector + `AoE` メニュー
+   - CPU AI 遅延も Debug 時 ×0.1
+   - M3 完了時に移行済みの AoE2 基準 Data を Balance 層経由で読む
+2. **Age Up**
+   - `AgeData` ScriptableObject — Dark / Feudal（MVP は 2 時代）
+   - TC で時代昇格（資源コスト + 建築要件）
+   - `BuildingData.requiredAge` で建築アンロック
 
 **拡張フック:** Castle / Imperial は `AgeData` 追加のみで後挿入（コード rewrite 不要）
 
-**プロンプト:** [prompts/phase42-prompt.md](prompts/phase42-prompt.md)（未作成）
+**プロンプト:** [prompts/phase42-prompt.md](prompts/phase42-prompt.md)（未作成 — Balance Mode を先頭セクションに含める）
 
 ---
 
