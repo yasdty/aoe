@@ -35,6 +35,9 @@ namespace AoE.RTS.Buildings
         [SerializeField] PlacedBuildingData archeryRangeData;
         [SerializeField] PlacedBuildingData stableData;
         [SerializeField] PlacedBuildingData blacksmithData;
+        [SerializeField] PlacedBuildingData palisadeWallData;
+        [SerializeField] PlacedBuildingData stoneWallData;
+        [SerializeField] PlacedBuildingData watchTowerData;
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
@@ -147,6 +150,9 @@ namespace AoE.RTS.Buildings
             archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
             stableData = PlacedBuildingDataResolver.ResolveStable(ref stableData);
             blacksmithData = PlacedBuildingDataResolver.ResolveBlacksmith(ref blacksmithData);
+            palisadeWallData = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
+            stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
+            watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
@@ -328,6 +334,62 @@ namespace AoE.RTS.Buildings
             instance.RefreshGhostFromPointer();
         }
 
+        public static void EnterPalisadeWallPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.palisadeWallData = PlacedBuildingDataResolver.ResolvePalisadeWall(ref instance.palisadeWallData);
+            if (instance.palisadeWallData == null)
+                return;
+
+            BeginPlacementMode(builders, instance.palisadeWallData);
+        }
+
+        public static void EnterStoneWallPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref instance.stoneWallData);
+            if (instance.stoneWallData == null || !GameSessionManager.CanBuild(instance.stoneWallData, UnitTeam.Player))
+                return;
+
+            BeginPlacementMode(builders, instance.stoneWallData);
+        }
+
+        public static void EnterWatchTowerPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref instance.watchTowerData);
+            if (instance.watchTowerData == null || !GameSessionManager.CanBuild(instance.watchTowerData, UnitTeam.Player))
+                return;
+
+            BeginPlacementMode(builders, instance.watchTowerData);
+        }
+
+        static void BeginPlacementMode(IReadOnlyList<Unit> builders, PlacedBuildingData placementData)
+        {
+            instance.stashedBuilders.Clear();
+            if (builders != null)
+            {
+                for (int i = 0; i < builders.Count; i++)
+                {
+                    Unit unit = builders[i];
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
+                        instance.stashedBuilders.Add(unit);
+                }
+            }
+
+            instance.activePlacementData = placementData;
+            instance.isPlacementModeActive = true;
+            instance.placementOpenedFrame = Time.frameCount;
+            instance.ghostObject.SetActive(true);
+            instance.RefreshGhostFromPointer();
+        }
+
         public static void EnterFarmPlacementMode(IReadOnlyList<Unit> builders)
         {
             if (instance == null || GameSessionManager.IsGameOver)
@@ -472,7 +534,7 @@ namespace AoE.RTS.Buildings
             if (!instance.ghostValid)
                 return false;
 
-            if (!ResourceManager.TrySpendWood(placementData.ScaledWoodCost))
+            if (!PlacementCostUtility.TrySpend(UnitTeam.Player, placementData))
                 return false;
 
             instance.builderLookupBuffer.Clear();
@@ -511,7 +573,7 @@ namespace AoE.RTS.Buildings
             if (!instance.CanPlaceAt(position, data))
                 return false;
 
-            if (!ResourceManager.TrySpendWood(builder.Team, data.ScaledWoodCost))
+            if (!PlacementCostUtility.TrySpend(builder.Team, data))
                 return false;
 
             instance.builderLookupBuffer.Clear();
@@ -758,6 +820,27 @@ namespace AoE.RTS.Buildings
                 Blacksmith blacksmith = RuntimeBuildingFactory.CreateBlacksmith(site.data, site.position, team);
                 if (blacksmith != null && site.builder != null)
                     blacksmith.SetTeam(site.builder.Team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.PalisadeWall)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                RuntimeBuildingFactory.CreatePalisadeWall(site.data, site.position, team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.StoneWall)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                RuntimeBuildingFactory.CreateStoneWall(site.data, site.position, team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.WatchTower)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                RuntimeBuildingFactory.CreateWatchTower(site.data, site.position, team);
                 return;
             }
 

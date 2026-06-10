@@ -211,6 +211,9 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData archeryRangeData = Phase1SceneBuilder.EnsureArcheryRangeData(archerData);
             PlacedBuildingData stableData = Phase1SceneBuilder.EnsureStableData(cavalryData, scoutData);
             PlacedBuildingData blacksmithData = Phase1SceneBuilder.EnsureBlacksmithData();
+            PlacedBuildingData palisadeWallData = Phase1SceneBuilder.EnsurePalisadeWallData();
+            PlacedBuildingData stoneWallData = Phase1SceneBuilder.EnsureStoneWallData();
+            PlacedBuildingData watchTowerData = Phase1SceneBuilder.EnsureWatchTowerData();
             PlacedBuildingData millData = Phase1SceneBuilder.EnsureMillData();
             UnitData manAtArmsData = Phase1SceneBuilder.EnsureManAtArmsData();
             TechnologyData infantryUpgradeTech = Phase1SceneBuilder.EnsureInfantryUpgradeTech(militiaData, manAtArmsData);
@@ -249,6 +252,9 @@ namespace AoE.RTS.EditorTools
                 archeryRangeData,
                 stableData,
                 blacksmithData,
+                palisadeWallData,
+                stoneWallData,
+                watchTowerData,
                 millData,
                 infantryUpgradeTech,
                 villagerData,
@@ -509,6 +515,53 @@ namespace AoE.RTS.EditorTools
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             Debug.Log("Added Blacksmith & Tech wiring. Save the scene (Ctrl+S) if needed.");
+        }
+
+        [MenuItem("AoE/Add Defense (Phase44)", true)]
+        static bool ValidateAddDefense() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Defense (Phase44)")]
+        public static void AddDefenseToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            PlacedBuildingData palisadeWallData = Phase1SceneBuilder.EnsurePalisadeWallData();
+            PlacedBuildingData stoneWallData = Phase1SceneBuilder.EnsureStoneWallData();
+            PlacedBuildingData watchTowerData = Phase1SceneBuilder.EnsureWatchTowerData();
+
+            GameObject systems = GameObject.Find("Systems");
+            Transform systemsTransform = systems != null ? systems.transform : null;
+            if (Object.FindAnyObjectByType<WatchTowerDefenseManager>() == null)
+            {
+                GameObject watchTowerDefenseObject = new GameObject("WatchTowerDefenseManager");
+                if (systemsTransform != null)
+                    watchTowerDefenseObject.transform.SetParent(systemsTransform);
+                watchTowerDefenseObject.AddComponent<WatchTowerDefenseManager>();
+            }
+
+            BuildingPlacementManager placementManager = Object.FindAnyObjectByType<BuildingPlacementManager>();
+            if (placementManager != null)
+            {
+                SerializedObject serializedPlacement = new SerializedObject(placementManager);
+                serializedPlacement.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
+                serializedPlacement.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
+                serializedPlacement.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
+                serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            ResourceHudView resourceHud = Object.FindAnyObjectByType<ResourceHudView>();
+            if (resourceHud != null)
+            {
+                SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
+                serializedResourceHud.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
+                serializedResourceHud.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
+                serializedResourceHud.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
+                serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added Defense wiring. Save the scene (Ctrl+S) if needed.");
         }
 
         static void EnsureAttackMoveManager()
@@ -824,6 +877,9 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData archeryRangeData,
             PlacedBuildingData stableData,
             PlacedBuildingData blacksmithData,
+            PlacedBuildingData palisadeWallData,
+            PlacedBuildingData stoneWallData,
+            PlacedBuildingData watchTowerData,
             PlacedBuildingData millData,
             TechnologyData infantryUpgradeTech,
             UnitData villagerData,
@@ -929,6 +985,10 @@ namespace AoE.RTS.EditorTools
             GameObject blacksmithResearchObject = new GameObject("BlacksmithResearchManager");
             blacksmithResearchObject.transform.SetParent(systems.transform);
             blacksmithResearchObject.AddComponent<BlacksmithResearchManager>();
+
+            GameObject watchTowerDefenseObject = new GameObject("WatchTowerDefenseManager");
+            watchTowerDefenseObject.transform.SetParent(systems.transform);
+            watchTowerDefenseObject.AddComponent<WatchTowerDefenseManager>();
 
             GameObject resourceManagerObject = new GameObject("ResourceManager");
             resourceManagerObject.transform.SetParent(systems.transform);
@@ -1067,6 +1127,9 @@ namespace AoE.RTS.EditorTools
             serializedPlacement.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;
             serializedPlacement.FindProperty("stableData").objectReferenceValue = stableData;
             serializedPlacement.FindProperty("blacksmithData").objectReferenceValue = blacksmithData;
+            serializedPlacement.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
+            serializedPlacement.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
+            serializedPlacement.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
             serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
@@ -1076,6 +1139,9 @@ namespace AoE.RTS.EditorTools
             serializedResourceHud.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;
             serializedResourceHud.FindProperty("stableData").objectReferenceValue = stableData;
             serializedResourceHud.FindProperty("blacksmithData").objectReferenceValue = blacksmithData;
+            serializedResourceHud.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
+            serializedResourceHud.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
+            serializedResourceHud.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
             serializedResourceHud.FindProperty("millData").objectReferenceValue = millData;
             serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
 

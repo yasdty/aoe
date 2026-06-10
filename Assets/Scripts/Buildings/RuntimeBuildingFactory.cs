@@ -53,6 +53,21 @@ namespace AoE.RTS.Buildings
             return CreateFreshBlacksmith(data, position, team);
         }
 
+        public static PalisadeWall CreatePalisadeWall(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return CreateFreshPalisadeWall(data, position, team);
+        }
+
+        public static StoneWall CreateStoneWall(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return CreateFreshStoneWall(data, position, team);
+        }
+
+        public static WatchTower CreateWatchTower(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return CreateFreshWatchTower(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -142,6 +157,69 @@ namespace AoE.RTS.Buildings
             blacksmith.SetData(data);
             blacksmith.SetTeam(team);
             return blacksmith;
+        }
+
+        public static PalisadeWall CreateFreshPalisadeWall(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return CreateFreshDefenseWall<PalisadeWall>("PalisadeWall", data, position, team);
+        }
+
+        public static StoneWall CreateFreshStoneWall(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return CreateFreshDefenseWall<StoneWall>("StoneWall", data, position, team);
+        }
+
+        public static WatchTower CreateFreshWatchTower(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject towerObject = EntityVisualBuilder.CreateBuildingShell(
+                "WatchTower",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.Barracks);
+
+            ApplySharedMaterialIfMissingRendererTint(towerObject);
+            ConfigureBuildingHealth(towerObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
+
+            WatchTower watchTower = towerObject.AddComponent<WatchTower>();
+            watchTower.SetData(data);
+            return watchTower;
+        }
+
+        static TWall CreateFreshDefenseWall<TWall>(
+            string objectName,
+            PlacedBuildingData data,
+            Vector3 position,
+            UnitTeam team)
+            where TWall : MonoBehaviour
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject wallObject = EntityVisualBuilder.CreateBuildingShell(
+                objectName,
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
+
+            ApplySharedMaterialIfMissingRendererTint(wallObject);
+            ConfigureBuildingHealth(wallObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
+
+            TWall wall = wallObject.AddComponent<TWall>();
+            if (wall is PalisadeWall palisadeWall)
+                palisadeWall.SetData(data);
+            else if (wall is StoneWall stoneWall)
+                stoneWall.SetData(data);
+
+            return wall;
         }
 
         public static Stable CreateFreshStable(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)

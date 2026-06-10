@@ -4923,6 +4923,9 @@ MonoBehaviour:
   archeryRangeData: {fileID: 0}
   stableData: {fileID: 0}
   blacksmithData: {fileID: 11400000, guid: 2bb1e621986b7c8438fc99cfd0fa8476, type: 2}
+  palisadeWallData: {fileID: 11400000, guid: 5cec63d68a73b1a48bea44edda574334, type: 2}
+  stoneWallData: {fileID: 11400000, guid: a1dfe9611fb1d8541861e6682b2201f5, type: 2}
+  watchTowerData: {fileID: 11400000, guid: d3642e41932365d44942a367176b0213, type: 2}
   farmData: {fileID: 0}
   lumberCampData: {fileID: 0}
   miningCampData: {fileID: 0}
@@ -8536,6 +8539,7 @@ Transform:
   - {fileID: 1701010296}
   - {fileID: 1160346432}
   - {fileID: 38522574}
+  - {fileID: 1123743820}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1118097740
@@ -8696,6 +8700,50 @@ Transform:
   - {fileID: 1919455898}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1123743819
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1123743820}
+  - component: {fileID: 1123743821}
+  m_Layer: 0
+  m_Name: WatchTowerDefenseManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1123743820
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123743819}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1100026793}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1123743821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123743819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b412f8462eb96d74fb9006f893c4bbc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Buildings.WatchTowerDefenseManager
 --- !u!1 &1130261840
 GameObject:
   m_ObjectHideFlags: 0
@@ -9089,6 +9137,9 @@ MonoBehaviour:
   lumberCampData: {fileID: 0}
   miningCampData: {fileID: 0}
   millData: {fileID: 0}
+  palisadeWallData: {fileID: 11400000, guid: 5cec63d68a73b1a48bea44edda574334, type: 2}
+  stoneWallData: {fileID: 11400000, guid: a1dfe9611fb1d8541861e6682b2201f5, type: 2}
+  watchTowerData: {fileID: 11400000, guid: d3642e41932365d44942a367176b0213, type: 2}
 --- !u!114 &1160346441
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10690,7 +10741,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1375805452}
   - component: {fileID: 1375805450}
-  - component: {fileID: 1375805451}
   - component: {fileID: 1375805448}
   - component: {fileID: 1375805449}
   m_Layer: 0
@@ -10788,14 +10838,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &1375805451
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1375805447}
-  m_Enabled: 1
 --- !u!4 &1375805452
 Transform:
   m_ObjectHideFlags: 0

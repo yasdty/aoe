@@ -14,7 +14,10 @@ namespace AoE.RTS.Buildings
         Mill = 5,
         ArcheryRange = 6,
         Stable = 7,
-        Blacksmith = 8
+        Blacksmith = 8,
+        PalisadeWall = 9,
+        StoneWall = 10,
+        WatchTower = 11
     }
 
     [CreateAssetMenu(fileName = "PlacedBuildingData", menuName = "AoE/Placed Building Data")]
@@ -24,7 +27,11 @@ namespace AoE.RTS.Buildings
         public string displayName = "House";
         public GameAge requiredAge = GameAge.Dark;
         public float woodCost = 25f;
+        public float stoneCost;
         public float buildTime = 3f;
+        public float towerAttack = 5f;
+        public float towerAttackRange = 7f;
+        public float towerAttackCooldown = 2f;
         public float footprintWidth = 4f;
         public float footprintDepth = 4f;
         public float buildingHeight = 3f;
@@ -49,6 +56,7 @@ namespace AoE.RTS.Buildings
         public float foodCapacity;
 
         public float ScaledWoodCost => GameplayBalance.ScaleResourceCost(woodCost);
+        public float ScaledStoneCost => GameplayBalance.ScaleResourceCost(stoneCost);
         public float ScaledBuildTime => GameplayBalance.ScaleBuildTime(buildTime);
         public float ScaledTrainTime => GameplayBalance.ScaleBuildTime(trainTime);
         public float ScaledTrainWoodCost => GameplayBalance.ScaleResourceCost(trainWoodCost);

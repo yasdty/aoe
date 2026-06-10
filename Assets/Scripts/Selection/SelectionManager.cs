@@ -259,6 +259,27 @@ namespace AoE.RTS.Selection
                 return true;
             }
 
+            PalisadeWall palisadeWall = hit.collider.GetComponentInParent<PalisadeWall>();
+            if (palisadeWall != null && palisadeWall.Team == UnitTeam.Player)
+            {
+                SetPlacedBuildingSelection(palisadeWall.GetComponent<BuildingHealth>());
+                return true;
+            }
+
+            StoneWall stoneWall = hit.collider.GetComponentInParent<StoneWall>();
+            if (stoneWall != null && stoneWall.Team == UnitTeam.Player)
+            {
+                SetPlacedBuildingSelection(stoneWall.GetComponent<BuildingHealth>());
+                return true;
+            }
+
+            WatchTower watchTower = hit.collider.GetComponentInParent<WatchTower>();
+            if (watchTower != null && watchTower.Team == UnitTeam.Player)
+            {
+                SetPlacedBuildingSelection(watchTower.GetComponent<BuildingHealth>());
+                return true;
+            }
+
             Farm farm = hit.collider.GetComponentInParent<Farm>();
             if (farm != null && farm.Team == UnitTeam.Player)
             {

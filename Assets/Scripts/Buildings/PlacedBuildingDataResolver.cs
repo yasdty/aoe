@@ -206,6 +206,92 @@ namespace AoE.RTS.Buildings
             return cached;
         }
 
+        public static PlacedBuildingData ResolvePalisadeWall(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultPalisadeWallData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.PalisadeWall;
+            cached.displayName = "Palisade Wall";
+            cached.requiredAge = GameAge.Dark;
+            cached.woodCost = 2f;
+            cached.buildTime = 7f;
+            cached.footprintWidth = 1f;
+            cached.footprintDepth = 4f;
+            cached.buildingHeight = 2f;
+            cached.housingProvided = 0;
+            cached.maxHp = 250f;
+            cached.defaultColor = new Color(0.6f, 0.45f, 0.25f);
+            return cached;
+        }
+
+        public static PlacedBuildingData ResolveStoneWall(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultStoneWallData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.StoneWall;
+            cached.displayName = "Stone Wall";
+            cached.requiredAge = GameAge.Feudal;
+            cached.stoneCost = 5f;
+            cached.buildTime = 8f;
+            cached.footprintWidth = 1f;
+            cached.footprintDepth = 4f;
+            cached.buildingHeight = 2.5f;
+            cached.housingProvided = 0;
+            cached.maxHp = 900f;
+            cached.meleeArmor = 0f;
+            cached.pierceArmor = 8f;
+            cached.defaultColor = new Color(0.55f, 0.55f, 0.58f);
+            return cached;
+        }
+
+        public static PlacedBuildingData ResolveWatchTower(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultWatchTowerData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.WatchTower;
+            cached.displayName = "Watch Tower";
+            cached.requiredAge = GameAge.Feudal;
+            cached.stoneCost = 125f;
+            cached.buildTime = 80f;
+            cached.footprintWidth = 4f;
+            cached.footprintDepth = 4f;
+            cached.buildingHeight = 5f;
+            cached.housingProvided = 0;
+            cached.maxHp = 1020f;
+            cached.meleeArmor = 0f;
+            cached.pierceArmor = 8f;
+            cached.towerAttack = 5f;
+            cached.towerAttackRange = 7f;
+            cached.towerAttackCooldown = 2f;
+            cached.defaultColor = new Color(0.5f, 0.52f, 0.55f);
+            cached.selectedColor = new Color(0.85f, 0.8f, 0.55f);
+            return cached;
+        }
+
         public static PlacedBuildingData ResolveStable(ref PlacedBuildingData cached)
         {
             if (cached != null)

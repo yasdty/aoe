@@ -1,6 +1,6 @@
 # Phase 44 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 実装済み（Play 確認推奨）  
 > **前提:** Phase 1〜43 完了（M4 Blacksmith & Tech）  
 > **マイルストン:** M4 AoE Gameplay — **Defense**  
 > **ロードマップ:** [08_M4_GAMEPLAY_PHASES.md](../08_M4_GAMEPLAY_PHASES.md)  
@@ -95,17 +95,17 @@
 1. `Phase10.unity` — **Debug + CPU Relaxed**
 2. Palisade を Wood で配置 → 建築完了 → HP 表示
 3. Feudal 昇格後 Stone Wall / Watch Tower 配置可能
-4. 塔が近くの敵 CPU ユニットを攻撃（Relaxed 猶予中は CPU 攻撃波なし）
+4. 塔が近くの敵 CPU ユニットを攻撃 — Console に `[WatchTower]` ログ（Relaxed 猶予中は CPU 攻撃波なし。塔射程 7m 内の敵のみ）
 5. コスト表示 = Balance 後の値
-6. Console エラーなし
+6. Console エラーなし（`AudioListener` 警告は Main Camera から除去済み）
 
 ---
 
 ## ⑥ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 44 ✅
-- [ ] `08_M4_GAMEPLAY_PHASES.md` — Phase 44 ✅
-- [ ] 本プロンプト — Play 確認待ち → ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 44 ✅
+- [x] `08_M4_GAMEPLAY_PHASES.md` — Phase 44 ✅
+- [x] 本プロンプト — Play 確認待ち → ✅
 
 ---
 

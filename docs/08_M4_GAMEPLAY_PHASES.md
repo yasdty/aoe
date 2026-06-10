@@ -15,11 +15,11 @@
 |-------|------|------|------|
 | 42 | Age Up + **Gameplay Balance** | **Phase 42 先頭:** Balance Mode 実装 → 時代昇格（Dark → Feudal MVP）・建築アンロック | ✅ 完了 |
 | 43 | Blacksmith & Tech | 鍛冶屋 + 歩兵 UP 1 系統（例: Militia → MAA） | ✅ 完了 |
-| 44 | Defense | 柵 / 石壁 / 箭塔 MVP | ⬜ 未着手 |
+| 44 | Defense | 柵 / 石壁 / 箭塔 MVP | ✅ 完了 |
 | 45 | Market | 資源交易 MVP | ⬜ 未着手 |
 | 46 | Civilization | 文明ボーナス 1 種 Data 駆動 | ⬜ 未着手 |
 | 47 | Second TC | 2 台目 Town Center（ブーム下地） | ⬜ 未着手 |
-| 48 | RTS UX Polish | キュー取消・House Pop 減・建築ホットキー・Shift+5 キュー | ⬜ 未着手 |
+| 48 | RTS UX Polish | キュー取消・House Pop 減・建築ホットキー・Shift+5 キュー・**壁 Shift+ドラッグ連続配置** | ⬜ 未着手 |
 
 **M4 完了条件:**
 
@@ -61,9 +61,9 @@
 
 ---
 
-## Phase 44 — Defense ⬜
+## Phase 44 — Defense ✅
 
-**実装:** Palisade Wall / Stone Wall / Watch Tower — HP・攻撃・村民建築
+**実装:** Palisade Wall（Dark / Wood）/ Stone Wall（Feudal / Stone）/ Watch Tower（Feudal / Stone・遠距離攻撃）/ `PlacementCostUtility` + `stoneCost` / `WatchTowerDefenseManager`
 
 **プロンプト:** [prompts/phase44-prompt.md](prompts/phase44-prompt.md)
 
@@ -73,7 +73,7 @@
 
 **実装:** Market 建築 / 資源売買（固定レート MVP）
 
-**プロンプト:** [prompts/phase45-prompt.md](prompts/phase45-prompt.md)（未作成）
+**プロンプト:** [prompts/phase45-prompt.md](prompts/phase45-prompt.md)
 
 ---
 
@@ -105,6 +105,7 @@
 | Shift+5 一括キュー | TC / Barracks |
 | House 破壊 | Pop cap 減少 |
 | 建築ホットキー | House / Barracks 等（Input System 拡張） |
+| **壁 Shift+ドラッグ連続配置** | Palisade / Stone Wall — AoE2 同型（Shift 押下中にドラッグでセグメント列配置。Phase 44 は 1 マスずつ MVP） |
 
 **プロンプト:** [prompts/phase48-prompt.md](prompts/phase48-prompt.md)（未作成）
 

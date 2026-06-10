@@ -69,6 +69,15 @@ namespace AoE.RTS.Combat
             return BuildBreakdown(AttackDamageType.Melee, attackPower, armor, bonus: 0f);
         }
 
+        public static CombatDamageBreakdown ResolvePierceAttack(float attackPower, Unit target)
+        {
+            if (target == null)
+                return default;
+
+            float armor = target.PierceArmor;
+            return BuildBreakdown(AttackDamageType.Pierce, attackPower, armor, bonus: 0f);
+        }
+
         static CombatDamageBreakdown BuildBreakdown(
             AttackDamageType damageType,
             float attackPower,

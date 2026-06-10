@@ -192,5 +192,26 @@ namespace AoE.RTS.Economy
             instance.playerGold -= amount;
             return true;
         }
+
+        public static bool TrySpendStone(UnitTeam team, float amount)
+        {
+            if (instance == null || amount <= 0f)
+                return false;
+
+            if (team == UnitTeam.Enemy)
+            {
+                if (instance.enemyStone < amount)
+                    return false;
+
+                instance.enemyStone -= amount;
+                return true;
+            }
+
+            if (instance.playerStone < amount)
+                return false;
+
+            instance.playerStone -= amount;
+            return true;
+        }
     }
 }

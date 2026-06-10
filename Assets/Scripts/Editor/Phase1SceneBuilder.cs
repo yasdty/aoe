@@ -45,6 +45,9 @@ namespace AoE.RTS.EditorTools
         const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
         const string FeudalAgeDataPath = GameAssetPaths.FeudalAgeData;
         const string DefaultBlacksmithDataPath = GameAssetPaths.DefaultBlacksmithData;
+        const string DefaultPalisadeWallDataPath = GameAssetPaths.DefaultPalisadeWallData;
+        const string DefaultStoneWallDataPath = GameAssetPaths.DefaultStoneWallData;
+        const string DefaultWatchTowerDataPath = GameAssetPaths.DefaultWatchTowerData;
 
         public static bool EnsureEditModeForSceneSetup()
         {
@@ -82,6 +85,9 @@ namespace AoE.RTS.EditorTools
             UnitData manAtArmsData = EnsureManAtArmsData();
             EnsureBlacksmithData();
             EnsureInfantryUpgradeTech(militiaData, manAtArmsData);
+            EnsurePalisadeWallData();
+            EnsureStoneWallData();
+            EnsureWatchTowerData();
             EnsureFeudalAgeData();
             Debug.Log("Synced AoE2 game data assets.");
         }
@@ -1128,6 +1134,197 @@ namespace AoE.RTS.EditorTools
             return data;
         }
 
+        public static PlacedBuildingData EnsurePalisadeWallData()
+        {
+            return EnsureDefenseBuildingData(
+                DefaultPalisadeWallDataPath,
+                PlacedBuildingKind.PalisadeWall,
+                "Palisade Wall",
+                GameAge.Dark,
+                woodCost: 2f,
+                stoneCost: 0f,
+                buildTime: 7f,
+                footprintWidth: 1f,
+                footprintDepth: 4f,
+                buildingHeight: 2f,
+                maxHp: 250f,
+                meleeArmor: 0f,
+                pierceArmor: 0f,
+                towerAttack: 0f,
+                defaultColor: new Color(0.6f, 0.45f, 0.25f));
+        }
+
+        public static PlacedBuildingData EnsureStoneWallData()
+        {
+            return EnsureDefenseBuildingData(
+                DefaultStoneWallDataPath,
+                PlacedBuildingKind.StoneWall,
+                "Stone Wall",
+                GameAge.Feudal,
+                woodCost: 0f,
+                stoneCost: 5f,
+                buildTime: 8f,
+                footprintWidth: 1f,
+                footprintDepth: 4f,
+                buildingHeight: 2.5f,
+                maxHp: 900f,
+                meleeArmor: 0f,
+                pierceArmor: 8f,
+                towerAttack: 0f,
+                defaultColor: new Color(0.55f, 0.55f, 0.58f));
+        }
+
+        public static PlacedBuildingData EnsureWatchTowerData()
+        {
+            return EnsureDefenseBuildingData(
+                DefaultWatchTowerDataPath,
+                PlacedBuildingKind.WatchTower,
+                "Watch Tower",
+                GameAge.Feudal,
+                woodCost: 0f,
+                stoneCost: 125f,
+                buildTime: 80f,
+                footprintWidth: 4f,
+                footprintDepth: 4f,
+                buildingHeight: 5f,
+                maxHp: 1020f,
+                meleeArmor: 0f,
+                pierceArmor: 8f,
+                towerAttack: 5f,
+                defaultColor: new Color(0.5f, 0.52f, 0.55f),
+                selectedColor: new Color(0.85f, 0.8f, 0.55f),
+                towerAttackRange: 7f,
+                towerAttackCooldown: 2f);
+        }
+
+        static PlacedBuildingData EnsureDefenseBuildingData(
+            string assetPath,
+            PlacedBuildingKind kind,
+            string displayName,
+            GameAge requiredAge,
+            float woodCost,
+            float stoneCost,
+            float buildTime,
+            float footprintWidth,
+            float footprintDepth,
+            float buildingHeight,
+            float maxHp,
+            float meleeArmor,
+            float pierceArmor,
+            float towerAttack,
+            Color defaultColor,
+            Color? selectedColor = null,
+            float towerAttackRange = 7f,
+            float towerAttackCooldown = 2f)
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(assetPath);
+            if (existing != null)
+            {
+                bool dirty = SyncDefenseBuildingData(
+                    existing,
+                    kind,
+                    displayName,
+                    requiredAge,
+                    woodCost,
+                    stoneCost,
+                    buildTime,
+                    footprintWidth,
+                    footprintDepth,
+                    buildingHeight,
+                    maxHp,
+                    meleeArmor,
+                    pierceArmor,
+                    towerAttack,
+                    defaultColor,
+                    selectedColor,
+                    towerAttackRange,
+                    towerAttackCooldown);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            SyncDefenseBuildingData(
+                data,
+                kind,
+                displayName,
+                requiredAge,
+                woodCost,
+                stoneCost,
+                buildTime,
+                footprintWidth,
+                footprintDepth,
+                buildingHeight,
+                maxHp,
+                meleeArmor,
+                pierceArmor,
+                towerAttack,
+                defaultColor,
+                selectedColor,
+                towerAttackRange,
+                towerAttackCooldown);
+            AssetDatabase.CreateAsset(data, assetPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        static bool SyncDefenseBuildingData(
+            PlacedBuildingData data,
+            PlacedBuildingKind kind,
+            string displayName,
+            GameAge requiredAge,
+            float woodCost,
+            float stoneCost,
+            float buildTime,
+            float footprintWidth,
+            float footprintDepth,
+            float buildingHeight,
+            float maxHp,
+            float meleeArmor,
+            float pierceArmor,
+            float towerAttack,
+            Color defaultColor,
+            Color? selectedColor,
+            float towerAttackRange,
+            float towerAttackCooldown)
+        {
+            bool dirty = false;
+            if (data.kind != kind) { data.kind = kind; dirty = true; }
+            if (data.displayName != displayName) { data.displayName = displayName; dirty = true; }
+            if (data.requiredAge != requiredAge) { data.requiredAge = requiredAge; dirty = true; }
+            if (data.woodCost != woodCost) { data.woodCost = woodCost; dirty = true; }
+            if (data.stoneCost != stoneCost) { data.stoneCost = stoneCost; dirty = true; }
+            if (data.buildTime != buildTime) { data.buildTime = buildTime; dirty = true; }
+            if (data.footprintWidth != footprintWidth) { data.footprintWidth = footprintWidth; dirty = true; }
+            if (data.footprintDepth != footprintDepth) { data.footprintDepth = footprintDepth; dirty = true; }
+            if (data.buildingHeight != buildingHeight) { data.buildingHeight = buildingHeight; dirty = true; }
+            if (data.housingProvided != 0) { data.housingProvided = 0; dirty = true; }
+            if (data.maxHp != maxHp) { data.maxHp = maxHp; dirty = true; }
+            if (data.meleeArmor != meleeArmor) { data.meleeArmor = meleeArmor; dirty = true; }
+            if (data.pierceArmor != pierceArmor) { data.pierceArmor = pierceArmor; dirty = true; }
+            if (data.towerAttack != towerAttack) { data.towerAttack = towerAttack; dirty = true; }
+            if (data.towerAttackRange != towerAttackRange) { data.towerAttackRange = towerAttackRange; dirty = true; }
+            if (data.towerAttackCooldown != towerAttackCooldown) { data.towerAttackCooldown = towerAttackCooldown; dirty = true; }
+            if (data.defaultColor != defaultColor) { data.defaultColor = defaultColor; dirty = true; }
+            if (selectedColor.HasValue && data.selectedColor != selectedColor.Value)
+            {
+                data.selectedColor = selectedColor.Value;
+                dirty = true;
+            }
+
+            return dirty;
+        }
+
         public static GameObject CreateTownCenter(BuildingData buildingData, Vector3 position)
         {
             const float buildingHeight = 4f;
@@ -1610,8 +1807,7 @@ namespace AoE.RTS.EditorTools
         {
             GameObject cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
-            UnityEngine.Camera camera = cameraObject.AddComponent<UnityEngine.Camera>();
-            cameraObject.AddComponent<AudioListener>();
+            cameraObject.AddComponent<UnityEngine.Camera>();
 
             RTSInputReader inputReader = cameraObject.AddComponent<RTSInputReader>();
             SerializedObject serializedInput = new SerializedObject(inputReader);

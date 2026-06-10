@@ -19,6 +19,9 @@ namespace AoE.RTS.Selection
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
         [SerializeField] PlacedBuildingData millData;
+        [SerializeField] PlacedBuildingData palisadeWallData;
+        [SerializeField] PlacedBuildingData stoneWallData;
+        [SerializeField] PlacedBuildingData watchTowerData;
 
         const float Margin = 12f;
         const float PanelWidth = 210f;
@@ -45,6 +48,9 @@ namespace AoE.RTS.Selection
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
             millData = PlacedBuildingDataResolver.ResolveMill(ref millData);
+            palisadeWallData = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
+            stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
+            watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             if (selectionManager == null)
                 selectionManager = FindAnyObjectByType<SelectionManager>();
         }
@@ -71,9 +77,12 @@ namespace AoE.RTS.Selection
             PlacedBuildingData lumberCamp = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             PlacedBuildingData miningCamp = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
             PlacedBuildingData mill = PlacedBuildingDataResolver.ResolveMill(ref millData);
+            PlacedBuildingData palisadeWall = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
+            PlacedBuildingData stoneWall = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
+            PlacedBuildingData watchTower = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + FoodLineHeight + ButtonGap
                 + GoldLineHeight + ButtonGap + StoneLineHeight + ButtonGap + PopLineHeight + ButtonGap
-                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
+                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
             Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
             GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
 
@@ -234,6 +243,52 @@ namespace AoE.RTS.Selection
                     : null;
                 BuildingPlacementManager.EnterMillPlacementMode(builders);
             }
+            y += ButtonHeight + ButtonGap;
+
+            Rect palisadeButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canAffordPalisade = PlacementCostUtility.CanAfford(UnitTeam.Player, palisadeWall);
+            GUI.enabled = canAffordPalisade && !inPlacementMode && !gameOver;
+            if (GUI.Button(palisadeButtonRect, $"Build Palisade ({FormatPlacementCost(palisadeWall)})"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterPalisadeWallPlacementMode(builders);
+            }
+            y += ButtonHeight + ButtonGap;
+
+            Rect stoneWallButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canBuildStoneWall = GameSessionManager.CanBuild(stoneWall, UnitTeam.Player);
+            bool canAffordStoneWall = PlacementCostUtility.CanAfford(UnitTeam.Player, stoneWall);
+            GUI.enabled = canBuildStoneWall && canAffordStoneWall && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    stoneWallButtonRect,
+                    canBuildStoneWall
+                        ? $"Build Stone Wall ({FormatPlacementCost(stoneWall)})"
+                        : "Stone Wall (Feudal Age)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterStoneWallPlacementMode(builders);
+            }
+            y += ButtonHeight + ButtonGap;
+
+            Rect watchTowerButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canBuildWatchTower = GameSessionManager.CanBuild(watchTower, UnitTeam.Player);
+            bool canAffordWatchTower = PlacementCostUtility.CanAfford(UnitTeam.Player, watchTower);
+            GUI.enabled = canBuildWatchTower && canAffordWatchTower && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    watchTowerButtonRect,
+                    canBuildWatchTower
+                        ? $"Build Watch Tower ({FormatPlacementCost(watchTower)})"
+                        : "Watch Tower (Feudal Age)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterWatchTowerPlacementMode(builders);
+            }
             GUI.enabled = true;
 
             if (inPlacementMode)
@@ -245,12 +300,28 @@ namespace AoE.RTS.Selection
             else
             {
                 GameUiInput.ClearHudHintScreenRect();
-                if (!canAffordHouse && !canAffordBarracks && !canAffordArcheryRange && !canAffordStable && !canAffordBlacksmith && !canAffordFarm && !canAffordLumberCamp && !canAffordMiningCamp && !canAffordMill)
+                if (!canAffordHouse && !canAffordBarracks && !canAffordArcheryRange && !canAffordStable && !canAffordBlacksmith && !canAffordFarm && !canAffordLumberCamp && !canAffordMiningCamp && !canAffordMill && !canAffordPalisade && !canAffordStoneWall && !canAffordWatchTower)
                 {
                     Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
                     GUI.Label(hintRect, "Need more Wood.");
                 }
             }
+        }
+
+        static string FormatPlacementCost(PlacedBuildingData data)
+        {
+            if (data == null)
+                return "0";
+
+            int wood = Mathf.CeilToInt(data.ScaledWoodCost);
+            int stone = Mathf.CeilToInt(data.ScaledStoneCost);
+            if (wood > 0 && stone > 0)
+                return $"{wood} Wood, {stone} Stone";
+
+            if (stone > 0)
+                return $"{stone} Stone";
+
+            return $"{wood} Wood";
         }
     }
 }
