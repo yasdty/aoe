@@ -1,6 +1,6 @@
 # Phase 50 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜49 完了（M5 Wall & Gate — 通行遮断・ドラッグ列・Gate）  
 > **マイルストン:** M5 — **Wall Age Grades**  
 > **ロードマップ:** [09_M5_VISUAL_UI_PHASES.md](../09_M5_VISUAL_UI_PHASES.md)  
@@ -96,10 +96,12 @@
 
 ## ⑥ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 50 ✅ / 時代別壁 ✅
-- [ ] `09_M5_VISUAL_UI_PHASES.md` — Phase 50 ✅
-- [ ] 本プロンプト — ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 50 ✅ / 時代別壁 ✅
+- [x] `09_M5_VISUAL_UI_PHASES.md` — Phase 50 ✅
+- [x] 本プロンプト — ✅
 
 ---
 
 Phase 50 のみ。**Phase 51（i18n）・Phase 52（View Split）には触れない。**
+
+> **次:** [phase51-prompt.md](phase51-prompt.md) — Localization (i18n)

@@ -23,7 +23,7 @@
 | Phase | 名称 | 目的 | 状態 |
 |-------|------|------|------|
 | 49 | **Wall & Gate System** | 通行遮断・ドラッグ連続配置・セグメント接続・**Gate（自軍通過）** | ✅ 完了 |
-| 50 | **Wall Age Grades** | 時代に応じた柵/壁グレード（AoE2: 初期柵 → 昇格後の石壁等） | ⬜ 未着手 |
+| 50 | **Wall Age Grades** | 時代に応じた柵/壁グレード（AoE2: 初期柵 → 昇格後の石壁等） | ✅ 完了 |
 | 51 | **Localization (i18n)** | LanguageMap + **日本語表示**（AoE2 Wiki 用語）/ EN↔JA 切替 | ⬜ 未着手 |
 | 52 | View Layer Split | Simulation / View 分離 + uGUI Canvas シェル | ⬜ 未着手 |
 | 53 | HUD Migration | 資源・生産・選択パネルを uGUI へ（**i18n キー経由**） | ⬜ 未着手 |
@@ -62,16 +62,18 @@
 
 ---
 
-## Phase 50 — Wall Age Grades ⬜
+## Phase 50 — Wall Age Grades ✅
 
 **目的:** Age Up に伴い利用可能な壁種・HP・コストが変わる AoE2 仕様の再現。
 
 | 時代（MVP） | 壁種（例） |
 |-------------|-----------|
 | Dark Age | フェンス（Palisade）— Wood |
-| Feudal Age | 石の城壁（Stone Wall）— Stone + Wood |
+| Feudal Age | 石の城壁（Stone Wall）— Stone + **Gate**（Wood） |
 
-**実装方針:** `PlacedBuildingData.requiredAge` + 配置 HUD の自動差し替え / 既存 Palisade の「グレードアップ」は Data 駆動（rewrite 禁止）
+**HUD 方針（AoE2 近似）:** Feudal 昇格後も **Palisade を継続表示**し、Stone Wall / Gate を追加アンロック（`CanBuild` + gray ボタン）。
+
+**実装:** `PlacedBuildingData.requiredAge` + `GameSessionManager.CanBuild` を配置 HUD / ゴースト / 確定の単一真実源に。Palisade→Stone グレードアップは未実装（任意・後回し）。
 
 **プロンプト:** [prompts/phase50-prompt.md](prompts/phase50-prompt.md)
 
@@ -91,7 +93,7 @@
 
 **キー例:** `unit.villager` → EN `Villager` / JA `村民`、`building.house` → `House` / `家`、`resource.wood` → `Wood` / `木材`
 
-**プロンプト:** [prompts/phase51-prompt.md](prompts/phase51-prompt.md)（未作成）
+**プロンプト:** [prompts/phase51-prompt.md](prompts/phase51-prompt.md)
 
 ---
 
@@ -151,5 +153,5 @@
 
 1. M4 Phase 48 Play 確認完了
 2. **Phase 49 Wall & Gate** — gameplay 優先（UI 移行前）
-3. Phase 50 Wall Age Grades → Phase 51 i18n → Phase 52 以降 Visual
+3. Phase 51 i18n → Phase 52 以降 Visual
 4. **1 Phase ごと small diff**

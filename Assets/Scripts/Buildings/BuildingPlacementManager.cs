@@ -366,7 +366,7 @@ namespace AoE.RTS.Buildings
                 return;
 
             instance.palisadeWallData = PlacedBuildingDataResolver.ResolvePalisadeWall(ref instance.palisadeWallData);
-            if (instance.palisadeWallData == null)
+            if (instance.palisadeWallData == null || !GameSessionManager.CanBuild(instance.palisadeWallData, UnitTeam.Player))
                 return;
 
             BeginPlacementMode(builders, instance.palisadeWallData);
@@ -831,6 +831,9 @@ namespace AoE.RTS.Buildings
         bool CanPlaceBuildingAt(Vector3 position, PlacedBuildingData data)
         {
             if (data == null)
+                return false;
+
+            if (!GameSessionManager.CanBuild(data, UnitTeam.Player))
                 return false;
 
             if (data.kind == PlacedBuildingKind.Gate)

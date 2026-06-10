@@ -321,9 +321,14 @@ namespace AoE.RTS.Selection
             y += ButtonHeight + ButtonGap;
 
             Rect palisadeButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canBuildPalisade = GameSessionManager.CanBuild(palisadeWall, UnitTeam.Player);
             bool canAffordPalisade = PlacementCostUtility.CanAfford(UnitTeam.Player, palisadeWall);
-            GUI.enabled = canAffordPalisade && !inPlacementMode && !gameOver;
-            if (GUI.Button(palisadeButtonRect, $"Build Palisade ({FormatPlacementCost(palisadeWall)})"))
+            GUI.enabled = canBuildPalisade && canAffordPalisade && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    palisadeButtonRect,
+                    canBuildPalisade
+                        ? $"Build Palisade ({FormatPlacementCost(palisadeWall)})"
+                        : "Palisade (Dark Age)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
