@@ -39,6 +39,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] PlacedBuildingData stoneWallData;
         [SerializeField] PlacedBuildingData watchTowerData;
         [SerializeField] PlacedBuildingData marketData;
+        [SerializeField] PlacedBuildingData townCenterPlacementData;
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
@@ -155,6 +156,7 @@ namespace AoE.RTS.Buildings
             stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
             watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             marketData = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
+            townCenterPlacementData = PlacedBuildingDataResolver.ResolveTownCenterPlacement(ref townCenterPlacementData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
@@ -384,6 +386,46 @@ namespace AoE.RTS.Buildings
             BeginPlacementMode(builders, instance.marketData);
         }
 
+        public static void EnterTownCenterPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.townCenterPlacementData = PlacedBuildingDataResolver.ResolveTownCenterPlacement(
+                ref instance.townCenterPlacementData);
+            if (instance.townCenterPlacementData == null
+                || !GameSessionManager.CanBuild(instance.townCenterPlacementData, UnitTeam.Player)
+                || !CanPlaceAdditionalTownCenter(UnitTeam.Player))
+                return;
+
+            BeginPlacementMode(builders, instance.townCenterPlacementData);
+        }
+
+        public static bool CanPlaceAdditionalTownCenter(UnitTeam team)
+        {
+            return GetTownCenterSlotsUsedForTeam(team) < ProductionManager.MaxTownCentersPerTeam;
+        }
+
+        public static int GetTownCenterSlotsUsedForTeam(UnitTeam team)
+        {
+            int count = ProductionManager.GetTownCenterCountForTeam(team);
+            if (instance == null)
+                return count;
+
+            for (int i = 0; i < instance.sites.Count; i++)
+            {
+                ConstructionSite site = instance.sites[i];
+                if (site.data == null || site.data.kind != PlacedBuildingKind.TownCenter)
+                    continue;
+
+                Unit builder = site.builder;
+                if (builder != null && builder.Team == team)
+                    count++;
+            }
+
+            return count;
+        }
+
         static void BeginPlacementMode(IReadOnlyList<Unit> builders, PlacedBuildingData placementData)
         {
             instance.stashedBuilders.Clear();
@@ -541,6 +583,9 @@ namespace AoE.RTS.Buildings
 
             PlacedBuildingData placementData = instance.activePlacementData;
             if (!GameSessionManager.CanBuild(placementData, builder.Team))
+                return false;
+
+            if (placementData.kind == PlacedBuildingKind.TownCenter && !CanPlaceAdditionalTownCenter(builder.Team))
                 return false;
 
             instance.ghostPosition = placementPosition;
@@ -864,6 +909,15 @@ namespace AoE.RTS.Buildings
                 Market market = RuntimeBuildingFactory.CreateMarket(site.data, site.position, team);
                 if (market != null && site.builder != null)
                     market.SetTeam(site.builder.Team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.TownCenter)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                TownCenter townCenter = RuntimeBuildingFactory.CreatePlacedTownCenter(site.position, team);
+                if (townCenter != null && site.builder != null)
+                    townCenter.SetTeam(site.builder.Team);
                 return;
             }
 

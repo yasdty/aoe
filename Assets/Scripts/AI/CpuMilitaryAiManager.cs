@@ -53,6 +53,7 @@ namespace AoE.RTS.AI
 
         float evaluateTimer;
         float waveTimer;
+        float relaxedGraceEndsAt;
         TownCenter cpuTownCenter;
         readonly List<Unit> unitBuffer = new List<Unit>(24);
         readonly List<Unit> attackWaveBuffer = new List<Unit>(16);
@@ -79,12 +80,9 @@ namespace AoE.RTS.AI
         public bool IsAttackGraceActive => AttackGraceRemainingSeconds > 0f;
 
         float AttackGraceRemainingSeconds =>
-            Mathf.Max(0f, EffectiveFirstAttackGraceSeconds - Time.timeSinceLevelLoad);
+            IsRelaxedPace ? Mathf.Max(0f, relaxedGraceEndsAt - Time.timeSinceLevelLoad) : 0f;
 
         bool IsRelaxedPace => GameSessionManager.CpuAttackPace == CpuAttackPace.Relaxed;
-
-        float EffectiveFirstAttackGraceSeconds =>
-            IsRelaxedPace ? relaxedFirstAttackGraceSeconds : 0f;
 
         float EffectiveBarracksBuildDelaySeconds =>
             IsRelaxedPace
@@ -132,7 +130,27 @@ namespace AoE.RTS.AI
             RefreshCpuTownCenter();
             evaluateTimer = 1f;
             waveTimer = ScaledAttackWaveIntervalSeconds;
+            ApplyGraceForCurrentPace(resetFromNow: false);
             SimulationTick.Register(this);
+        }
+
+        public void NotifyCpuAttackPaceChanged(CpuAttackPace pace)
+        {
+            ApplyGraceForCurrentPace(resetFromNow: pace == CpuAttackPace.Relaxed);
+            waveTimer = ScaledAttackWaveIntervalSeconds;
+        }
+
+        void ApplyGraceForCurrentPace(bool resetFromNow)
+        {
+            if (!IsRelaxedPace)
+            {
+                relaxedGraceEndsAt = 0f;
+                return;
+            }
+
+            relaxedGraceEndsAt = resetFromNow
+                ? Time.timeSinceLevelLoad + relaxedFirstAttackGraceSeconds
+                : relaxedFirstAttackGraceSeconds;
         }
 
         public void TickSimulation(float fixedDeltaTime)
@@ -421,7 +439,20 @@ namespace AoE.RTS.AI
 
         void LaunchAttackWave()
         {
-            if (IsAttackGraceActive)
+            LaunchAttackWaveInternal(respectAttackGrace: true);
+        }
+
+        public void ForceDebugAttackWave()
+        {
+            if (GameplayBalance.Mode != GameplayBalanceMode.Debug)
+                return;
+
+            LaunchAttackWaveInternal(respectAttackGrace: false);
+        }
+
+        void LaunchAttackWaveInternal(bool respectAttackGrace)
+        {
+            if (respectAttackGrace && IsAttackGraceActive)
                 return;
 
             CollectCpuAttackWaveUnits(attackWaveBuffer);

@@ -109,7 +109,7 @@ namespace AoE.RTS.Economy
             for (int i = 0; i < units.Count; i++)
             {
                 Unit unit = units[i];
-                if (unit == null || ProductionManager.GetTownCenterForTeam(unit.Team) == null)
+                if (unit == null || !ProductionManager.HasAnyTownCenterForTeam(unit.Team))
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -196,7 +196,7 @@ namespace AoE.RTS.Economy
 
         void BeginMoveToDeposit(ref GatherJob job, int index)
         {
-            if (job.carriedWood <= 0f || ProductionManager.GetTownCenterForTeam(job.unit.Team) == null)
+            if (job.carriedWood <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
             {
                 job.unit.ClearMoveTarget();
                 jobs.RemoveAt(index);

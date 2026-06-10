@@ -37,7 +37,7 @@ namespace AoE.RTS.Buildings
             float bestDistanceSq = float.MaxValue;
             Vector3 bestCenter = Vector3.zero;
 
-            TownCenter townCenter = ProductionManager.GetTownCenterForTeam(unit.Team);
+            TownCenter townCenter = ProductionManager.GetNearestTownCenter(unit.Team, unitPosition);
             if (townCenter != null)
             {
                 Vector3 townCenterPosition = townCenter.transform.position;

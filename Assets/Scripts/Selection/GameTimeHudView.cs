@@ -4,6 +4,7 @@ using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace AoE.RTS.Selection
 {
@@ -14,15 +15,28 @@ namespace AoE.RTS.Selection
         const float LineHeight = 20f;
         const float Padding = 8f;
 
+        void Update()
+        {
+            if (GameSessionManager.IsGameOver || Keyboard.current == null)
+                return;
+
+            if (Keyboard.current.pKey.wasPressedThisFrame)
+                GameSessionManager.ToggleCpuAttackPace();
+        }
+
         void OnGUI()
         {
             float lineCount = 2f;
             if (CpuMilitaryAiManager.Instance != null)
                 lineCount += 3f;
+            if (GameplayBalance.Mode == GameplayBalanceMode.Debug && CpuMilitaryAiManager.Instance != null)
+                lineCount += 1f;
 
             float panelHeight = Padding * 2f + LineHeight * lineCount;
             float x = Screen.width * 0.5f - PanelWidth * 0.5f;
             Rect panelRect = new Rect(x, Margin, PanelWidth, panelHeight);
+            GameUiInput.ExpandHudPanelScreenRect(panelRect);
+
             GUI.Box(panelRect, GUIContent.none);
 
             float y = Margin + Padding;
@@ -44,7 +58,15 @@ namespace AoE.RTS.Selection
             string paceLabel = GameSessionManager.CpuAttackPace == CpuAttackPace.Relaxed
                 ? "Relaxed"
                 : "Aggressive";
-            DrawLine(x, ref y, $"CPU pace: {paceLabel}");
+            Rect paceRect = new Rect(x + Padding, y, PanelWidth - Padding * 2f, LineHeight);
+            GUI.enabled = !GameSessionManager.IsGameOver;
+            if (GUI.Button(paceRect, $"CPU pace: {paceLabel} (click / P)"))
+                GameSessionManager.ToggleCpuAttackPace();
+            GUI.enabled = true;
+            y += LineHeight;
+
+            if (GameplayBalance.Mode == GameplayBalanceMode.Debug)
+                DrawLine(x, ref y, "Debug: K=TC dmg, Shift+K=CPU wave");
 
             if (military.HasCpuBarracks)
             {

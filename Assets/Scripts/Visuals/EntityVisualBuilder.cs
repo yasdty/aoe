@@ -58,8 +58,14 @@ namespace AoE.RTS.Visuals
 
         public static PlaceholderVisualKind GetBuildingVisualKind(Buildings.PlacedBuildingData data)
         {
-            if (data != null && data.kind == Buildings.PlacedBuildingKind.Barracks)
+            if (data == null)
+                return PlaceholderVisualKind.House;
+
+            if (data.kind == Buildings.PlacedBuildingKind.Barracks)
                 return PlaceholderVisualKind.Barracks;
+
+            if (data.kind == Buildings.PlacedBuildingKind.TownCenter)
+                return PlaceholderVisualKind.TownCenter;
 
             return PlaceholderVisualKind.House;
         }

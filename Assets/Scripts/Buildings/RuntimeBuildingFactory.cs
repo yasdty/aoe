@@ -1,3 +1,4 @@
+using AoE.RTS.Core;
 using AoE.RTS.Units;
 using AoE.RTS.Visuals;
 using UnityEngine;
@@ -71,6 +72,38 @@ namespace AoE.RTS.Buildings
         public static Market CreateMarket(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             return CreateFreshMarket(data, position, team);
+        }
+
+        public static TownCenter CreatePlacedTownCenter(Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            BuildingData buildingData = null;
+            buildingData = BuildingDataResolver.ResolveTownCenter(ref buildingData);
+            if (buildingData == null)
+                return null;
+
+            const float buildingHeight = 4f;
+            const float buildingWidth = 8f;
+            const float groundClearance = 0.05f;
+
+            Vector3 worldPosition = new Vector3(
+                position.x,
+                buildingHeight * 0.5f + groundClearance,
+                position.z);
+
+            GameObject townCenterObject = EntityVisualBuilder.CreateBuildingShell(
+                "TownCenter",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(buildingWidth, buildingHeight, buildingWidth),
+                Vector3.zero,
+                PlaceholderVisualKind.TownCenter);
+
+            ApplySharedMaterialIfMissingRendererTint(townCenterObject);
+
+            TownCenter townCenter = townCenterObject.AddComponent<TownCenter>();
+            townCenter.SetData(buildingData);
+            townCenter.SetTeam(team);
+            return townCenter;
         }
 
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)

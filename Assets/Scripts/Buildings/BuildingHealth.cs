@@ -62,8 +62,15 @@ namespace AoE.RTS.Buildings
             bool countsAsTownCenter = isTownCenter || GetComponent<TownCenter>() != null;
             if (countsAsTownCenter)
             {
-                GameSessionManager.NotifyTownCenterDestroyed(team);
+                UnitTeam destroyedTeam = team;
+                TownCenter townCenter = GetComponent<TownCenter>();
+                if (townCenter != null)
+                    ProductionManager.Unregister(townCenter);
+
                 Destroy(gameObject);
+
+                if (!ProductionManager.HasAnyTownCenterForTeam(destroyedTeam))
+                    GameSessionManager.NotifyTownCenterDestroyed(destroyedTeam);
                 return;
             }
 

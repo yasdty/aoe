@@ -9,6 +9,7 @@ namespace AoE.RTS.Buildings
     public class ProductionManager : MonoBehaviour, ISimulationTickable
     {
         public const int MaxQueueSize = 15;
+        public const int MaxTownCentersPerTeam = 2;
 
         struct ProductionJob
         {
@@ -119,11 +120,70 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < instance.townCenters.Count; i++)
             {
                 TownCenter townCenter = instance.townCenters[i];
-                if (townCenter != null && townCenter.Team == team)
+                if (townCenter != null && townCenter.Team == team && IsActiveTownCenter(townCenter))
                     return townCenter;
             }
 
             return null;
+        }
+
+        public static int GetTownCenterCountForTeam(UnitTeam team)
+        {
+            if (instance == null)
+                return 0;
+
+            int count = 0;
+            for (int i = 0; i < instance.townCenters.Count; i++)
+            {
+                TownCenter townCenter = instance.townCenters[i];
+                if (townCenter != null && townCenter.Team == team && IsActiveTownCenter(townCenter))
+                    count++;
+            }
+
+            return count;
+        }
+
+        public static bool HasAnyTownCenterForTeam(UnitTeam team)
+        {
+            return GetTownCenterCountForTeam(team) > 0;
+        }
+
+        public static TownCenter GetNearestTownCenter(UnitTeam team, Vector3 fromPosition)
+        {
+            if (instance == null)
+                return null;
+
+            TownCenter nearest = null;
+            float bestDistanceSq = float.MaxValue;
+            Vector3 flatFrom = fromPosition;
+            flatFrom.y = 0f;
+
+            for (int i = 0; i < instance.townCenters.Count; i++)
+            {
+                TownCenter townCenter = instance.townCenters[i];
+                if (townCenter == null || townCenter.Team != team || !IsActiveTownCenter(townCenter))
+                    continue;
+
+                Vector3 flatCenter = townCenter.transform.position;
+                flatCenter.y = 0f;
+                float distanceSq = (flatCenter - flatFrom).sqrMagnitude;
+                if (distanceSq >= bestDistanceSq)
+                    continue;
+
+                bestDistanceSq = distanceSq;
+                nearest = townCenter;
+            }
+
+            return nearest;
+        }
+
+        static bool IsActiveTownCenter(TownCenter townCenter)
+        {
+            if (townCenter == null || !townCenter.gameObject.activeInHierarchy)
+                return false;
+
+            BuildingHealth health = townCenter.GetComponent<BuildingHealth>();
+            return health == null || health.IsAlive;
         }
 
         public static bool TryQueueProduction(

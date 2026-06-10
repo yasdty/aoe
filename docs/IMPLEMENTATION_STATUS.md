@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 46 ✅（Civilization — 採集ボーナス MVP）。**次: Phase 47 Second TC。**
+> **最終更新:** Phase 47 ✅（Second TC — 2 台目建設 MVP）。**次: Phase 48 RTS UX Polish。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -81,7 +81,7 @@
 | 44 | Defense | `Phase10.unity` | ✅ 完了（M4） |
 | 45 | Market | `Phase10.unity` | ✅ 完了（M4） |
 | 46 | Civilization | `Phase10.unity` | ✅ 完了（M4） |
-| 47 | Second TC | `Phase10.unity` | ⬜ 未着手（M4） |
+| 47 | Second TC | `Phase10.unity` | ✅ 完了（M4） |
 | 48 | RTS UX Polish | `Phase10.unity` | ⬜ 未着手（M4）— 壁 Shift+ドラッグ連続配置含む |
 | 49 | View Layer Split | `Phase10.unity` | ⬜ 未着手（M5） |
 | 50 | HUD Migration | `Phase10.unity` | ⬜ 未着手（M5） |
@@ -108,7 +108,7 @@
 
 **Milestone 3 Military:** ✅ 完了（Phase 36〜41）
 
-**Milestone 4 AoE Gameplay:** 🔄 進行中（Phase 46 ✅ — Phase 47 次）
+**Milestone 4 AoE Gameplay:** 🔄 進行中（Phase 47 ✅ — Phase 48 次）
 
 **Milestone 5 Visual / UI:** ⬜ 未着手（Phase 49〜53）
 
@@ -202,6 +202,9 @@
 | Lumber Camp | ✅ | 100 Wood / 6 秒 / Wood Drop-off 拠点 |
 | 市場・交易 | ✅ | Phase 45 — Market + Food/Wood/Stone ↔ Gold 固定レート |
 | 文明ボーナス | ✅ | Phase 46 — `CivilizationData` + Player 採集 +10%（既定）/ 歩兵 HP ボーナス対応 |
+| 2 台目 TC | ✅ | Phase 47 — Feudal 以降 275W+100S / チーム最大 2 基 / 最寄り TC 搬入 |
+| CPU ペース切替 | ✅ | Play 中 `P` または HUD ボタンで Relaxed ↔ Aggressive |
+| Debug テスト | ✅ | Debug 時 `K`=TC ダメージ / `Shift+K`=CPU ウェーブ強制 |
 | 農業（Farm） | ✅ | 60 Wood / 8 秒 / 250 Food 容量・枯渇で Pool 返却 |
 | 漁業 | ❌ | |
 
@@ -1032,7 +1035,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・7 建築・Militia・1 CPU — **Dark Age 垂直スライス**（全体 ~15%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 47 Second TC** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
+| 次に何を作るべき？ | **Phase 48 RTS UX Polish** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

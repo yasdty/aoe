@@ -50,6 +50,7 @@ namespace AoE.RTS.EditorTools
         const string DefaultWatchTowerDataPath = GameAssetPaths.DefaultWatchTowerData;
         const string DefaultMarketDataPath = GameAssetPaths.DefaultMarketData;
         const string DefaultMarketTradeDataPath = GameAssetPaths.DefaultMarketTradeData;
+        const string DefaultTownCenterPlacementDataPath = GameAssetPaths.DefaultTownCenterPlacementData;
         const string DefaultPlayerCivilizationDataPath = GameAssetPaths.DefaultPlayerCivilizationData;
         const string DefaultCpuCivilizationDataPath = GameAssetPaths.DefaultCpuCivilizationData;
 
@@ -96,6 +97,7 @@ namespace AoE.RTS.EditorTools
             EnsureMarketTradeData();
             EnsureDefaultPlayerCivilizationData();
             EnsureDefaultCpuCivilizationData();
+            EnsureTownCenterPlacementData();
             EnsureFeudalAgeData();
             Debug.Log("Synced AoE2 game data assets.");
         }
@@ -1275,6 +1277,56 @@ namespace AoE.RTS.EditorTools
             data.gatherRateMultiplier = gatherRateMultiplier;
             data.infantryHpMultiplier = infantryHpMultiplier;
             AssetDatabase.CreateAsset(data, assetPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureTownCenterPlacementData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(
+                DefaultTownCenterPlacementDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.TownCenter) { existing.kind = PlacedBuildingKind.TownCenter; dirty = true; }
+                if (existing.displayName != "Town Center") { existing.displayName = "Town Center"; dirty = true; }
+                if (existing.requiredAge != GameAge.Feudal) { existing.requiredAge = GameAge.Feudal; dirty = true; }
+                if (existing.woodCost != 275f) { existing.woodCost = 275f; dirty = true; }
+                if (existing.stoneCost != 100f) { existing.stoneCost = 100f; dirty = true; }
+                if (existing.buildTime != 150f) { existing.buildTime = 150f; dirty = true; }
+                if (existing.footprintWidth != 8f) { existing.footprintWidth = 8f; dirty = true; }
+                if (existing.footprintDepth != 8f) { existing.footprintDepth = 8f; dirty = true; }
+                if (existing.buildingHeight != 4f) { existing.buildingHeight = 4f; dirty = true; }
+                if (existing.maxHp != 400f) { existing.maxHp = 400f; dirty = true; }
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.TownCenter;
+            data.displayName = "Town Center";
+            data.requiredAge = GameAge.Feudal;
+            data.woodCost = 275f;
+            data.stoneCost = 100f;
+            data.buildTime = 150f;
+            data.footprintWidth = 8f;
+            data.footprintDepth = 8f;
+            data.buildingHeight = 4f;
+            data.housingProvided = 0;
+            data.maxHp = 400f;
+            data.defaultColor = new Color(0.75f, 0.65f, 0.45f);
+            data.selectedColor = new Color(0.95f, 0.85f, 0.35f);
+            AssetDatabase.CreateAsset(data, DefaultTownCenterPlacementDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }

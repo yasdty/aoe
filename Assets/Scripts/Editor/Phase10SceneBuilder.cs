@@ -216,6 +216,7 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData watchTowerData = Phase1SceneBuilder.EnsureWatchTowerData();
             PlacedBuildingData marketData = Phase1SceneBuilder.EnsureMarketData();
             MarketTradeData marketTradeData = Phase1SceneBuilder.EnsureMarketTradeData();
+            PlacedBuildingData townCenterPlacementData = Phase1SceneBuilder.EnsureTownCenterPlacementData();
             PlacedBuildingData millData = Phase1SceneBuilder.EnsureMillData();
             UnitData manAtArmsData = Phase1SceneBuilder.EnsureManAtArmsData();
             TechnologyData infantryUpgradeTech = Phase1SceneBuilder.EnsureInfantryUpgradeTech(militiaData, manAtArmsData);
@@ -259,6 +260,7 @@ namespace AoE.RTS.EditorTools
                 watchTowerData,
                 marketData,
                 marketTradeData,
+                townCenterPlacementData,
                 millData,
                 infantryUpgradeTech,
                 villagerData,
@@ -647,6 +649,68 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added Civilization wiring. Save the scene (Ctrl+S) if needed.");
         }
 
+        [MenuItem("AoE/Add Second TC (Phase47)", true)]
+        static bool ValidateAddSecondTc() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Second TC (Phase47)")]
+        public static void AddSecondTcToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            PlacedBuildingData townCenterPlacementData = Phase1SceneBuilder.EnsureTownCenterPlacementData();
+
+            BuildingPlacementManager placementManager = Object.FindAnyObjectByType<BuildingPlacementManager>();
+            if (placementManager != null)
+            {
+                SerializedObject serializedPlacement = new SerializedObject(placementManager);
+                serializedPlacement.FindProperty("townCenterPlacementData").objectReferenceValue =
+                    townCenterPlacementData;
+                serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(placementManager);
+            }
+            else
+            {
+                Debug.LogWarning("BuildingPlacementManager not found — Second TC data was not wired.");
+            }
+
+            ResourceHudView resourceHud = Object.FindAnyObjectByType<ResourceHudView>();
+            if (resourceHud != null)
+            {
+                SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
+                serializedResourceHud.FindProperty("townCenterPlacementData").objectReferenceValue =
+                    townCenterPlacementData;
+                serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(resourceHud);
+            }
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added Second TC wiring. Save the scene (Ctrl+S) if needed.");
+        }
+
+        [MenuItem("AoE/Add Debug Playtest Input (Phase47)", true)]
+        static bool ValidateAddDebugPlaytestInput() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Debug Playtest Input (Phase47)")]
+        public static void AddDebugPlaytestInputToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            GameObject systems = GameObject.Find("Systems");
+            if (systems == null)
+            {
+                Debug.LogWarning("Systems object not found — DebugPlaytestInput was not added.");
+                return;
+            }
+
+            if (systems.GetComponent<DebugPlaytestInput>() == null)
+                systems.AddComponent<DebugPlaytestInput>();
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added DebugPlaytestInput to Systems. Save the scene (Ctrl+S) if needed.");
+        }
+
         static void EnsureAttackMoveManager()
         {
             if (Object.FindAnyObjectByType<AttackMoveManager>() != null)
@@ -969,6 +1033,7 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData watchTowerData,
             PlacedBuildingData marketData,
             MarketTradeData marketTradeData,
+            PlacedBuildingData townCenterPlacementData,
             PlacedBuildingData millData,
             TechnologyData infantryUpgradeTech,
             UnitData villagerData,
@@ -979,6 +1044,7 @@ namespace AoE.RTS.EditorTools
             CivilizationData playerCivilization = Phase1SceneBuilder.EnsureDefaultPlayerCivilizationData();
             CivilizationData cpuCivilization = Phase1SceneBuilder.EnsureDefaultCpuCivilizationData();
             GameSessionManager sessionManager = systems.AddComponent<GameSessionManager>();
+            systems.AddComponent<DebugPlaytestInput>();
             SerializedObject serializedSession = new SerializedObject(sessionManager);
             serializedSession.FindProperty("balanceMode").enumValueIndex = (int)GameplayBalanceMode.Debug;
             serializedSession.FindProperty("cpuAttackPace").enumValueIndex = (int)CpuAttackPace.Relaxed;
@@ -1231,6 +1297,7 @@ namespace AoE.RTS.EditorTools
             serializedPlacement.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
             serializedPlacement.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
             serializedPlacement.FindProperty("marketData").objectReferenceValue = marketData;
+            serializedPlacement.FindProperty("townCenterPlacementData").objectReferenceValue = townCenterPlacementData;
             serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
@@ -1244,6 +1311,7 @@ namespace AoE.RTS.EditorTools
             serializedResourceHud.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
             serializedResourceHud.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
             serializedResourceHud.FindProperty("marketData").objectReferenceValue = marketData;
+            serializedResourceHud.FindProperty("townCenterPlacementData").objectReferenceValue = townCenterPlacementData;
             serializedResourceHud.FindProperty("millData").objectReferenceValue = millData;
             serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
 

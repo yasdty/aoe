@@ -1,3 +1,4 @@
+using AoE.RTS.AI;
 using AoE.RTS.Buildings;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
@@ -32,6 +33,25 @@ namespace AoE.RTS.Core
         public static GameplayBalanceMode BalanceMode => GameplayBalance.Mode;
         public static CpuAttackPace CpuAttackPace =>
             instance != null ? instance.cpuAttackPace : CpuAttackPace.Relaxed;
+
+        public static void SetCpuAttackPace(CpuAttackPace pace)
+        {
+            if (instance == null || instance.cpuAttackPace == pace)
+                return;
+
+            instance.cpuAttackPace = pace;
+            if (CpuMilitaryAiManager.Instance != null)
+                CpuMilitaryAiManager.Instance.NotifyCpuAttackPaceChanged(pace);
+
+            Debug.Log($"GameSession: CPU attack pace → {pace}");
+        }
+
+        public static void ToggleCpuAttackPace()
+        {
+            SetCpuAttackPace(CpuAttackPace == CpuAttackPace.Relaxed
+                ? CpuAttackPace.Aggressive
+                : CpuAttackPace.Relaxed);
+        }
 
         void Awake()
         {

@@ -77,7 +77,7 @@ namespace AoE.RTS.Economy
                 if (unit == null || unit.CanAttack)
                     continue;
 
-                if (ProductionManager.GetTownCenterForTeam(unit.Team) == null)
+                if (!ProductionManager.HasAnyTownCenterForTeam(unit.Team))
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -103,7 +103,7 @@ namespace AoE.RTS.Economy
                 if (unit == null || unit.CanAttack)
                     continue;
 
-                if (ProductionManager.GetTownCenterForTeam(unit.Team) == null)
+                if (!ProductionManager.HasAnyTownCenterForTeam(unit.Team))
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -288,7 +288,7 @@ namespace AoE.RTS.Economy
 
         void BeginGoldMoveToDeposit(ref GoldGatherJob job, int index)
         {
-            if (job.carriedAmount <= 0f || ProductionManager.GetTownCenterForTeam(job.unit.Team) == null)
+            if (job.carriedAmount <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
             {
                 job.unit.ClearMoveTarget();
                 goldJobs.RemoveAt(index);
@@ -374,7 +374,7 @@ namespace AoE.RTS.Economy
 
         void BeginStoneMoveToDeposit(ref StoneGatherJob job, int index)
         {
-            if (job.carriedAmount <= 0f || ProductionManager.GetTownCenterForTeam(job.unit.Team) == null)
+            if (job.carriedAmount <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
             {
                 job.unit.ClearMoveTarget();
                 stoneJobs.RemoveAt(index);

@@ -1,6 +1,6 @@
 # Phase 47 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了（Play 確認待ち）  
 > **前提:** Phase 1〜46 完了（M4 Civilization）  
 > **マイルストン:** M4 AoE Gameplay — **Second TC**  
 > **ロードマップ:** [08_M4_GAMEPLAY_PHASES.md](../08_M4_GAMEPLAY_PHASES.md)  
@@ -123,9 +123,9 @@ GetNearestTownCenter(UnitTeam team, Vector3 fromPosition) // 搬入・Age Up 用
 
 ## ⑥ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 47 ✅
-- [ ] `08_M4_GAMEPLAY_PHASES.md` — Phase 47 ✅
-- [ ] 本プロンプト — Play 確認待ち → ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 47 ✅
+- [x] `08_M4_GAMEPLAY_PHASES.md` — Phase 47 ✅
+- [x] 本プロンプト — Play 確認待ち → ✅
 
 ---
 

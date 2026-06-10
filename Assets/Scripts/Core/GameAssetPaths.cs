@@ -4,6 +4,7 @@ namespace AoE.RTS.Core
     {
         public const string RTSInputActions = "Assets/Input/RTSInputActions.inputactions";
         public const string TownCenterData = "Assets/Data/BuildingData/TownCenterData.asset";
+        public const string DefaultTownCenterPlacementData = "Assets/Data/BuildingData/TownCenterPlacementData.asset";
         public const string DefaultTreeData = "Assets/Data/ResourceData/DefaultTree.asset";
         public const string DefaultBerryBushData = "Assets/Data/ResourceData/DefaultBerryBush.asset";
         public const string DefaultDeerData = "Assets/Data/ResourceData/DefaultDeer.asset";

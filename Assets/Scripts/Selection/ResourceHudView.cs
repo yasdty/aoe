@@ -23,6 +23,7 @@ namespace AoE.RTS.Selection
         [SerializeField] PlacedBuildingData stoneWallData;
         [SerializeField] PlacedBuildingData watchTowerData;
         [SerializeField] PlacedBuildingData marketData;
+        [SerializeField] PlacedBuildingData townCenterPlacementData;
 
         const float Margin = 12f;
         const float PanelWidth = 210f;
@@ -35,7 +36,7 @@ namespace AoE.RTS.Selection
         const float ButtonHeight = 28f;
         const float ButtonGap = 4f;
         const float Padding = 8f;
-        const int BuildButtonCount = 13;
+        const int BuildButtonCount = 14;
 
         static ResourceHudView instance;
 
@@ -67,6 +68,7 @@ namespace AoE.RTS.Selection
             stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
             watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             marketData = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
+            townCenterPlacementData = PlacedBuildingDataResolver.ResolveTownCenterPlacement(ref townCenterPlacementData);
             if (selectionManager == null)
                 selectionManager = FindAnyObjectByType<SelectionManager>();
         }
@@ -99,6 +101,8 @@ namespace AoE.RTS.Selection
             PlacedBuildingData stoneWall = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
             PlacedBuildingData watchTower = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             PlacedBuildingData market = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
+            PlacedBuildingData townCenterPlacement = PlacedBuildingDataResolver.ResolveTownCenterPlacement(
+                ref townCenterPlacementData);
             bool inPlacementMode = BuildingPlacementManager.IsPlacementModeActive;
             bool showBuildMenu = !inPlacementMode
                 && selectionManager != null
@@ -341,11 +345,33 @@ namespace AoE.RTS.Selection
                     : null;
                 BuildingPlacementManager.EnterMarketPlacementMode(builders);
             }
+            y += ButtonHeight + ButtonGap;
+
+            bool feudalUnlocked = GameSessionManager.CanBuild(townCenterPlacement, UnitTeam.Player);
+            bool canPlaceTownCenter = feudalUnlocked
+                && BuildingPlacementManager.CanPlaceAdditionalTownCenter(UnitTeam.Player);
+            bool canAffordTownCenter = PlacementCostUtility.CanAfford(UnitTeam.Player, townCenterPlacement);
+            Rect townCenterButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            GUI.enabled = canPlaceTownCenter && canAffordTownCenter && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    townCenterButtonRect,
+                    canPlaceTownCenter
+                        ? $"Build Town Center ({FormatPlacementCost(townCenterPlacement)})"
+                        : feudalUnlocked
+                            ? "Town Center (Max 2)"
+                            : "Town Center (Feudal Age)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterTownCenterPlacementMode(builders);
+            }
             GUI.enabled = true;
 
             bool canAffordAnyBuild = canAffordHouse || canAffordBarracks || canAffordArcheryRange || canAffordStable
                 || canAffordBlacksmith || canAffordFarm || canAffordLumberCamp || canAffordMiningCamp || canAffordMill
-                || canAffordPalisade || canAffordStoneWall || canAffordWatchTower || canAffordMarket;
+                || canAffordPalisade || canAffordStoneWall || canAffordWatchTower || canAffordMarket
+                || canAffordTownCenter;
             DrawPlacementHints(panelRect, inPlacementMode, canAffordAnyBuild);
         }
 

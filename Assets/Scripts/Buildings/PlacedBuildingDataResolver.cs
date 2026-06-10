@@ -349,5 +349,33 @@ namespace AoE.RTS.Buildings
             cached.selectedColor = new Color(0.85f, 0.8f, 0.55f);
             return cached;
         }
+
+        public static PlacedBuildingData ResolveTownCenterPlacement(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultTownCenterPlacementData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.TownCenter;
+            cached.displayName = "Town Center";
+            cached.requiredAge = GameAge.Feudal;
+            cached.woodCost = 275f;
+            cached.stoneCost = 100f;
+            cached.buildTime = 150f;
+            cached.footprintWidth = 8f;
+            cached.footprintDepth = 8f;
+            cached.buildingHeight = 4f;
+            cached.housingProvided = 0;
+            cached.maxHp = 400f;
+            cached.defaultColor = new Color(0.75f, 0.65f, 0.45f);
+            cached.selectedColor = new Color(0.95f, 0.85f, 0.35f);
+            return cached;
+        }
     }
 }

@@ -4927,6 +4927,7 @@ MonoBehaviour:
   stoneWallData: {fileID: 11400000, guid: a1dfe9611fb1d8541861e6682b2201f5, type: 2}
   watchTowerData: {fileID: 11400000, guid: d3642e41932365d44942a367176b0213, type: 2}
   marketData: {fileID: 0}
+  townCenterPlacementData: {fileID: 11400000, guid: 5650ca6935b951b4e8e442774737fdb1, type: 2}
   farmData: {fileID: 0}
   lumberCampData: {fileID: 0}
   miningCampData: {fileID: 0}
@@ -8495,7 +8496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Core.GameSessionManager
   balanceMode: 0
-  cpuAttackPace: 0
+  cpuAttackPace: 1
   feudalAgeData: {fileID: 11400000, guid: f52198f1c02eabe4cbde1eeb92716fa5, type: 2}
   playerCivilization: {fileID: 11400000, guid: aed0f76afcfd0aa4f9da550aa3f7f984, type: 2}
   enemyCivilization: {fileID: 11400000, guid: b91a55e0e46470a42a0c20b7aaf1041a, type: 2}
@@ -9144,6 +9145,7 @@ MonoBehaviour:
   stoneWallData: {fileID: 11400000, guid: a1dfe9611fb1d8541861e6682b2201f5, type: 2}
   watchTowerData: {fileID: 11400000, guid: d3642e41932365d44942a367176b0213, type: 2}
   marketData: {fileID: 0}
+  townCenterPlacementData: {fileID: 11400000, guid: 5650ca6935b951b4e8e442774737fdb1, type: 2}
 --- !u!114 &1160346441
 MonoBehaviour:
   m_ObjectHideFlags: 0
