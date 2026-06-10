@@ -31,6 +31,7 @@ namespace AoE.RTS.Selection
         const float GoldLineHeight = 24f;
         const float StoneLineHeight = 24f;
         const float PopLineHeight = 24f;
+        const float CivLineHeight = 20f;
         const float ButtonHeight = 28f;
         const float ButtonGap = 4f;
         const float Padding = 8f;
@@ -44,7 +45,8 @@ namespace AoE.RTS.Selection
             + FoodLineHeight + ButtonGap
             + GoldLineHeight + ButtonGap
             + StoneLineHeight + ButtonGap
-            + PopLineHeight + ButtonGap;
+            + PopLineHeight + ButtonGap
+            + CivLineHeight + ButtonGap;
 
         static float BuildMenuHeight =>
             BuildButtonCount * ButtonHeight + (BuildButtonCount - 1) * ButtonGap;
@@ -128,6 +130,14 @@ namespace AoE.RTS.Selection
             Rect popRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, PopLineHeight);
             GUI.Label(popRect, $"Pop: {PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}");
             y += PopLineHeight + ButtonGap;
+
+            string civLabel = CivilizationBonusUtility.GetHudLabel(UnitTeam.Player);
+            if (!string.IsNullOrEmpty(civLabel))
+            {
+                Rect civRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, CivLineHeight);
+                GUI.Label(civRect, civLabel);
+                y += CivLineHeight + ButtonGap;
+            }
 
             if (!showBuildMenu)
             {

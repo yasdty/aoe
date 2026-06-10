@@ -617,6 +617,36 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added Market wiring. Save the scene (Ctrl+S) if needed.");
         }
 
+        [MenuItem("AoE/Add Civilization (Phase46)", true)]
+        static bool ValidateAddCivilization() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Civilization (Phase46)")]
+        public static void AddCivilizationToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            CivilizationData playerCivilization = Phase1SceneBuilder.EnsureDefaultPlayerCivilizationData();
+            CivilizationData cpuCivilization = Phase1SceneBuilder.EnsureDefaultCpuCivilizationData();
+
+            GameSessionManager sessionManager = Object.FindAnyObjectByType<GameSessionManager>();
+            if (sessionManager != null)
+            {
+                SerializedObject serializedSession = new SerializedObject(sessionManager);
+                serializedSession.FindProperty("playerCivilization").objectReferenceValue = playerCivilization;
+                serializedSession.FindProperty("enemyCivilization").objectReferenceValue = cpuCivilization;
+                serializedSession.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(sessionManager);
+            }
+            else
+            {
+                Debug.LogWarning("GameSessionManager not found — civilization data was not wired.");
+            }
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added Civilization wiring. Save the scene (Ctrl+S) if needed.");
+        }
+
         static void EnsureAttackMoveManager()
         {
             if (Object.FindAnyObjectByType<AttackMoveManager>() != null)
@@ -790,6 +820,8 @@ namespace AoE.RTS.EditorTools
         static void ApplyPhase42SceneWiring()
         {
             AgeData feudalAgeData = Phase1SceneBuilder.EnsureFeudalAgeData();
+            CivilizationData playerCivilization = Phase1SceneBuilder.EnsureDefaultPlayerCivilizationData();
+            CivilizationData cpuCivilization = Phase1SceneBuilder.EnsureDefaultCpuCivilizationData();
 
             GameSessionManager sessionManager = Object.FindAnyObjectByType<GameSessionManager>();
             if (sessionManager != null)
@@ -798,6 +830,8 @@ namespace AoE.RTS.EditorTools
                 serializedSession.FindProperty("balanceMode").enumValueIndex = (int)GameplayBalanceMode.Debug;
                 serializedSession.FindProperty("cpuAttackPace").enumValueIndex = (int)CpuAttackPace.Relaxed;
                 serializedSession.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
+                serializedSession.FindProperty("playerCivilization").objectReferenceValue = playerCivilization;
+                serializedSession.FindProperty("enemyCivilization").objectReferenceValue = cpuCivilization;
                 serializedSession.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(sessionManager);
             }
@@ -942,11 +976,15 @@ namespace AoE.RTS.EditorTools
         {
             GameObject systems = new GameObject("Systems");
             AgeData feudalAgeData = Phase1SceneBuilder.EnsureFeudalAgeData();
+            CivilizationData playerCivilization = Phase1SceneBuilder.EnsureDefaultPlayerCivilizationData();
+            CivilizationData cpuCivilization = Phase1SceneBuilder.EnsureDefaultCpuCivilizationData();
             GameSessionManager sessionManager = systems.AddComponent<GameSessionManager>();
             SerializedObject serializedSession = new SerializedObject(sessionManager);
             serializedSession.FindProperty("balanceMode").enumValueIndex = (int)GameplayBalanceMode.Debug;
             serializedSession.FindProperty("cpuAttackPace").enumValueIndex = (int)CpuAttackPace.Relaxed;
             serializedSession.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
+            serializedSession.FindProperty("playerCivilization").objectReferenceValue = playerCivilization;
+            serializedSession.FindProperty("enemyCivilization").objectReferenceValue = cpuCivilization;
             serializedSession.ApplyModifiedPropertiesWithoutUndo();
 
             GameObject simulationTickObject = new GameObject("SimulationTick");

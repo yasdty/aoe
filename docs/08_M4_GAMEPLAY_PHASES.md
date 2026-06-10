@@ -17,7 +17,7 @@
 | 43 | Blacksmith & Tech | 鍛冶屋 + 歩兵 UP 1 系統（例: Militia → MAA） | ✅ 完了 |
 | 44 | Defense | 柵 / 石壁 / 箭塔 MVP | ✅ 完了 |
 | 45 | Market | 資源交易 MVP | ✅ 完了 |
-| 46 | Civilization | 文明ボーナス 1 種 Data 駆動 | ⬜ 未着手 |
+| 46 | Civilization | 文明ボーナス 1 種 Data 駆動 | ✅ 完了 |
 | 47 | Second TC | 2 台目 Town Center（ブーム下地） | ⬜ 未着手 |
 | 48 | RTS UX Polish | キュー取消・House Pop 減・建築ホットキー・Shift+5 キュー・**壁 Shift+ドラッグ連続配置** | ⬜ 未着手 |
 
@@ -77,7 +77,7 @@
 
 ---
 
-## Phase 46 — Civilization ⬜
+## Phase 46 — Civilization ✅
 
 **実装:** `CivilizationData` — 経済 or 軍事ボーナス 1 種 + チーム適用
 
@@ -91,7 +91,7 @@
 
 **実装:** Feudal 以降 2 台目 TC 建設 / 人口・生産のスノーボール下地
 
-**プロンプト:** [prompts/phase47-prompt.md](prompts/phase47-prompt.md)（未作成）
+**プロンプト:** [prompts/phase47-prompt.md](prompts/phase47-prompt.md)
 
 ---
 

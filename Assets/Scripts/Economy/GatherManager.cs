@@ -183,7 +183,7 @@ namespace AoE.RTS.Economy
                 return;
             }
 
-            float request = GatherRate * deltaTime;
+            float request = CivilizationBonusUtility.ScaleGatherRate(job.unit.Team, GatherRate) * deltaTime;
             float room = CarryCapacity - job.carriedWood;
             float taken = job.tree.TakeWood(Mathf.Min(request, room));
             job.carriedWood += taken;
@@ -220,6 +220,7 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddWood(job.unit.Team, job.carriedWood);
+                CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedWood = 0f;
 
                 if (job.tree != null && !job.tree.IsDepleted)

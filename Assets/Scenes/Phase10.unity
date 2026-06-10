@@ -4926,6 +4926,7 @@ MonoBehaviour:
   palisadeWallData: {fileID: 11400000, guid: 5cec63d68a73b1a48bea44edda574334, type: 2}
   stoneWallData: {fileID: 11400000, guid: a1dfe9611fb1d8541861e6682b2201f5, type: 2}
   watchTowerData: {fileID: 11400000, guid: d3642e41932365d44942a367176b0213, type: 2}
+  marketData: {fileID: 0}
   farmData: {fileID: 0}
   lumberCampData: {fileID: 0}
   miningCampData: {fileID: 0}
@@ -8496,6 +8497,8 @@ MonoBehaviour:
   balanceMode: 0
   cpuAttackPace: 0
   feudalAgeData: {fileID: 11400000, guid: f52198f1c02eabe4cbde1eeb92716fa5, type: 2}
+  playerCivilization: {fileID: 11400000, guid: aed0f76afcfd0aa4f9da550aa3f7f984, type: 2}
+  enemyCivilization: {fileID: 11400000, guid: b91a55e0e46470a42a0c20b7aaf1041a, type: 2}
 --- !u!4 &1100026793
 Transform:
   m_ObjectHideFlags: 0
@@ -9140,6 +9143,7 @@ MonoBehaviour:
   palisadeWallData: {fileID: 11400000, guid: 5cec63d68a73b1a48bea44edda574334, type: 2}
   stoneWallData: {fileID: 11400000, guid: a1dfe9611fb1d8541861e6682b2201f5, type: 2}
   watchTowerData: {fileID: 11400000, guid: d3642e41932365d44942a367176b0213, type: 2}
+  marketData: {fileID: 0}
 --- !u!114 &1160346441
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10741,6 +10745,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1375805452}
   - component: {fileID: 1375805450}
+  - component: {fileID: 1375805451}
   - component: {fileID: 1375805448}
   - component: {fileID: 1375805449}
   m_Layer: 0
@@ -10838,6 +10843,14 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!81 &1375805451
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1375805447}
+  m_Enabled: 1
 --- !u!4 &1375805452
 Transform:
   m_ObjectHideFlags: 0

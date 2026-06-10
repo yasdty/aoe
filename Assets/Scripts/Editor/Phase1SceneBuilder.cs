@@ -50,6 +50,8 @@ namespace AoE.RTS.EditorTools
         const string DefaultWatchTowerDataPath = GameAssetPaths.DefaultWatchTowerData;
         const string DefaultMarketDataPath = GameAssetPaths.DefaultMarketData;
         const string DefaultMarketTradeDataPath = GameAssetPaths.DefaultMarketTradeData;
+        const string DefaultPlayerCivilizationDataPath = GameAssetPaths.DefaultPlayerCivilizationData;
+        const string DefaultCpuCivilizationDataPath = GameAssetPaths.DefaultCpuCivilizationData;
 
         public static bool EnsureEditModeForSceneSetup()
         {
@@ -92,6 +94,8 @@ namespace AoE.RTS.EditorTools
             EnsureWatchTowerData();
             EnsureMarketData();
             EnsureMarketTradeData();
+            EnsureDefaultPlayerCivilizationData();
+            EnsureDefaultCpuCivilizationData();
             EnsureFeudalAgeData();
             Debug.Log("Synced AoE2 game data assets.");
         }
@@ -1202,6 +1206,75 @@ namespace AoE.RTS.EditorTools
             data.sellStoneGoldReceived = 50f;
             data.buyStoneGoldCost = 50f;
             AssetDatabase.CreateAsset(data, DefaultMarketTradeDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static CivilizationData EnsureDefaultPlayerCivilizationData()
+        {
+            return EnsureCivilizationData(
+                DefaultPlayerCivilizationDataPath,
+                "Franks (Demo)",
+                CivilizationBonusKind.GatherRate,
+                1.1f,
+                1f);
+        }
+
+        public static CivilizationData EnsureDefaultCpuCivilizationData()
+        {
+            return EnsureCivilizationData(
+                DefaultCpuCivilizationDataPath,
+                "Standard",
+                CivilizationBonusKind.GatherRate,
+                1f,
+                1f);
+        }
+
+        static CivilizationData EnsureCivilizationData(
+            string assetPath,
+            string displayName,
+            CivilizationBonusKind bonusKind,
+            float gatherRateMultiplier,
+            float infantryHpMultiplier)
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/CivilizationData"))
+                AssetDatabase.CreateFolder("Assets/Data", "CivilizationData");
+
+            CivilizationData existing = AssetDatabase.LoadAssetAtPath<CivilizationData>(assetPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.displayName != displayName) { existing.displayName = displayName; dirty = true; }
+                if (existing.bonusKind != bonusKind) { existing.bonusKind = bonusKind; dirty = true; }
+                if (existing.gatherRateMultiplier != gatherRateMultiplier)
+                {
+                    existing.gatherRateMultiplier = gatherRateMultiplier;
+                    dirty = true;
+                }
+
+                if (existing.infantryHpMultiplier != infantryHpMultiplier)
+                {
+                    existing.infantryHpMultiplier = infantryHpMultiplier;
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            CivilizationData data = ScriptableObject.CreateInstance<CivilizationData>();
+            data.displayName = displayName;
+            data.bonusKind = bonusKind;
+            data.gatherRateMultiplier = gatherRateMultiplier;
+            data.infantryHpMultiplier = infantryHpMultiplier;
+            AssetDatabase.CreateAsset(data, assetPath);
             AssetDatabase.SaveAssets();
             return data;
         }

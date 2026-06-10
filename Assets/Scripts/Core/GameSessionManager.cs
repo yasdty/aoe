@@ -22,6 +22,8 @@ namespace AoE.RTS.Core
         [SerializeField] GameplayBalanceMode balanceMode = GameplayBalanceMode.Debug;
         [SerializeField] CpuAttackPace cpuAttackPace = CpuAttackPace.Relaxed;
         [SerializeField] AgeData feudalAgeData;
+        [SerializeField] CivilizationData playerCivilization;
+        [SerializeField] CivilizationData enemyCivilization;
 
         MatchState state = MatchState.Playing;
 
@@ -51,6 +53,14 @@ namespace AoE.RTS.Core
         public static GameAge GetAge(UnitTeam team)
         {
             return team == UnitTeam.Enemy ? enemyAge : playerAge;
+        }
+
+        public static CivilizationData GetCivilization(UnitTeam team)
+        {
+            if (instance == null)
+                return null;
+
+            return team == UnitTeam.Enemy ? instance.enemyCivilization : instance.playerCivilization;
         }
 
         public static bool CanBuild(PlacedBuildingData data, UnitTeam team)

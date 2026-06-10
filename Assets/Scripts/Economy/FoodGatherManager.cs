@@ -447,7 +447,7 @@ namespace AoE.RTS.Economy
                 return;
             }
 
-            float request = GatherRate * deltaTime;
+            float request = CivilizationBonusUtility.ScaleGatherRate(job.unit.Team, GatherRate) * deltaTime;
             float room = CarryCapacity - job.carriedFood;
             float taken = job.farm.TakeFood(Mathf.Min(request, room));
             job.carriedFood += taken;
@@ -493,6 +493,7 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedFood = 0f;
 
                 if (IsFarmGatherTargetValid(job.farm))
@@ -552,7 +553,7 @@ namespace AoE.RTS.Economy
                 return;
             }
 
-            float request = GatherRate * deltaTime;
+            float request = CivilizationBonusUtility.ScaleGatherRate(job.unit.Team, GatherRate) * deltaTime;
             float room = CarryCapacity - job.carriedFood;
             float taken = job.bush.TakeFood(Mathf.Min(request, room));
             job.carriedFood += taken;
@@ -589,6 +590,7 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedFood = 0f;
 
                 if (job.bush != null && !job.bush.IsDepleted)
@@ -724,7 +726,7 @@ namespace AoE.RTS.Economy
 
             SyncBoarHunter(job);
 
-            float request = GatherRate * deltaTime;
+            float request = CivilizationBonusUtility.ScaleGatherRate(job.unit.Team, GatherRate) * deltaTime;
             float room = CarryCapacity - job.carriedFood;
 
             if (job.animalBehaviour is BoarResource boar)
@@ -791,6 +793,7 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedFood = 0f;
 
                 IHuntableFoodResource animal = job.animalBehaviour as IHuntableFoodResource;

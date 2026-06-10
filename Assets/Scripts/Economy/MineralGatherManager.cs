@@ -275,7 +275,7 @@ namespace AoE.RTS.Economy
                 return;
             }
 
-            float request = GatherRate * deltaTime;
+            float request = CivilizationBonusUtility.ScaleGatherRate(job.unit.Team, GatherRate) * deltaTime;
             float room = CarryCapacity - job.carriedAmount;
             float taken = job.mine.TakeMineral(Mathf.Min(request, room));
             job.carriedAmount += taken;
@@ -312,6 +312,7 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddGold(job.unit.Team, job.carriedAmount);
+                CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedAmount = 0f;
 
                 if (job.mine != null && !job.mine.IsDepleted)
@@ -360,7 +361,7 @@ namespace AoE.RTS.Economy
                 return;
             }
 
-            float request = GatherRate * deltaTime;
+            float request = CivilizationBonusUtility.ScaleGatherRate(job.unit.Team, GatherRate) * deltaTime;
             float room = CarryCapacity - job.carriedAmount;
             float taken = job.mine.TakeMineral(Mathf.Min(request, room));
             job.carriedAmount += taken;
@@ -397,6 +398,7 @@ namespace AoE.RTS.Economy
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
                 ResourceManager.AddStone(job.unit.Team, job.carriedAmount);
+                CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedAmount = 0f;
 
                 if (job.mine != null && !job.mine.IsDepleted)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Combat;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Selection;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace AoE.RTS.Units
         [SerializeField] UnitTeam team = UnitTeam.Player;
 
         float currentHp;
+        float effectiveMaxHp;
         Vector3? moveTarget;
         Renderer cachedRenderer;
         MaterialPropertyBlock propertyBlock;
@@ -26,7 +28,7 @@ namespace AoE.RTS.Units
         UnitCombatStance combatStance = UnitCombatStance.Aggressive;
 
         public float CurrentHp => currentHp;
-        public float MaxHp => data != null ? data.maxHp : 100f;
+        public float MaxHp => effectiveMaxHp > 0f ? effectiveMaxHp : (data != null ? data.maxHp : 100f);
         public bool IsAlive => !isDead;
         public bool IsSelected => isSelected;
         public UnitData Data => data;
@@ -68,6 +70,7 @@ namespace AoE.RTS.Units
             nextStandSlot++;
             cachedRenderer = GetComponentInChildren<Renderer>();
             ApplyTeamFromData();
+            RefreshEffectiveMaxHp();
             currentHp = MaxHp;
         }
 
@@ -83,6 +86,12 @@ namespace AoE.RTS.Units
             if (!isDead)
                 UnitManager.Register(this);
 
+            float baseMaxHp = data != null ? data.maxHp : 100f;
+            bool wasAtFullHealth = Mathf.Approximately(currentHp, baseMaxHp);
+            RefreshEffectiveMaxHp();
+            if (wasAtFullHealth)
+                currentHp = MaxHp;
+
             UpdateVisual();
         }
 
@@ -95,6 +104,7 @@ namespace AoE.RTS.Units
         {
             data = unitData;
             ApplyTeamFromData();
+            RefreshEffectiveMaxHp();
             currentHp = MaxHp;
             UpdateVisual();
         }
@@ -140,9 +150,15 @@ namespace AoE.RTS.Units
 
             ApplyTeamFromData();
             team = unitTeam;
+            RefreshEffectiveMaxHp();
             currentHp = MaxHp;
             transform.position = position;
             UpdateVisual();
+        }
+
+        void RefreshEffectiveMaxHp()
+        {
+            effectiveMaxHp = CivilizationBonusUtility.GetScaledMaxHp(data, team);
         }
 
         public void Die()
