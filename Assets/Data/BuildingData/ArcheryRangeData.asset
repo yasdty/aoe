@@ -14,16 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Buildings.PlacedBuildingData
   kind: 6
   displayName: Archery Range
-  woodCost: 150
-  buildTime: 40
+  requiredAge: 1
+  woodCost: 175
+  buildTime: 50
   footprintWidth: 6
   footprintDepth: 6
   buildingHeight: 3.5
   housingProvided: 0
   trainUnitData: {fileID: 11400000, guid: 54ce4b71fb0499e4f83f9bd7ccc44ca2, type: 2}
-  trainTime: 3
-  trainWoodCost: 25
-  trainFoodCost: 25
+  trainTime: 35
+  trainWoodCost: 35
+  trainFoodCost: 35
+  secondaryTrainUnitData: {fileID: 0}
+  secondaryTrainTime: 3
+  secondaryTrainWoodCost: 25
+  secondaryTrainFoodCost: 35
   spawnClearance: 4
   defaultColor: {r: 0.45, g: 0.55, b: 0.38, a: 1}
   ghostValidColor: {r: 0.4, g: 0.85, b: 0.45, a: 1}
@@ -31,5 +36,6 @@ MonoBehaviour:
   constructionColor: {r: 0.42, g: 0.4, b: 0.38, a: 1}
   selectedColor: {r: 0.75, g: 0.9, b: 0.45, a: 1}
   maxHp: 300
-  armor: 0
+  meleeArmor: 0
+  pierceArmor: 0
   foodCapacity: 0

@@ -224,7 +224,7 @@ namespace AoE.RTS.Buildings
                 return;
 
             instance.barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref instance.barracksData);
-            if (instance.barracksData == null)
+            if (instance.barracksData == null || !GameSessionManager.CanBuild(instance.barracksData, UnitTeam.Player))
                 return;
 
             instance.stashedBuilders.Clear();
@@ -251,7 +251,7 @@ namespace AoE.RTS.Buildings
                 return;
 
             instance.archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref instance.archeryRangeData);
-            if (instance.archeryRangeData == null)
+            if (instance.archeryRangeData == null || !GameSessionManager.CanBuild(instance.archeryRangeData, UnitTeam.Player))
                 return;
 
             instance.stashedBuilders.Clear();
@@ -278,7 +278,7 @@ namespace AoE.RTS.Buildings
                 return;
 
             instance.stableData = PlacedBuildingDataResolver.ResolveStable(ref instance.stableData);
-            if (instance.stableData == null)
+            if (instance.stableData == null || !GameSessionManager.CanBuild(instance.stableData, UnitTeam.Player))
                 return;
 
             instance.stashedBuilders.Clear();
@@ -435,12 +435,15 @@ namespace AoE.RTS.Buildings
                 return false;
 
             PlacedBuildingData placementData = instance.activePlacementData;
+            if (!GameSessionManager.CanBuild(placementData, builder.Team))
+                return false;
+
             instance.ghostPosition = placementPosition;
             instance.ghostValid = instance.CanPlaceAt(placementPosition, placementData);
             if (!instance.ghostValid)
                 return false;
 
-            if (!ResourceManager.TrySpendWood(placementData.woodCost))
+            if (!ResourceManager.TrySpendWood(placementData.ScaledWoodCost))
                 return false;
 
             instance.builderLookupBuffer.Clear();
@@ -458,7 +461,7 @@ namespace AoE.RTS.Buildings
                 data = placementData,
                 builder = builder,
                 position = instance.ghostPosition,
-                remainingTime = placementData.buildTime,
+                remainingTime = placementData.ScaledBuildTime,
                 builderArrived = false,
                 siteVisual = instance.CreateConstructionVisual(placementData, instance.ghostPosition)
             });
@@ -472,11 +475,14 @@ namespace AoE.RTS.Buildings
             if (instance == null || data == null || builder == null || !builder.IsAlive)
                 return false;
 
+            if (!GameSessionManager.CanBuild(data, builder.Team))
+                return false;
+
             position = instance.SnapToFootprint(position);
             if (!instance.CanPlaceAt(position, data))
                 return false;
 
-            if (!ResourceManager.TrySpendWood(builder.Team, data.woodCost))
+            if (!ResourceManager.TrySpendWood(builder.Team, data.ScaledWoodCost))
                 return false;
 
             instance.builderLookupBuffer.Clear();
@@ -494,7 +500,7 @@ namespace AoE.RTS.Buildings
                 data = data,
                 builder = builder,
                 position = position,
-                remainingTime = data.buildTime,
+                remainingTime = data.ScaledBuildTime,
                 builderArrived = false,
                 siteVisual = instance.CreateConstructionVisual(data, position)
             });

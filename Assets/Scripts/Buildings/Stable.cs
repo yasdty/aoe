@@ -100,9 +100,9 @@ namespace AoE.RTS.Buildings
             return StableProductionManager.TryQueueProduction(
                 this,
                 data.trainUnitData,
-                data.trainTime,
-                data.trainWoodCost,
-                data.trainFoodCost);
+                data.ScaledTrainTime,
+                data.ScaledTrainWoodCost,
+                data.ScaledTrainFoodCost);
         }
 
         public bool TryQueueScoutProduction()
@@ -113,9 +113,9 @@ namespace AoE.RTS.Buildings
             return StableProductionManager.TryQueueProduction(
                 this,
                 data.secondaryTrainUnitData,
-                data.secondaryTrainTime,
-                data.secondaryTrainWoodCost,
-                data.secondaryTrainFoodCost);
+                data.ScaledSecondaryTrainTime,
+                data.ScaledSecondaryTrainWoodCost,
+                data.ScaledSecondaryTrainFoodCost);
         }
 
         public Vector3 GetUnitSpawnPosition()

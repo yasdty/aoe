@@ -100,9 +100,9 @@ namespace AoE.RTS.Buildings
             return ArcheryRangeProductionManager.TryQueueProduction(
                 this,
                 data.trainUnitData,
-                data.trainTime,
-                data.trainWoodCost,
-                data.trainFoodCost);
+                data.ScaledTrainTime,
+                data.ScaledTrainWoodCost,
+                data.ScaledTrainFoodCost);
         }
 
         public Vector3 GetUnitSpawnPosition()

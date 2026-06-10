@@ -19,6 +19,8 @@ namespace AoE.RTS.Core
         public const string DefaultLumberCampData = "Assets/Data/BuildingData/LumberCampData.asset";
         public const string DefaultMiningCampData = "Assets/Data/BuildingData/MiningCampData.asset";
         public const string DefaultMillData = "Assets/Data/BuildingData/MillData.asset";
+        public const string DefaultBlacksmithData = "Assets/Data/BuildingData/BlacksmithData.asset";
+        public const string FeudalAgeData = "Assets/Data/AgeData/FeudalAgeData.asset";
         public const string MilitiaData = "Assets/Data/UnitData/MilitiaData.asset";
         public const string SpearmanData = "Assets/Data/UnitData/SpearmanData.asset";
         public const string ArcherData = "Assets/Data/UnitData/ArcherData.asset";

@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Buildings.PlacedBuildingData
   kind: 2
   displayName: Farm
+  requiredAge: 0
   woodCost: 60
-  buildTime: 8
+  buildTime: 25
   footprintWidth: 4
   footprintDepth: 4
   buildingHeight: 3
@@ -23,6 +24,11 @@ MonoBehaviour:
   trainUnitData: {fileID: 0}
   trainTime: 3
   trainWoodCost: 20
+  trainFoodCost: 0
+  secondaryTrainUnitData: {fileID: 0}
+  secondaryTrainTime: 3
+  secondaryTrainWoodCost: 25
+  secondaryTrainFoodCost: 35
   spawnClearance: 4
   defaultColor: {r: 0.35, g: 0.7, b: 0.25, a: 1}
   ghostValidColor: {r: 0.4, g: 0.85, b: 0.45, a: 1}
@@ -30,5 +36,6 @@ MonoBehaviour:
   constructionColor: {r: 0.42, g: 0.4, b: 0.38, a: 1}
   selectedColor: {r: 0.95, g: 0.85, b: 0.35, a: 1}
   maxHp: 100
-  armor: 0
+  meleeArmor: 0
+  pierceArmor: 0
   foodCapacity: 250

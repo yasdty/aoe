@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TownCenterData
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Buildings.BuildingData
   displayName: Town Center
-  villagerTrainTime: 3
+  villagerTrainTime: 25
   villagerFoodCost: 50
   villagerUnitData: {fileID: 11400000, guid: f1276b33e6e8ad44ab09060d9f915c63, type: 2}
   defaultColor: {r: 0.75, g: 0.65, b: 0.45, a: 1}
@@ -21,4 +21,5 @@ MonoBehaviour:
   spawnForwardOffset: 8
   spawnClearance: 4
   maxHp: 400
-  armor: 0
+  meleeArmor: 0
+  pierceArmor: 0

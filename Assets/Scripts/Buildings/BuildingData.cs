@@ -1,3 +1,4 @@
+using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -17,5 +18,8 @@ namespace AoE.RTS.Buildings
         public float maxHp = 400f;
         public float meleeArmor;
         public float pierceArmor;
+
+        public float ScaledVillagerTrainTime => GameplayBalance.ScaleBuildTime(villagerTrainTime);
+        public float ScaledVillagerFoodCost => GameplayBalance.ScaleResourceCost(villagerFoodCost);
     }
 }

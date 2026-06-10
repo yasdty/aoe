@@ -1,6 +1,6 @@
 # Phase 42 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜41 完了（**M3 Military 完了**）  
 > **マイルストン:** M4 AoE Gameplay — **Gameplay Balance Mode + Age Up**  
 > **ロードマップ:** [08_M4_GAMEPLAY_PHASES.md](../08_M4_GAMEPLAY_PHASES.md)  

@@ -102,9 +102,10 @@ namespace AoE.RTS.Selection
             bool gameOver = GameSessionManager.IsGameOver;
 
             Rect houseButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canAffordHouse = ResourceManager.Wood >= house.woodCost;
+            int houseWoodCost = Mathf.CeilToInt(house.ScaledWoodCost);
+            bool canAffordHouse = ResourceManager.Wood >= house.ScaledWoodCost;
             GUI.enabled = canAffordHouse && !inPlacementMode && !gameOver;
-            if (GUI.Button(houseButtonRect, $"Build House ({house.woodCost} Wood)"))
+            if (GUI.Button(houseButtonRect, $"Build House ({houseWoodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -114,9 +115,10 @@ namespace AoE.RTS.Selection
             y += ButtonHeight + ButtonGap;
 
             Rect barracksButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canAffordBarracks = ResourceManager.Wood >= barracks.woodCost;
+            int barracksWoodCost = Mathf.CeilToInt(barracks.ScaledWoodCost);
+            bool canAffordBarracks = ResourceManager.Wood >= barracks.ScaledWoodCost;
             GUI.enabled = canAffordBarracks && !inPlacementMode && !gameOver;
-            if (GUI.Button(barracksButtonRect, $"Build Barracks ({barracks.woodCost} Wood)"))
+            if (GUI.Button(barracksButtonRect, $"Build Barracks ({barracksWoodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -126,9 +128,15 @@ namespace AoE.RTS.Selection
             y += ButtonHeight + ButtonGap;
 
             Rect archeryRangeButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canAffordArcheryRange = ResourceManager.Wood >= archeryRange.woodCost;
-            GUI.enabled = canAffordArcheryRange && !inPlacementMode && !gameOver;
-            if (GUI.Button(archeryRangeButtonRect, $"Build Archery Range ({archeryRange.woodCost} Wood)"))
+            int archeryWoodCost = Mathf.CeilToInt(archeryRange.ScaledWoodCost);
+            bool canBuildArcheryRange = GameSessionManager.CanBuild(archeryRange, UnitTeam.Player);
+            bool canAffordArcheryRange = ResourceManager.Wood >= archeryRange.ScaledWoodCost;
+            GUI.enabled = canBuildArcheryRange && canAffordArcheryRange && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    archeryRangeButtonRect,
+                    canBuildArcheryRange
+                        ? $"Build Archery Range ({archeryWoodCost} Wood)"
+                        : "Archery Range (Feudal Age)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -138,9 +146,15 @@ namespace AoE.RTS.Selection
             y += ButtonHeight + ButtonGap;
 
             Rect stableButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canAffordStable = ResourceManager.Wood >= stable.woodCost;
-            GUI.enabled = canAffordStable && !inPlacementMode && !gameOver;
-            if (GUI.Button(stableButtonRect, $"Build Stable ({stable.woodCost} Wood)"))
+            int stableWoodCost = Mathf.CeilToInt(stable.ScaledWoodCost);
+            bool canBuildStable = GameSessionManager.CanBuild(stable, UnitTeam.Player);
+            bool canAffordStable = ResourceManager.Wood >= stable.ScaledWoodCost;
+            GUI.enabled = canBuildStable && canAffordStable && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    stableButtonRect,
+                    canBuildStable
+                        ? $"Build Stable ({stableWoodCost} Wood)"
+                        : "Stable (Feudal Age)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -150,9 +164,10 @@ namespace AoE.RTS.Selection
             y += ButtonHeight + ButtonGap;
 
             Rect farmButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canAffordFarm = ResourceManager.Wood >= farm.woodCost;
+            int farmWoodCost = Mathf.CeilToInt(farm.ScaledWoodCost);
+            bool canAffordFarm = ResourceManager.Wood >= farm.ScaledWoodCost;
             GUI.enabled = canAffordFarm && !inPlacementMode && !gameOver;
-            if (GUI.Button(farmButtonRect, $"Build Farm ({farm.woodCost} Wood)"))
+            if (GUI.Button(farmButtonRect, $"Build Farm ({farmWoodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -162,9 +177,10 @@ namespace AoE.RTS.Selection
             y += ButtonHeight + ButtonGap;
 
             Rect lumberCampButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canAffordLumberCamp = ResourceManager.Wood >= lumberCamp.woodCost;
+            int lumberCampWoodCost = Mathf.CeilToInt(lumberCamp.ScaledWoodCost);
+            bool canAffordLumberCamp = ResourceManager.Wood >= lumberCamp.ScaledWoodCost;
             GUI.enabled = canAffordLumberCamp && !inPlacementMode && !gameOver;
-            if (GUI.Button(lumberCampButtonRect, $"Build Lumber Camp ({lumberCamp.woodCost} Wood)"))
+            if (GUI.Button(lumberCampButtonRect, $"Build Lumber Camp ({lumberCampWoodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -174,9 +190,10 @@ namespace AoE.RTS.Selection
             y += ButtonHeight + ButtonGap;
 
             Rect miningCampButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canAffordMiningCamp = ResourceManager.Wood >= miningCamp.woodCost;
+            int miningCampWoodCost = Mathf.CeilToInt(miningCamp.ScaledWoodCost);
+            bool canAffordMiningCamp = ResourceManager.Wood >= miningCamp.ScaledWoodCost;
             GUI.enabled = canAffordMiningCamp && !inPlacementMode && !gameOver;
-            if (GUI.Button(miningCampButtonRect, $"Build Mining Camp ({miningCamp.woodCost} Wood)"))
+            if (GUI.Button(miningCampButtonRect, $"Build Mining Camp ({miningCampWoodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -186,9 +203,10 @@ namespace AoE.RTS.Selection
             y += ButtonHeight + ButtonGap;
 
             Rect millButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canAffordMill = ResourceManager.Wood >= mill.woodCost;
+            int millWoodCost = Mathf.CeilToInt(mill.ScaledWoodCost);
+            bool canAffordMill = ResourceManager.Wood >= mill.ScaledWoodCost;
             GUI.enabled = canAffordMill && !inPlacementMode && !gameOver;
-            if (GUI.Button(millButtonRect, $"Build Mill ({mill.woodCost} Wood)"))
+            if (GUI.Button(millButtonRect, $"Build Mill ({millWoodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits

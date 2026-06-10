@@ -136,10 +136,10 @@ namespace AoE.RTS.AI
             if (data == null || cpuTownCenter == null)
                 return false;
 
-            if (!CpuAiCoordination.HasWoodReserveForBarracks(data.woodCost))
+            if (!CpuAiCoordination.HasWoodReserveForBarracks(data.ScaledWoodCost))
                 return false;
 
-            if (ResourceManager.GetWood(CpuAiCoordination.CpuTeam) < data.woodCost)
+            if (ResourceManager.GetWood(CpuAiCoordination.CpuTeam) < data.ScaledWoodCost)
                 return false;
 
             Unit builder = FindBuilderForHouse();
@@ -309,7 +309,7 @@ namespace AoE.RTS.AI
                 < PopulationManager.GetMaxPopulation(CpuAiCoordination.CpuTeam))
                 return false;
 
-            if (ResourceManager.GetWood(CpuAiCoordination.CpuTeam) < houseData.woodCost)
+            if (ResourceManager.GetWood(CpuAiCoordination.CpuTeam) < houseData.ScaledWoodCost)
                 return false;
 
             return !BuildingPlacementManager.HasActiveConstructionForTeam(CpuAiCoordination.CpuTeam)
@@ -325,7 +325,7 @@ namespace AoE.RTS.AI
                 < PopulationManager.GetMaxPopulation(CpuAiCoordination.CpuTeam))
                 return;
 
-            if (ResourceManager.GetWood(CpuAiCoordination.CpuTeam) < houseData.woodCost)
+            if (ResourceManager.GetWood(CpuAiCoordination.CpuTeam) < houseData.ScaledWoodCost)
                 return;
 
             if (BuildingPlacementManager.HasActiveConstructionForTeam(CpuAiCoordination.CpuTeam))

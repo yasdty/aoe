@@ -36,18 +36,20 @@ namespace AoE.RTS.Selection
             bool isProducing = queueCount > 0;
             bool queueFull = queueCount >= BarracksProductionManager.MaxQueueSize;
             bool populationFull = !PopulationManager.CanTrainUnit();
-            bool canAffordMilitiaWood = ResourceManager.Wood >= data.trainWoodCost;
-            bool canAffordSpearmanWood = ResourceManager.Wood >= data.secondaryTrainWoodCost;
-            bool canAffordSpearmanFood = ResourceManager.Food >= data.secondaryTrainFoodCost;
+            bool canAffordMilitiaFood = ResourceManager.Food >= data.ScaledTrainFoodCost;
+            bool canAffordMilitiaWood = data.ScaledTrainWoodCost <= 0f
+                || ResourceManager.Wood >= data.ScaledTrainWoodCost;
+            bool canAffordMilitia = canAffordMilitiaFood && canAffordMilitiaWood;
+            bool canAffordSpearmanWood = ResourceManager.Wood >= data.ScaledSecondaryTrainWoodCost;
+            bool canAffordSpearmanFood = ResourceManager.Food >= data.ScaledSecondaryTrainFoodCost;
             bool canAffordSpearman = canAffordSpearmanWood && canAffordSpearmanFood;
 
-            GUI.enabled = !queueFull && !populationFull && canAffordMilitiaWood && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button($"Create Militia (Q) ({data.trainWoodCost} Wood)"))
+            GUI.enabled = !queueFull && !populationFull && canAffordMilitia && !GameSessionManager.IsGameOver;
+            if (GUILayout.Button(BuildMilitiaLabel(data)))
                 CommandQueue.Enqueue(new TrainMilitiaCommand(barracks));
 
             GUI.enabled = !queueFull && !populationFull && canAffordSpearman && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button(
-                    $"Create Spearman (E) ({data.secondaryTrainWoodCost} Wood, {data.secondaryTrainFoodCost} Food)"))
+            if (GUILayout.Button(BuildSpearmanLabel(data)))
                 CommandQueue.Enqueue(new TrainSpearmanCommand(barracks));
             GUI.enabled = true;
 
@@ -58,7 +60,7 @@ namespace AoE.RTS.Selection
                 GUILayout.Label("Queue full");
             else if (populationFull)
                 GUILayout.Label("Population full");
-            else if (!canAffordMilitiaWood && !canAffordSpearman)
+            else if (!canAffordMilitia && !canAffordSpearman)
                 GUILayout.Label("Need more resources");
             else if (!canAffordSpearmanWood || !canAffordSpearmanFood)
             {
@@ -79,6 +81,23 @@ namespace AoE.RTS.Selection
             }
 
             GUILayout.EndArea();
+        }
+
+        static string BuildMilitiaLabel(PlacedBuildingData data)
+        {
+            if (data.ScaledTrainWoodCost > 0f)
+            {
+                return $"Create Militia (Q) ({Mathf.CeilToInt(data.ScaledTrainWoodCost)} Wood, "
+                    + $"{Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)";
+            }
+
+            return $"Create Militia (Q) ({Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)";
+        }
+
+        static string BuildSpearmanLabel(PlacedBuildingData data)
+        {
+            return $"Create Spearman (E) ({Mathf.CeilToInt(data.ScaledSecondaryTrainWoodCost)} Wood, "
+                + $"{Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost)} Food)";
         }
 
         void Update()

@@ -13,7 +13,7 @@
 
 | Phase | 名称 | 目的 | 状態 |
 |-------|------|------|------|
-| 42 | Age Up + **Gameplay Balance** | **Phase 42 先頭:** Balance Mode 実装 → 時代昇格（Dark → Feudal MVP）・建築アンロック | ⬜ 未着手 |
+| 42 | Age Up + **Gameplay Balance** | **Phase 42 先頭:** Balance Mode 実装 → 時代昇格（Dark → Feudal MVP）・建築アンロック | ✅ 完了 |
 | 43 | Blacksmith & Tech | 鍛冶屋 + 歩兵 UP 1 系統（例: Militia → MAA） | ⬜ 未着手 |
 | 44 | Defense | 柵 / 石壁 / 箭塔 MVP | ⬜ 未着手 |
 | 45 | Market | 資源交易 MVP | ⬜ 未着手 |
@@ -33,7 +33,7 @@
 
 ---
 
-## Phase 42 — Gameplay Balance + Age Up ⬜
+## Phase 42 — Gameplay Balance + Age Up ✅
 
 **実装順（確定）:**
 
@@ -57,7 +57,7 @@
 
 **実装:** Blacksmith 建築 / `TechnologyData` / 研究キュー（TC 生産キューと同型パターン推奨）
 
-**プロンプト:** [prompts/phase43-prompt.md](prompts/phase43-prompt.md)（未作成）
+**プロンプト:** [prompts/phase43-prompt.md](prompts/phase43-prompt.md)
 
 ---
 

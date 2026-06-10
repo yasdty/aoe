@@ -70,13 +70,13 @@ M3 ロードマップ [07_M3_MILITARY_PHASES.md](07_M3_MILITARY_PHASES.md) の *
 
 ## 4. 適用箇所（実装時チェックリスト）
 
-- [ ] `BuildingPlacementManager` — 配置開始時 Wood 消費・建築 `buildTime`
-- [ ] `ProductionManager` / `BarracksProductionManager` / `ArcheryRangeProductionManager` / `StableProductionManager` 等 — 訓練コスト・`trainTime`
-- [ ] `ResourceHudView` / 各 `*PanelView` — ボタン表示コスト
-- [ ] `PlacedBuildingDataResolver` — fallback 値（AoE2 基準）
-- [ ] `CpuMilitaryAiManager` / `CpuEconomyAiManager` — AI コスト閾値 **および** 建築遅延秒（`barracksBuildDelay` 等）— Debug 時 **×0.1**（§6-C）
-- [ ] `GameSessionManager` + `Phase10SceneBuilder` — シーン既定モード **Debug**（§6-B）
-- [ ] Editor — `AoE → Balance Mode → Debug / AoE2` メニュー（§6-F）
+- [x] `BuildingPlacementManager` — 配置開始時 Wood 消費・建築 `buildTime`
+- [x] `ProductionManager` / `BarracksProductionManager` / `ArcheryRangeProductionManager` / `StableProductionManager` 等 — 訓練コスト・`trainTime`
+- [x] `ResourceHudView` / 各 `*PanelView` — ボタン表示コスト
+- [x] `PlacedBuildingDataResolver` — fallback 値（AoE2 基準）
+- [x] `CpuMilitaryAiManager` / `CpuEconomyAiManager` — AI コスト閾値 **および** 建築遅延秒 — Debug 時 **×0.1**
+- [x] `GameSessionManager` + `Phase10SceneBuilder` — シーン既定モード **Debug**
+- [x] Editor — `AoE → Balance Mode → Debug / AoE2` メニュー
 
 ---
 

@@ -41,6 +41,8 @@ namespace AoE.RTS.EditorTools
         const string CavalryDataPath = GameAssetPaths.CavalryData;
         const string ScoutDataPath = GameAssetPaths.ScoutData;
         const string EnemyDummyDataPath = GameAssetPaths.EnemyDummyData;
+        const string FeudalAgeDataPath = GameAssetPaths.FeudalAgeData;
+        const string DefaultBlacksmithDataPath = GameAssetPaths.DefaultBlacksmithData;
 
         public static bool EnsureEditModeForSceneSetup()
         {
@@ -49,6 +51,35 @@ namespace AoE.RTS.EditorTools
 
             Debug.LogWarning("Stop Play mode before running AoE scene setup menus.");
             return false;
+        }
+
+        [MenuItem("AoE/Sync AoE2 Game Data", true)]
+        static bool ValidateSyncAoe2GameData() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Sync AoE2 Game Data")]
+        public static void SyncAoe2GameData()
+        {
+            if (!EnsureEditModeForSceneSetup())
+                return;
+
+            UnitData villagerData = EnsureDefaultUnitData();
+            UnitData militiaData = EnsureMilitiaData();
+            UnitData spearmanData = EnsureSpearmanData();
+            UnitData archerData = EnsureArcherData();
+            UnitData cavalryData = EnsureCavalryData();
+            UnitData scoutData = EnsureScoutData();
+            EnsureTownCenterData(villagerData);
+            EnsureHouseData();
+            EnsureFarmData();
+            EnsureLumberCampData();
+            EnsureMiningCampData();
+            EnsureMillData();
+            EnsureBarracksData(militiaData, spearmanData);
+            EnsureArcheryRangeData(archerData);
+            EnsureStableData(cavalryData, scoutData);
+            EnsureBlacksmithData();
+            EnsureFeudalAgeData();
+            Debug.Log("Synced AoE2 game data assets.");
         }
 
         [MenuItem("AoE/Fix Phase1 Input References", true)]
@@ -208,9 +239,9 @@ namespace AoE.RTS.EditorTools
                     EditorUtility.SetDirty(existing);
                 }
 
-                if (existing.villagerTrainTime != 3f)
+                if (existing.villagerTrainTime != 25f)
                 {
-                    existing.villagerTrainTime = 3f;
+                    existing.villagerTrainTime = 25f;
                     EditorUtility.SetDirty(existing);
                 }
 
@@ -232,7 +263,7 @@ namespace AoE.RTS.EditorTools
 
             BuildingData data = ScriptableObject.CreateInstance<BuildingData>();
             data.displayName = "Town Center";
-            data.villagerTrainTime = 3f;
+            data.villagerTrainTime = 25f;
             data.villagerFoodCost = 50f;
             data.villagerUnitData = villagerData;
             data.spawnForwardOffset = 8f;
@@ -254,9 +285,15 @@ namespace AoE.RTS.EditorTools
             if (existing != null)
             {
                 bool dirty = false;
-                if (existing.buildTime != 3f)
+                if (existing.woodCost != 30f)
                 {
-                    existing.buildTime = 3f;
+                    existing.woodCost = 30f;
+                    dirty = true;
+                }
+
+                if (existing.buildTime != 25f)
+                {
+                    existing.buildTime = 25f;
                     dirty = true;
                 }
 
@@ -290,8 +327,8 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
             data.kind = PlacedBuildingKind.House;
             data.displayName = "House";
-            data.woodCost = 25f;
-            data.buildTime = 3f;
+            data.woodCost = 30f;
+            data.buildTime = 25f;
             data.housingProvided = 5;
             data.maxHp = 150f;
             AssetDatabase.CreateAsset(data, DefaultHouseDataPath);
@@ -322,9 +359,9 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
-                if (existing.buildTime != 8f)
+                if (existing.buildTime != 25f)
                 {
-                    existing.buildTime = 8f;
+                    existing.buildTime = 25f;
                     dirty = true;
                 }
 
@@ -359,7 +396,7 @@ namespace AoE.RTS.EditorTools
             data.kind = PlacedBuildingKind.Farm;
             data.displayName = "Farm";
             data.woodCost = 60f;
-            data.buildTime = 8f;
+            data.buildTime = 25f;
             data.housingProvided = 0;
             data.foodCapacity = 250f;
             data.maxHp = 100f;
@@ -392,9 +429,9 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
-                if (existing.buildTime != 6f)
+                if (existing.buildTime != 25f)
                 {
-                    existing.buildTime = 6f;
+                    existing.buildTime = 25f;
                     dirty = true;
                 }
 
@@ -423,7 +460,7 @@ namespace AoE.RTS.EditorTools
             data.kind = PlacedBuildingKind.LumberCamp;
             data.displayName = "Lumber Camp";
             data.woodCost = 100f;
-            data.buildTime = 6f;
+            data.buildTime = 25f;
             data.housingProvided = 0;
             data.maxHp = 400f;
             data.defaultColor = new Color(0.55f, 0.38f, 0.22f);
@@ -455,9 +492,9 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
-                if (existing.buildTime != 6f)
+                if (existing.buildTime != 25f)
                 {
-                    existing.buildTime = 6f;
+                    existing.buildTime = 25f;
                     dirty = true;
                 }
 
@@ -486,7 +523,7 @@ namespace AoE.RTS.EditorTools
             data.kind = PlacedBuildingKind.MiningCamp;
             data.displayName = "Mining Camp";
             data.woodCost = 100f;
-            data.buildTime = 6f;
+            data.buildTime = 25f;
             data.housingProvided = 0;
             data.maxHp = 400f;
             data.defaultColor = new Color(0.45f, 0.48f, 0.52f);
@@ -518,9 +555,9 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
-                if (existing.buildTime != 6f)
+                if (existing.buildTime != 25f)
                 {
-                    existing.buildTime = 6f;
+                    existing.buildTime = 25f;
                     dirty = true;
                 }
 
@@ -549,7 +586,7 @@ namespace AoE.RTS.EditorTools
             data.kind = PlacedBuildingKind.Mill;
             data.displayName = "Mill";
             data.woodCost = 100f;
-            data.buildTime = 6f;
+            data.buildTime = 25f;
             data.housingProvided = 0;
             data.maxHp = 400f;
             data.defaultColor = new Color(0.62f, 0.52f, 0.38f);
@@ -646,9 +683,15 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
-                if (existing.secondaryTrainTime != 4f) { existing.secondaryTrainTime = 4f; dirty = true; }
-                if (existing.secondaryTrainWoodCost != 25f) { existing.secondaryTrainWoodCost = 25f; dirty = true; }
+                if (existing.secondaryTrainTime != 22f) { existing.secondaryTrainTime = 22f; dirty = true; }
+                if (existing.secondaryTrainWoodCost != 22f) { existing.secondaryTrainWoodCost = 22f; dirty = true; }
                 if (existing.secondaryTrainFoodCost != 35f) { existing.secondaryTrainFoodCost = 35f; dirty = true; }
+                if (existing.woodCost != 175f) { existing.woodCost = 175f; dirty = true; }
+                if (existing.buildTime != 50f) { existing.buildTime = 50f; dirty = true; }
+                if (existing.trainTime != 21f) { existing.trainTime = 21f; dirty = true; }
+                if (existing.trainWoodCost != 0f) { existing.trainWoodCost = 0f; dirty = true; }
+                if (existing.trainFoodCost != 60f) { existing.trainFoodCost = 60f; dirty = true; }
+                if (existing.requiredAge != GameAge.Dark) { existing.requiredAge = GameAge.Dark; dirty = true; }
 
                 if (existing.maxHp != 200f)
                 {
@@ -668,18 +711,19 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
             data.kind = PlacedBuildingKind.Barracks;
             data.displayName = "Barracks";
-            data.woodCost = 50f;
-            data.buildTime = 5f;
+            data.woodCost = 175f;
+            data.buildTime = 50f;
             data.footprintWidth = 6f;
             data.footprintDepth = 6f;
             data.buildingHeight = 3.5f;
             data.housingProvided = 0;
             data.trainUnitData = militiaData;
-            data.trainTime = 3f;
-            data.trainWoodCost = 20f;
+            data.trainTime = 21f;
+            data.trainWoodCost = 0f;
+            data.trainFoodCost = 60f;
             data.secondaryTrainUnitData = spearmanData;
-            data.secondaryTrainTime = 4f;
-            data.secondaryTrainWoodCost = 25f;
+            data.secondaryTrainTime = 22f;
+            data.secondaryTrainWoodCost = 22f;
             data.secondaryTrainFoodCost = 35f;
             data.spawnClearance = 4f;
             data.defaultColor = new Color(0.55f, 0.35f, 0.32f);
@@ -769,11 +813,13 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
-                if (existing.woodCost != 150f) { existing.woodCost = 150f; dirty = true; }
-                if (existing.buildTime != 40f) { existing.buildTime = 40f; dirty = true; }
+                if (existing.woodCost != 175f) { existing.woodCost = 175f; dirty = true; }
+                if (existing.buildTime != 50f) { existing.buildTime = 50f; dirty = true; }
                 if (existing.maxHp != 300f) { existing.maxHp = 300f; dirty = true; }
-                if (existing.trainWoodCost != 25f) { existing.trainWoodCost = 25f; dirty = true; }
-                if (existing.trainFoodCost != 25f) { existing.trainFoodCost = 25f; dirty = true; }
+                if (existing.trainTime != 35f) { existing.trainTime = 35f; dirty = true; }
+                if (existing.trainWoodCost != 35f) { existing.trainWoodCost = 35f; dirty = true; }
+                if (existing.trainFoodCost != 35f) { existing.trainFoodCost = 35f; dirty = true; }
+                if (existing.requiredAge != GameAge.Feudal) { existing.requiredAge = GameAge.Feudal; dirty = true; }
 
                 if (dirty)
                 {
@@ -787,16 +833,17 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
             data.kind = PlacedBuildingKind.ArcheryRange;
             data.displayName = "Archery Range";
-            data.woodCost = 150f;
-            data.buildTime = 40f;
+            data.woodCost = 175f;
+            data.buildTime = 50f;
             data.footprintWidth = 6f;
             data.footprintDepth = 6f;
             data.buildingHeight = 3.5f;
             data.housingProvided = 0;
+            data.requiredAge = GameAge.Feudal;
             data.trainUnitData = archerData;
-            data.trainTime = 3f;
-            data.trainWoodCost = 25f;
-            data.trainFoodCost = 25f;
+            data.trainTime = 35f;
+            data.trainWoodCost = 35f;
+            data.trainFoodCost = 35f;
             data.spawnClearance = 4f;
             data.defaultColor = new Color(0.45f, 0.55f, 0.38f);
             data.selectedColor = new Color(0.75f, 0.9f, 0.45f);
@@ -891,15 +938,16 @@ namespace AoE.RTS.EditorTools
                     dirty = true;
                 }
 
-                if (existing.woodCost != 150f) { existing.woodCost = 150f; dirty = true; }
-                if (existing.buildTime != 40f) { existing.buildTime = 40f; dirty = true; }
+                if (existing.woodCost != 175f) { existing.woodCost = 175f; dirty = true; }
+                if (existing.buildTime != 50f) { existing.buildTime = 50f; dirty = true; }
                 if (existing.maxHp != 300f) { existing.maxHp = 300f; dirty = true; }
-                if (existing.trainTime != 5f) { existing.trainTime = 5f; dirty = true; }
-                if (existing.trainWoodCost != 20f) { existing.trainWoodCost = 20f; dirty = true; }
+                if (existing.trainTime != 30f) { existing.trainTime = 30f; dirty = true; }
+                if (existing.trainWoodCost != 75f) { existing.trainWoodCost = 75f; dirty = true; }
                 if (existing.trainFoodCost != 60f) { existing.trainFoodCost = 60f; dirty = true; }
-                if (existing.secondaryTrainTime != 6f) { existing.secondaryTrainTime = 6f; dirty = true; }
+                if (existing.secondaryTrainTime != 30f) { existing.secondaryTrainTime = 30f; dirty = true; }
                 if (existing.secondaryTrainWoodCost != 0f) { existing.secondaryTrainWoodCost = 0f; dirty = true; }
                 if (existing.secondaryTrainFoodCost != 80f) { existing.secondaryTrainFoodCost = 80f; dirty = true; }
+                if (existing.requiredAge != GameAge.Feudal) { existing.requiredAge = GameAge.Feudal; dirty = true; }
 
                 if (dirty)
                 {
@@ -913,18 +961,19 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
             data.kind = PlacedBuildingKind.Stable;
             data.displayName = "Stable";
-            data.woodCost = 150f;
-            data.buildTime = 40f;
+            data.woodCost = 175f;
+            data.buildTime = 50f;
             data.footprintWidth = 6f;
             data.footprintDepth = 6f;
             data.buildingHeight = 3.5f;
             data.housingProvided = 0;
+            data.requiredAge = GameAge.Feudal;
             data.trainUnitData = cavalryData;
-            data.trainTime = 5f;
-            data.trainWoodCost = 20f;
+            data.trainTime = 30f;
+            data.trainWoodCost = 75f;
             data.trainFoodCost = 60f;
             data.secondaryTrainUnitData = scoutData;
-            data.secondaryTrainTime = 6f;
+            data.secondaryTrainTime = 30f;
             data.secondaryTrainWoodCost = 0f;
             data.secondaryTrainFoodCost = 80f;
             data.spawnClearance = 4f;
@@ -932,6 +981,84 @@ namespace AoE.RTS.EditorTools
             data.selectedColor = new Color(0.9f, 0.75f, 0.35f);
             data.maxHp = 300f;
             AssetDatabase.CreateAsset(data, DefaultStableDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static AgeData EnsureFeudalAgeData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/AgeData"))
+                AssetDatabase.CreateFolder("Assets/Data", "AgeData");
+
+            AgeData existing = AssetDatabase.LoadAssetAtPath<AgeData>(FeudalAgeDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.targetAge != GameAge.Feudal) { existing.targetAge = GameAge.Feudal; dirty = true; }
+                if (existing.displayName != "Feudal Age") { existing.displayName = "Feudal Age"; dirty = true; }
+                if (existing.upgradeFoodCost != 500f) { existing.upgradeFoodCost = 500f; dirty = true; }
+                if (existing.upgradeGoldCost != 300f) { existing.upgradeGoldCost = 300f; dirty = true; }
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            AgeData data = ScriptableObject.CreateInstance<AgeData>();
+            data.targetAge = GameAge.Feudal;
+            data.displayName = "Feudal Age";
+            data.upgradeFoodCost = 500f;
+            data.upgradeGoldCost = 300f;
+            AssetDatabase.CreateAsset(data, FeudalAgeDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureBlacksmithData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultBlacksmithDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.Blacksmith) { existing.kind = PlacedBuildingKind.Blacksmith; dirty = true; }
+                if (existing.displayName != "Blacksmith") { existing.displayName = "Blacksmith"; dirty = true; }
+                if (existing.woodCost != 150f) { existing.woodCost = 150f; dirty = true; }
+                if (existing.buildTime != 40f) { existing.buildTime = 40f; dirty = true; }
+                if (existing.requiredAge != GameAge.Feudal) { existing.requiredAge = GameAge.Feudal; dirty = true; }
+                if (existing.maxHp != 300f) { existing.maxHp = 300f; dirty = true; }
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.Blacksmith;
+            data.displayName = "Blacksmith";
+            data.woodCost = 150f;
+            data.buildTime = 40f;
+            data.requiredAge = GameAge.Feudal;
+            data.footprintWidth = 6f;
+            data.footprintDepth = 6f;
+            data.buildingHeight = 3.5f;
+            data.housingProvided = 0;
+            data.maxHp = 300f;
+            data.defaultColor = new Color(0.5f, 0.5f, 0.55f);
+            data.selectedColor = new Color(0.85f, 0.85f, 0.95f);
+            AssetDatabase.CreateAsset(data, DefaultBlacksmithDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AoE.RTS.AI;
 using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -68,6 +69,9 @@ namespace AoE.RTS.Combat
         static bool CanAggro(Unit unit)
         {
             if (unit == null || !unit.IsAlive || !unit.CanAttack)
+                return false;
+
+            if (unit.Team == UnitTeam.Enemy && CpuMilitaryAiManager.IsCpuOffensiveActionsSuppressed)
                 return false;
 
             bool attackMoving = AttackMoveManager.IsUnitAttackMoving(unit);

@@ -100,8 +100,8 @@ namespace AoE.RTS.Buildings
             return ProductionManager.TryQueueProduction(
                 this,
                 data.villagerUnitData,
-                data.villagerTrainTime,
-                data.villagerFoodCost);
+                data.ScaledVillagerTrainTime,
+                data.ScaledVillagerFoodCost);
         }
 
         int villagerSpawnIndex;

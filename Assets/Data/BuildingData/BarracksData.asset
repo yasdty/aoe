@@ -14,19 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Buildings.PlacedBuildingData
   kind: 1
   displayName: Barracks
-  woodCost: 50
-  buildTime: 5
+  requiredAge: 0
+  woodCost: 175
+  buildTime: 50
   footprintWidth: 6
   footprintDepth: 6
   buildingHeight: 3.5
   housingProvided: 0
   trainUnitData: {fileID: 11400000, guid: e378a51c4fe34f946836fa556efaeb16, type: 2}
-  trainTime: 3
-  trainWoodCost: 20
-  trainFoodCost: 0
+  trainTime: 21
+  trainWoodCost: 0
+  trainFoodCost: 60
   secondaryTrainUnitData: {fileID: 11400000, guid: 9c30feea5edcf63419d213fdaa9a7e74, type: 2}
-  secondaryTrainTime: 4
-  secondaryTrainWoodCost: 25
+  secondaryTrainTime: 22
+  secondaryTrainWoodCost: 22
   secondaryTrainFoodCost: 35
   spawnClearance: 1.5
   defaultColor: {r: 0.55, g: 0.35, b: 0.32, a: 1}
@@ -35,5 +36,6 @@ MonoBehaviour:
   constructionColor: {r: 0.42, g: 0.4, b: 0.38, a: 1}
   selectedColor: {r: 0.95, g: 0.55, b: 0.35, a: 1}
   maxHp: 200
-  armor: 0
+  meleeArmor: 0
+  pierceArmor: 0
   foodCapacity: 0

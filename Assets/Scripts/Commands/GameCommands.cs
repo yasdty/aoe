@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Combat;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Selection;
 using AoE.RTS.Units;
@@ -549,6 +550,26 @@ namespace AoE.RTS.Commands
                 return;
 
             stable.TryQueueScoutProduction();
+        }
+    }
+
+    public sealed class AgeUpCommand : IGameCommand
+    {
+        readonly TownCenter townCenter;
+
+        public string DebugName => "AgeUp";
+
+        public AgeUpCommand(TownCenter townCenter)
+        {
+            this.townCenter = townCenter;
+        }
+
+        public void Execute()
+        {
+            if (townCenter == null)
+                return;
+
+            GameSessionManager.TryAgeUpToFeudal(townCenter);
         }
     }
 

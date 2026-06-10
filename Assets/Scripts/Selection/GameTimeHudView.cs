@@ -1,5 +1,6 @@
 using AoE.RTS.AI;
 using AoE.RTS.Buildings;
+using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -15,9 +16,9 @@ namespace AoE.RTS.Selection
 
         void OnGUI()
         {
-            float lineCount = 1f;
+            float lineCount = 2f;
             if (CpuMilitaryAiManager.Instance != null)
-                lineCount += 2f;
+                lineCount += 3f;
 
             float panelHeight = Padding * 2f + LineHeight * lineCount;
             float x = Screen.width * 0.5f - PanelWidth * 0.5f;
@@ -31,7 +32,19 @@ namespace AoE.RTS.Selection
             if (military == null)
                 return;
 
-            DrawLine(x, ref y, $"Next wave: {FormatTime(military.WaveTimerRemaining)}");
+            if (military.IsAttackGraceActive)
+            {
+                DrawLine(x, ref y, $"CPU peace: {FormatTime(military.WaveTimerRemaining)}");
+            }
+            else
+            {
+                DrawLine(x, ref y, $"Next wave: {FormatTime(military.WaveTimerRemaining)}");
+            }
+
+            string paceLabel = GameSessionManager.CpuAttackPace == CpuAttackPace.Relaxed
+                ? "Relaxed"
+                : "Aggressive";
+            DrawLine(x, ref y, $"CPU pace: {paceLabel}");
 
             if (military.HasCpuBarracks)
             {

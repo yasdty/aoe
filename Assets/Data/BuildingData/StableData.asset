@@ -14,18 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Buildings.PlacedBuildingData
   kind: 7
   displayName: Stable
-  woodCost: 150
-  buildTime: 40
+  requiredAge: 1
+  woodCost: 175
+  buildTime: 50
   footprintWidth: 6
   footprintDepth: 6
   buildingHeight: 3.5
   housingProvided: 0
   trainUnitData: {fileID: 11400000, guid: 4fcf10d0695e1574684139d844f8a225, type: 2}
-  trainTime: 5
-  trainWoodCost: 20
+  trainTime: 30
+  trainWoodCost: 75
   trainFoodCost: 60
   secondaryTrainUnitData: {fileID: 11400000, guid: c75886ca384069148ac2bc26edb99255, type: 2}
-  secondaryTrainTime: 6
+  secondaryTrainTime: 30
   secondaryTrainWoodCost: 0
   secondaryTrainFoodCost: 80
   spawnClearance: 4
@@ -35,5 +36,6 @@ MonoBehaviour:
   constructionColor: {r: 0.42, g: 0.4, b: 0.38, a: 1}
   selectedColor: {r: 0.9, g: 0.75, b: 0.35, a: 1}
   maxHp: 300
-  armor: 0
+  meleeArmor: 0
+  pierceArmor: 0
   foodCapacity: 0

@@ -212,6 +212,8 @@ namespace AoE.RTS.EditorTools
             Phase1SceneBuilder.EnsureLumberCampData();
             Phase1SceneBuilder.EnsureMiningCampData();
             Phase1SceneBuilder.EnsureMillData();
+            Phase1SceneBuilder.EnsureBlacksmithData();
+            Phase1SceneBuilder.EnsureFeudalAgeData();
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
             if (inputActions == null)
             {
@@ -567,6 +569,7 @@ namespace AoE.RTS.EditorTools
 
             UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
             ApplyClassicStartingResourcesToScene();
+            ApplyPhase42SceneWiring();
             EnsureStartingVillagerCount(villagerData, UnitTeam.Player, PlayerVillagerPositions);
             EnsureStartingVillagerCount(villagerData, UnitTeam.Enemy, CpuVillagerPositions);
 
@@ -599,10 +602,37 @@ namespace AoE.RTS.EditorTools
             EditorUtility.SetDirty(resourceManager);
         }
 
+        static void ApplyPhase42SceneWiring()
+        {
+            AgeData feudalAgeData = Phase1SceneBuilder.EnsureFeudalAgeData();
+
+            GameSessionManager sessionManager = Object.FindAnyObjectByType<GameSessionManager>();
+            if (sessionManager != null)
+            {
+                SerializedObject serializedSession = new SerializedObject(sessionManager);
+                serializedSession.FindProperty("balanceMode").enumValueIndex = (int)GameplayBalanceMode.Debug;
+                serializedSession.FindProperty("cpuAttackPace").enumValueIndex = (int)CpuAttackPace.Relaxed;
+                serializedSession.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
+                serializedSession.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(sessionManager);
+            }
+
+            ProductionPanelView productionPanel = Object.FindAnyObjectByType<ProductionPanelView>();
+            if (productionPanel != null)
+            {
+                SerializedObject serializedPanel = new SerializedObject(productionPanel);
+                serializedPanel.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
+                serializedPanel.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(productionPanel);
+            }
+        }
+
         static void EnsureStartingVillagerCount(UnitData villagerData, UnitTeam team, Vector3[] spawnPositions)
         {
-            Unit[] units = Object.FindObjectsByType<Unit>(FindObjectsSortMode.None);
-            int villagerCount = 0;
+            RemoveTeamUnitsWithoutData(team);
+
+            Unit[] units = Object.FindObjectsByType<Unit>();
+            var villagers = new System.Collections.Generic.List<Unit>(spawnPositions.Length);
             for (int i = 0; i < units.Length; i++)
             {
                 Unit unit = units[i];
@@ -612,9 +642,13 @@ namespace AoE.RTS.EditorTools
                 if (unit.Data.displayName != "Villager")
                     continue;
 
-                villagerCount++;
+                villagers.Add(unit);
             }
 
+            for (int i = villagers.Count - 1; i >= spawnPositions.Length; i--)
+                Object.DestroyImmediate(villagers[i].gameObject);
+
+            int villagerCount = Mathf.Min(villagers.Count, spawnPositions.Length);
             for (int i = villagerCount; i < spawnPositions.Length; i++)
             {
                 GameObject unitObject = Phase1SceneBuilder.CreateUnit(
@@ -624,6 +658,19 @@ namespace AoE.RTS.EditorTools
                 Unit unit = unitObject.GetComponent<Unit>();
                 if (unit != null)
                     unit.SetTeam(team);
+            }
+        }
+
+        static void RemoveTeamUnitsWithoutData(UnitTeam team)
+        {
+            Unit[] units = Object.FindObjectsByType<Unit>();
+            for (int i = 0; i < units.Length; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || unit.Team != team || unit.Data != null)
+                    continue;
+
+                Object.DestroyImmediate(unit.gameObject);
             }
         }
 
@@ -702,7 +749,13 @@ namespace AoE.RTS.EditorTools
             UnitData militiaData)
         {
             GameObject systems = new GameObject("Systems");
-            systems.AddComponent<GameSessionManager>();
+            AgeData feudalAgeData = Phase1SceneBuilder.EnsureFeudalAgeData();
+            GameSessionManager sessionManager = systems.AddComponent<GameSessionManager>();
+            SerializedObject serializedSession = new SerializedObject(sessionManager);
+            serializedSession.FindProperty("balanceMode").enumValueIndex = (int)GameplayBalanceMode.Debug;
+            serializedSession.FindProperty("cpuAttackPace").enumValueIndex = (int)CpuAttackPace.Relaxed;
+            serializedSession.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
+            serializedSession.ApplyModifiedPropertiesWithoutUndo();
 
             GameObject simulationTickObject = new GameObject("SimulationTick");
             simulationTickObject.transform.SetParent(systems.transform);
@@ -858,6 +911,7 @@ namespace AoE.RTS.EditorTools
             SerializedObject serializedProductionPanel = new SerializedObject(productionPanel);
             serializedProductionPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
             serializedProductionPanel.FindProperty("input").objectReferenceValue = inputReader;
+            serializedProductionPanel.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
             serializedProductionPanel.ApplyModifiedPropertiesWithoutUndo();
 
             BarracksPanelView barracksPanel = selectionManagerObject.GetComponent<BarracksPanelView>();

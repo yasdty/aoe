@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 41 ✅（M3 Formation — **M3 Military 完了**）。**次: Phase 42 Age Up + Gameplay Balance。**
+> **最終更新:** Phase 42 ✅（Balance + Age Up + CPU Relaxed ペース）。**次: Phase 43 Blacksmith & Tech。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -76,7 +76,8 @@
 | 39 | Counter System | `Phase10.unity` | ✅ 完了（M3） |
 | 40 | Stance & Attack-Move | `Phase10.unity` | ✅ 完了（M3） |
 | 41 | Formation | `Phase10.unity` | ✅ 完了（M3） |
-| 42 | Age Up | `Phase10.unity` | ⬜ 未着手（M4） |
+| 42 | Age Up + Gameplay Balance | `Phase10.unity` | ✅ 完了（M4） |
+| 43 | Blacksmith & Tech | `Phase10.unity` | ⬜ 未着手（M4） |
 | 43 | Blacksmith & Tech | `Phase10.unity` | ⬜ 未着手（M4） |
 | 44 | Defense | `Phase10.unity` | ⬜ 未着手（M4） |
 | 45 | Market | `Phase10.unity` | ⬜ 未着手（M4） |
@@ -108,7 +109,7 @@
 
 **Milestone 3 Military:** ✅ 完了（Phase 36〜41）
 
-**Milestone 4 AoE Gameplay:** ⬜ 未着手（Phase 42〜48）
+**Milestone 4 AoE Gameplay:** 🔄 進行中（Phase 42 ✅ — Phase 43 次）
 
 **Milestone 5 Visual / UI:** ⬜ 未着手（Phase 49〜53）
 
@@ -251,9 +252,9 @@
 | CPU House 建築 | ✅ | Wood 余裕・Pop 逼迫時 |
 | CPU Villager 増産 | ✅ | 目標 6 体 |
 | CPU 軍事 AI | ✅ | `CpuMilitaryAiManager` |
-| CPU Barracks 建築 | ✅ | 開始 60 秒後 + Wood 50 |
-| CPU Militia 生産 | ✅ | 目標 8 体 |
-| CPU 攻撃波 | ✅ | 30 秒毎、全 Militia に攻撃命令 |
+| CPU Barracks 建築 | ✅ | Relaxed: 90秒後 / Aggressive: Debug 倍率 |
+| CPU Militia 生産 | ✅ | 目標 8 体（拠点待機。攻撃波は兵種ごと最大2体） |
+| CPU 攻撃波 | ✅ | Relaxed: **2分猶予** → **5分毎**、各兵種最大 **2体** / `AoE → CPU Attack Pace` |
 | 難易度・文明差 | ❌ | |
 | ビルドオーダー最適化 | ❌ | ルールベース MVP |
 | スカウト・ラッシュ判断 | ❌ | |
@@ -1030,7 +1031,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・7 建築・Militia・1 CPU — **Dark Age 垂直スライス**（全体 ~15%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 42 Age Up + Gameplay Balance** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
+| 次に何を作るべき？ | **Phase 43 Blacksmith & Tech** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

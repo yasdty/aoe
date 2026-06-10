@@ -37,11 +37,13 @@ namespace AoE.RTS.Selection
             bool isProducing = queueCount > 0;
             bool queueFull = queueCount >= ArcheryRangeProductionManager.MaxQueueSize;
             bool populationFull = !PopulationManager.CanTrainUnit();
-            bool canAffordWood = ResourceManager.Wood >= data.trainWoodCost;
-            bool canAffordFood = ResourceManager.Food >= data.trainFoodCost;
+            bool canAffordWood = ResourceManager.Wood >= data.ScaledTrainWoodCost;
+            bool canAffordFood = ResourceManager.Food >= data.ScaledTrainFoodCost;
             bool canAfford = canAffordWood && canAffordFood;
             GUI.enabled = !queueFull && !populationFull && canAfford && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button($"Create Archer (Q) ({data.trainWoodCost} Wood, {data.trainFoodCost} Food)"))
+            if (GUILayout.Button(
+                    $"Create Archer (Q) ({Mathf.CeilToInt(data.ScaledTrainWoodCost)} Wood, "
+                    + $"{Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)"))
                 CommandQueue.Enqueue(new TrainArcherCommand(archeryRange));
             GUI.enabled = true;
 

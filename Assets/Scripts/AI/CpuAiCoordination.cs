@@ -6,7 +6,6 @@ namespace AoE.RTS.AI
 {
     public static class CpuAiCoordination
     {
-        public const float BarracksWoodCost = 50f;
         public const float BarracksBuildDelaySeconds = 60f;
         public const UnitTeam CpuTeam = UnitTeam.Enemy;
 
@@ -15,12 +14,15 @@ namespace AoE.RTS.AI
             return !BarracksProductionManager.HasBarracksForTeam(CpuTeam);
         }
 
-        public static bool HasWoodReserveForBarracks(float extraCost = 0f)
+        public static bool HasWoodReserveForBarracks(float scaledExtraCost = 0f)
         {
             if (BarracksProductionManager.HasBarracksForTeam(CpuTeam))
                 return true;
 
-            return ResourceManager.GetWood(CpuTeam) >= BarracksWoodCost + extraCost;
+            PlacedBuildingData barracksData = null;
+            barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
+            float scaledBarracksCost = barracksData != null ? barracksData.ScaledWoodCost : 0f;
+            return ResourceManager.GetWood(CpuTeam) >= scaledBarracksCost + scaledExtraCost;
         }
 
         public static bool HasActiveCpuConstruction()

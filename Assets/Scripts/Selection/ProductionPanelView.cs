@@ -12,9 +12,10 @@ namespace AoE.RTS.Selection
     {
         [SerializeField] SelectionManager selectionManager;
         [SerializeField] RTSInputReader input;
+        [SerializeField] AgeData feudalAgeData;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 104f;
+        const float PanelHeight = 156f;
         const float Margin = 12f;
 
         void OnGUI()
@@ -31,17 +32,20 @@ namespace AoE.RTS.Selection
 
             GUILayout.BeginArea(panelRect);
             GUILayout.Label("Town Center");
+            GUILayout.Label($"Age: {FormatAge(GameSessionManager.GetAge(townCenter.Team))}");
 
             int queueCount = ProductionManager.GetQueueCount(townCenter);
             bool isProducing = queueCount > 0;
             bool queueFull = queueCount >= ProductionManager.MaxQueueSize;
             bool populationFull = !PopulationManager.CanTrainUnit();
-            float foodCost = townCenter.Data != null ? townCenter.Data.villagerFoodCost : 0f;
+            float foodCost = townCenter.Data != null ? townCenter.Data.ScaledVillagerFoodCost : 0f;
             bool canAffordFood = ResourceManager.GetFood(UnitTeam.Player) >= foodCost;
             GUI.enabled = !queueFull && !populationFull && canAffordFood && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button($"Create Villager (Q) ({foodCost} Food)"))
+            if (GUILayout.Button($"Create Villager (Q) ({Mathf.CeilToInt(foodCost)} Food)"))
                 CommandQueue.Enqueue(new TrainVillagerCommand(townCenter));
             GUI.enabled = true;
+
+            DrawAgeUpButton(townCenter);
 
             if (queueCount > 0)
                 GUILayout.Label($"Queue: {queueCount}");
@@ -64,6 +68,36 @@ namespace AoE.RTS.Selection
             }
 
             GUILayout.EndArea();
+        }
+
+        void DrawAgeUpButton(TownCenter townCenter)
+        {
+            if (townCenter.Team != UnitTeam.Player)
+                return;
+
+            if (GameSessionManager.GetAge(townCenter.Team) >= GameAge.Feudal)
+                return;
+
+            AgeData ageData = feudalAgeData;
+            if (ageData == null)
+                return;
+
+            float foodCost = GameplayBalance.ScaleResourceCost(ageData.upgradeFoodCost);
+            float goldCost = GameplayBalance.ScaleResourceCost(ageData.upgradeGoldCost);
+            bool canAfford = ResourceManager.Food >= foodCost && ResourceManager.Gold >= goldCost;
+            GUI.enabled = canAfford && !GameSessionManager.IsGameOver;
+            if (GUILayout.Button(
+                    $"Age Up to Feudal ({Mathf.CeilToInt(foodCost)} Food, {Mathf.CeilToInt(goldCost)} Gold)"))
+                CommandQueue.Enqueue(new AgeUpCommand(townCenter));
+            GUI.enabled = true;
+
+            if (!canAfford)
+                GUILayout.Label("Need Food + Gold for Feudal Age");
+        }
+
+        static string FormatAge(GameAge age)
+        {
+            return age == GameAge.Feudal ? "Feudal Age" : "Dark Age";
         }
 
         void Update()

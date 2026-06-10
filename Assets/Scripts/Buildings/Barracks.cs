@@ -100,8 +100,9 @@ namespace AoE.RTS.Buildings
             return BarracksProductionManager.TryQueueProduction(
                 this,
                 data.trainUnitData,
-                data.trainTime,
-                data.trainWoodCost);
+                data.ScaledTrainTime,
+                data.ScaledTrainWoodCost,
+                data.ScaledTrainFoodCost);
         }
 
         public bool TryQueueSpearmanProduction()
@@ -112,9 +113,9 @@ namespace AoE.RTS.Buildings
             return BarracksProductionManager.TryQueueProduction(
                 this,
                 data.secondaryTrainUnitData,
-                data.secondaryTrainTime,
-                data.secondaryTrainWoodCost,
-                data.secondaryTrainFoodCost);
+                data.ScaledSecondaryTrainTime,
+                data.ScaledSecondaryTrainWoodCost,
+                data.ScaledSecondaryTrainFoodCost);
         }
 
         public Vector3 GetUnitSpawnPosition()

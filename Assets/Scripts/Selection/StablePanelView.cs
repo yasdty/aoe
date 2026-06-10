@@ -36,20 +36,22 @@ namespace AoE.RTS.Selection
             bool isProducing = queueCount > 0;
             bool queueFull = queueCount >= StableProductionManager.MaxQueueSize;
             bool populationFull = !PopulationManager.CanTrainUnit();
-            bool canAffordCavalryWood = ResourceManager.Wood >= data.trainWoodCost;
-            bool canAffordCavalryFood = ResourceManager.Food >= data.trainFoodCost;
+            bool canAffordCavalryWood = ResourceManager.Wood >= data.ScaledTrainWoodCost;
+            bool canAffordCavalryFood = ResourceManager.Food >= data.ScaledTrainFoodCost;
             bool canAffordCavalry = canAffordCavalryWood && canAffordCavalryFood;
-            bool canAffordScoutWood = ResourceManager.Wood >= data.secondaryTrainWoodCost;
-            bool canAffordScoutFood = ResourceManager.Food >= data.secondaryTrainFoodCost;
+            bool canAffordScoutWood = data.ScaledSecondaryTrainWoodCost <= 0f
+                || ResourceManager.Wood >= data.ScaledSecondaryTrainWoodCost;
+            bool canAffordScoutFood = ResourceManager.Food >= data.ScaledSecondaryTrainFoodCost;
             bool canAffordScout = canAffordScoutWood && canAffordScoutFood;
 
             GUI.enabled = !queueFull && !populationFull && canAffordCavalry && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button($"Create Cavalry (Q) ({data.trainWoodCost} Wood, {data.trainFoodCost} Food)"))
+            if (GUILayout.Button(
+                    $"Create Cavalry (Q) ({Mathf.CeilToInt(data.ScaledTrainWoodCost)} Wood, "
+                    + $"{Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)"))
                 CommandQueue.Enqueue(new TrainCavalryCommand(stable));
 
             GUI.enabled = !queueFull && !populationFull && canAffordScout && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button(
-                    $"Create Scout (E) ({data.secondaryTrainWoodCost} Wood, {data.secondaryTrainFoodCost} Food)"))
+            if (GUILayout.Button(BuildScoutLabel(data)))
                 CommandQueue.Enqueue(new TrainScoutCommand(stable));
             GUI.enabled = true;
 
@@ -90,6 +92,17 @@ namespace AoE.RTS.Selection
 
             if (input.WasTrainSecondaryPressedThisFrame())
                 CommandQueue.Enqueue(new TrainScoutCommand(stable));
+        }
+
+        static string BuildScoutLabel(PlacedBuildingData data)
+        {
+            if (data.ScaledSecondaryTrainWoodCost > 0f)
+            {
+                return $"Create Scout (E) ({Mathf.CeilToInt(data.ScaledSecondaryTrainWoodCost)} Wood, "
+                    + $"{Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost)} Food)";
+            }
+
+            return $"Create Scout (E) ({Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost)} Food)";
         }
     }
 }

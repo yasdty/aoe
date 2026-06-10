@@ -1,3 +1,4 @@
+using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -12,7 +13,8 @@ namespace AoE.RTS.Buildings
         MiningCamp = 4,
         Mill = 5,
         ArcheryRange = 6,
-        Stable = 7
+        Stable = 7,
+        Blacksmith = 8
     }
 
     [CreateAssetMenu(fileName = "PlacedBuildingData", menuName = "AoE/Placed Building Data")]
@@ -20,6 +22,7 @@ namespace AoE.RTS.Buildings
     {
         public PlacedBuildingKind kind = PlacedBuildingKind.House;
         public string displayName = "House";
+        public GameAge requiredAge = GameAge.Dark;
         public float woodCost = 25f;
         public float buildTime = 3f;
         public float footprintWidth = 4f;
@@ -44,5 +47,14 @@ namespace AoE.RTS.Buildings
         public float meleeArmor;
         public float pierceArmor;
         public float foodCapacity;
+
+        public float ScaledWoodCost => GameplayBalance.ScaleResourceCost(woodCost);
+        public float ScaledBuildTime => GameplayBalance.ScaleBuildTime(buildTime);
+        public float ScaledTrainTime => GameplayBalance.ScaleBuildTime(trainTime);
+        public float ScaledTrainWoodCost => GameplayBalance.ScaleResourceCost(trainWoodCost);
+        public float ScaledTrainFoodCost => GameplayBalance.ScaleResourceCost(trainFoodCost);
+        public float ScaledSecondaryTrainTime => GameplayBalance.ScaleBuildTime(secondaryTrainTime);
+        public float ScaledSecondaryTrainWoodCost => GameplayBalance.ScaleResourceCost(secondaryTrainWoodCost);
+        public float ScaledSecondaryTrainFoodCost => GameplayBalance.ScaleResourceCost(secondaryTrainFoodCost);
     }
 }
