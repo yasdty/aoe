@@ -68,6 +68,11 @@ namespace AoE.RTS.Buildings
             return CreateFreshWatchTower(data, position, team);
         }
 
+        public static Market CreateMarket(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return CreateFreshMarket(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -134,6 +139,29 @@ namespace AoE.RTS.Buildings
             archeryRange.SetData(data);
             archeryRange.SetTeam(team);
             return archeryRange;
+        }
+
+        public static Market CreateFreshMarket(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject marketObject = EntityVisualBuilder.CreateBuildingShell(
+                "Market",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
+
+            ApplySharedMaterialIfMissingRendererTint(marketObject);
+            ConfigureBuildingHealth(marketObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
+
+            Market market = marketObject.AddComponent<Market>();
+            market.SetData(data);
+            market.SetTeam(team);
+            return market;
         }
 
         public static Blacksmith CreateFreshBlacksmith(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)

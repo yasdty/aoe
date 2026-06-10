@@ -31,6 +31,7 @@ namespace AoE.RTS.Selection
         ArcheryRange selectedArcheryRange;
         Stable selectedStable;
         Blacksmith selectedBlacksmith;
+        Market selectedMarket;
         BuildingHealth selectedPlacedBuilding;
         Component selectedResource;
 
@@ -43,6 +44,7 @@ namespace AoE.RTS.Selection
         public ArcheryRange SelectedArcheryRange => selectedArcheryRange;
         public Stable SelectedStable => selectedStable;
         public Blacksmith SelectedBlacksmith => selectedBlacksmith;
+        public Market SelectedMarket => selectedMarket;
         public BuildingHealth SelectedPlacedBuilding => selectedPlacedBuilding;
         public Component SelectedResource => selectedResource;
 
@@ -61,6 +63,7 @@ namespace AoE.RTS.Selection
                     || selectedArcheryRange != null
                     || selectedStable != null
                     || selectedBlacksmith != null
+                    || selectedMarket != null
                     || selectedPlacedBuilding != null
                     || selectedResource != null;
             }
@@ -70,6 +73,7 @@ namespace AoE.RTS.Selection
         {
             instance = this;
             EnsureSelectionInfoPanelView();
+            EnsureMarketPanelView();
         }
 
         void EnsureSelectionInfoPanelView()
@@ -78,6 +82,26 @@ namespace AoE.RTS.Selection
                 return;
 
             gameObject.AddComponent<SelectionInfoPanelView>();
+        }
+
+        void EnsureMarketPanelView()
+        {
+            if (GetComponent<MarketPanelView>() != null)
+                return;
+
+            gameObject.AddComponent<MarketPanelView>();
+        }
+
+        public bool HasSelectedPlayerVillagers()
+        {
+            for (int i = 0; i < selectedUnits.Count; i++)
+            {
+                Unit unit = selectedUnits[i];
+                if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player && !unit.CanAttack)
+                    return true;
+            }
+
+            return false;
         }
 
         void OnDestroy()
@@ -256,6 +280,13 @@ namespace AoE.RTS.Selection
             if (blacksmith != null && blacksmith.Team == UnitTeam.Player)
             {
                 SetBlacksmithSelection(blacksmith);
+                return true;
+            }
+
+            Market market = hit.collider.GetComponentInParent<Market>();
+            if (market != null && market.Team == UnitTeam.Player)
+            {
+                SetMarketSelection(market);
                 return true;
             }
 
@@ -977,6 +1008,13 @@ namespace AoE.RTS.Selection
             blacksmith.SetSelected(true);
         }
 
+        void SetMarketSelection(Market market)
+        {
+            ClearAllSelection();
+            selectedMarket = market;
+            market.SetSelected(true);
+        }
+
         void ClearTownCenterSelection()
         {
             if (selectedTownCenter != null)
@@ -1022,6 +1060,15 @@ namespace AoE.RTS.Selection
             }
         }
 
+        void ClearMarketSelection()
+        {
+            if (selectedMarket != null)
+            {
+                selectedMarket.SetSelected(false);
+                selectedMarket = null;
+            }
+        }
+
         void ClearBuildingSelection()
         {
             ClearTownCenterSelection();
@@ -1029,6 +1076,7 @@ namespace AoE.RTS.Selection
             ClearArcheryRangeSelection();
             ClearStableSelection();
             ClearBlacksmithSelection();
+            ClearMarketSelection();
             selectedPlacedBuilding = null;
         }
 

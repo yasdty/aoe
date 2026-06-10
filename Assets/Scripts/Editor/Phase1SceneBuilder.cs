@@ -48,6 +48,8 @@ namespace AoE.RTS.EditorTools
         const string DefaultPalisadeWallDataPath = GameAssetPaths.DefaultPalisadeWallData;
         const string DefaultStoneWallDataPath = GameAssetPaths.DefaultStoneWallData;
         const string DefaultWatchTowerDataPath = GameAssetPaths.DefaultWatchTowerData;
+        const string DefaultMarketDataPath = GameAssetPaths.DefaultMarketData;
+        const string DefaultMarketTradeDataPath = GameAssetPaths.DefaultMarketTradeData;
 
         public static bool EnsureEditModeForSceneSetup()
         {
@@ -88,6 +90,8 @@ namespace AoE.RTS.EditorTools
             EnsurePalisadeWallData();
             EnsureStoneWallData();
             EnsureWatchTowerData();
+            EnsureMarketData();
+            EnsureMarketTradeData();
             EnsureFeudalAgeData();
             Debug.Log("Synced AoE2 game data assets.");
         }
@@ -1130,6 +1134,74 @@ namespace AoE.RTS.EditorTools
             data.defaultColor = new Color(0.5f, 0.5f, 0.55f);
             data.selectedColor = new Color(0.85f, 0.85f, 0.95f);
             AssetDatabase.CreateAsset(data, DefaultBlacksmithDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static PlacedBuildingData EnsureMarketData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/BuildingData"))
+                AssetDatabase.CreateFolder("Assets/Data", "BuildingData");
+
+            PlacedBuildingData existing = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(DefaultMarketDataPath);
+            if (existing != null)
+            {
+                bool dirty = false;
+                if (existing.kind != PlacedBuildingKind.Market) { existing.kind = PlacedBuildingKind.Market; dirty = true; }
+                if (existing.displayName != "Market") { existing.displayName = "Market"; dirty = true; }
+                if (existing.woodCost != 175f) { existing.woodCost = 175f; dirty = true; }
+                if (existing.buildTime != 60f) { existing.buildTime = 60f; dirty = true; }
+                if (existing.requiredAge != GameAge.Feudal) { existing.requiredAge = GameAge.Feudal; dirty = true; }
+                if (existing.maxHp != 400f) { existing.maxHp = 400f; dirty = true; }
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            PlacedBuildingData data = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            data.kind = PlacedBuildingKind.Market;
+            data.displayName = "Market";
+            data.woodCost = 175f;
+            data.buildTime = 60f;
+            data.requiredAge = GameAge.Feudal;
+            data.footprintWidth = 6f;
+            data.footprintDepth = 6f;
+            data.buildingHeight = 3.5f;
+            data.housingProvided = 0;
+            data.maxHp = 400f;
+            data.defaultColor = new Color(0.58f, 0.48f, 0.32f);
+            data.selectedColor = new Color(0.85f, 0.8f, 0.55f);
+            AssetDatabase.CreateAsset(data, DefaultMarketDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static MarketTradeData EnsureMarketTradeData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/MarketData"))
+                AssetDatabase.CreateFolder("Assets/Data", "MarketData");
+
+            MarketTradeData existing = AssetDatabase.LoadAssetAtPath<MarketTradeData>(DefaultMarketTradeDataPath);
+            if (existing != null)
+                return existing;
+
+            MarketTradeData data = ScriptableObject.CreateInstance<MarketTradeData>();
+            data.tradeUnitAmount = 100f;
+            data.sellFoodGoldReceived = 50f;
+            data.buyFoodGoldCost = 50f;
+            data.sellWoodGoldReceived = 50f;
+            data.buyWoodGoldCost = 50f;
+            data.sellStoneGoldReceived = 50f;
+            data.buyStoneGoldCost = 50f;
+            AssetDatabase.CreateAsset(data, DefaultMarketTradeDataPath);
             AssetDatabase.SaveAssets();
             return data;
         }

@@ -22,6 +22,7 @@ namespace AoE.RTS.Selection
         [SerializeField] PlacedBuildingData palisadeWallData;
         [SerializeField] PlacedBuildingData stoneWallData;
         [SerializeField] PlacedBuildingData watchTowerData;
+        [SerializeField] PlacedBuildingData marketData;
 
         const float Margin = 12f;
         const float PanelWidth = 210f;
@@ -33,8 +34,20 @@ namespace AoE.RTS.Selection
         const float ButtonHeight = 28f;
         const float ButtonGap = 4f;
         const float Padding = 8f;
+        const int BuildButtonCount = 13;
 
         static ResourceHudView instance;
+
+        static float ResourceStripHeight =>
+            Padding * 2f
+            + WoodLineHeight + ButtonGap
+            + FoodLineHeight + ButtonGap
+            + GoldLineHeight + ButtonGap
+            + StoneLineHeight + ButtonGap
+            + PopLineHeight + ButtonGap;
+
+        static float BuildMenuHeight =>
+            BuildButtonCount * ButtonHeight + (BuildButtonCount - 1) * ButtonGap;
 
         void Awake()
         {
@@ -51,6 +64,7 @@ namespace AoE.RTS.Selection
             palisadeWallData = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
             stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
             watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
+            marketData = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
             if (selectionManager == null)
                 selectionManager = FindAnyObjectByType<SelectionManager>();
         }
@@ -68,6 +82,8 @@ namespace AoE.RTS.Selection
 
         void OnGUI()
         {
+            GameUiInput.BeginHudLayoutFrame();
+
             PlacedBuildingData house = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             PlacedBuildingData archeryRange = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
@@ -80,9 +96,12 @@ namespace AoE.RTS.Selection
             PlacedBuildingData palisadeWall = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
             PlacedBuildingData stoneWall = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
             PlacedBuildingData watchTower = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
-            float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + FoodLineHeight + ButtonGap
-                + GoldLineHeight + ButtonGap + StoneLineHeight + ButtonGap + PopLineHeight + ButtonGap
-                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
+            PlacedBuildingData market = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
+            bool inPlacementMode = BuildingPlacementManager.IsPlacementModeActive;
+            bool showBuildMenu = !inPlacementMode
+                && selectionManager != null
+                && selectionManager.HasSelectedPlayerVillagers();
+            float panelHeight = ResourceStripHeight + (showBuildMenu ? BuildMenuHeight : 0f);
             Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
             GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
 
@@ -110,7 +129,12 @@ namespace AoE.RTS.Selection
             GUI.Label(popRect, $"Pop: {PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}");
             y += PopLineHeight + ButtonGap;
 
-            bool inPlacementMode = BuildingPlacementManager.IsPlacementModeActive;
+            if (!showBuildMenu)
+            {
+                DrawPlacementHints(panelRect, inPlacementMode, canAffordAnyBuild: false);
+                return;
+            }
+
             bool gameOver = GameSessionManager.IsGameOver;
 
             Rect houseButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
@@ -289,22 +313,47 @@ namespace AoE.RTS.Selection
                     : null;
                 BuildingPlacementManager.EnterWatchTowerPlacementMode(builders);
             }
+            y += ButtonHeight + ButtonGap;
+
+            Rect marketButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            int marketWoodCost = Mathf.CeilToInt(market.ScaledWoodCost);
+            bool canBuildMarket = GameSessionManager.CanBuild(market, UnitTeam.Player);
+            bool canAffordMarket = ResourceManager.Wood >= market.ScaledWoodCost;
+            GUI.enabled = canBuildMarket && canAffordMarket && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    marketButtonRect,
+                    canBuildMarket
+                        ? $"Build Market ({marketWoodCost} Wood)"
+                        : "Market (Feudal Age)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterMarketPlacementMode(builders);
+            }
             GUI.enabled = true;
 
+            bool canAffordAnyBuild = canAffordHouse || canAffordBarracks || canAffordArcheryRange || canAffordStable
+                || canAffordBlacksmith || canAffordFarm || canAffordLumberCamp || canAffordMiningCamp || canAffordMill
+                || canAffordPalisade || canAffordStoneWall || canAffordWatchTower || canAffordMarket;
+            DrawPlacementHints(panelRect, inPlacementMode, canAffordAnyBuild);
+        }
+
+        void DrawPlacementHints(Rect panelRect, bool inPlacementMode, bool canAffordAnyBuild)
+        {
             if (inPlacementMode)
             {
                 Rect hintRect = new Rect(Margin, panelRect.yMax + 4f, PanelWidth + 60f, 36f);
                 GameUiInput.SetHudHintScreenRect(GameUiInput.GuiRectToScreenRect(hintRect));
                 GUI.Label(hintRect, "Click ground to place. Esc / Right-click to cancel.");
+                return;
             }
-            else
+
+            GameUiInput.ClearHudHintScreenRect();
+            if (!canAffordAnyBuild)
             {
-                GameUiInput.ClearHudHintScreenRect();
-                if (!canAffordHouse && !canAffordBarracks && !canAffordArcheryRange && !canAffordStable && !canAffordBlacksmith && !canAffordFarm && !canAffordLumberCamp && !canAffordMiningCamp && !canAffordMill && !canAffordPalisade && !canAffordStoneWall && !canAffordWatchTower)
-                {
-                    Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
-                    GUI.Label(hintRect, "Need more Wood.");
-                }
+                Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
+                GUI.Label(hintRect, "Need more Wood.");
             }
         }
 

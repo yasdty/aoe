@@ -38,6 +38,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] PlacedBuildingData palisadeWallData;
         [SerializeField] PlacedBuildingData stoneWallData;
         [SerializeField] PlacedBuildingData watchTowerData;
+        [SerializeField] PlacedBuildingData marketData;
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
@@ -153,6 +154,7 @@ namespace AoE.RTS.Buildings
             palisadeWallData = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
             stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
             watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
+            marketData = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
@@ -368,6 +370,18 @@ namespace AoE.RTS.Buildings
                 return;
 
             BeginPlacementMode(builders, instance.watchTowerData);
+        }
+
+        public static void EnterMarketPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.marketData = PlacedBuildingDataResolver.ResolveMarket(ref instance.marketData);
+            if (instance.marketData == null || !GameSessionManager.CanBuild(instance.marketData, UnitTeam.Player))
+                return;
+
+            BeginPlacementMode(builders, instance.marketData);
         }
 
         static void BeginPlacementMode(IReadOnlyList<Unit> builders, PlacedBuildingData placementData)
@@ -844,6 +858,15 @@ namespace AoE.RTS.Buildings
                 return;
             }
 
+            if (site.data.kind == PlacedBuildingKind.Market)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                Market market = RuntimeBuildingFactory.CreateMarket(site.data, site.position, team);
+                if (market != null && site.builder != null)
+                    market.SetTeam(site.builder.Team);
+                return;
+            }
+
             if (site.data.kind == PlacedBuildingKind.Farm)
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
@@ -872,10 +895,13 @@ namespace AoE.RTS.Buildings
                 return;
             }
 
-            UnitTeam houseTeam = site.builder != null ? site.builder.Team : UnitTeam.Player;
-            RuntimeBuildingFactory.CreateHouse(site.data, site.position, houseTeam);
-            if (site.data.housingProvided > 0 && site.builder != null)
-                PopulationManager.AddHousing(site.builder.Team, site.data.housingProvided);
+            if (site.data.kind == PlacedBuildingKind.House)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                RuntimeBuildingFactory.CreateHouse(site.data, site.position, team);
+                if (site.data.housingProvided > 0)
+                    PopulationManager.AddHousing(team, site.data.housingProvided);
+            }
         }
 
         Vector3 SnapToFootprint(Vector3 worldPoint)

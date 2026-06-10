@@ -593,6 +593,39 @@ namespace AoE.RTS.Commands
         }
     }
 
+    public sealed class MarketTradeCommand : IGameCommand
+    {
+        readonly Market market;
+        readonly MarketTradeAction action;
+        readonly MarketTradeData tradeRates;
+
+        public string DebugName => action switch
+        {
+            MarketTradeAction.SellFood => "TradeSellFood",
+            MarketTradeAction.BuyFood => "TradeBuyFood",
+            MarketTradeAction.SellWood => "TradeSellWood",
+            MarketTradeAction.BuyWood => "TradeBuyWood",
+            MarketTradeAction.SellStone => "TradeSellStone",
+            MarketTradeAction.BuyStone => "TradeBuyStone",
+            _ => "Trade"
+        };
+
+        public MarketTradeCommand(Market market, MarketTradeAction action, MarketTradeData tradeRates)
+        {
+            this.market = market;
+            this.action = action;
+            this.tradeRates = tradeRates;
+        }
+
+        public void Execute()
+        {
+            if (market == null || tradeRates == null)
+                return;
+
+            MarketTradeUtility.TryTrade(market, action, tradeRates);
+        }
+    }
+
     public sealed class SetRallyPointCommand : IGameCommand
     {
         readonly TownCenter townCenter;

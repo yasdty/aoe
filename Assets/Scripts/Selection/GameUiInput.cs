@@ -10,6 +10,23 @@ namespace AoE.RTS.Selection
         static Rect hudPanelScreenRect;
         static Rect hudHintScreenRect;
         static bool hasHudPanelRect;
+        static int hudLayoutFrame = -1;
+
+        public static void BeginHudLayoutFrame()
+        {
+            if (Time.frameCount == hudLayoutFrame)
+                return;
+
+            hudLayoutFrame = Time.frameCount;
+            ResetHudPanelRects();
+        }
+
+        public static void ResetHudPanelRects()
+        {
+            hudPanelScreenRect = Rect.zero;
+            hasHudPanelRect = false;
+            hudHintScreenRect = Rect.zero;
+        }
 
         public static void SetHudPanelScreenRect(Rect screenRect)
         {

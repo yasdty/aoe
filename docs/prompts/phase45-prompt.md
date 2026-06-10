@@ -1,6 +1,6 @@
 # Phase 45 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 実装済み（Play 確認推奨）  
 > **前提:** Phase 1〜44 完了（M4 Defense）  
 > **マイルストン:** M4 AoE Gameplay — **Market**  
 > **ロードマップ:** [08_M4_GAMEPLAY_PHASES.md](../08_M4_GAMEPLAY_PHASES.md)  
@@ -124,9 +124,9 @@
 
 ## ⑥ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 45 ✅
-- [ ] `08_M4_GAMEPLAY_PHASES.md` — Phase 45 ✅
-- [ ] 本プロンプト — Play 確認待ち → ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 45 ✅
+- [x] `08_M4_GAMEPLAY_PHASES.md` — Phase 45 ✅
+- [x] 本プロンプト — Play 確認待ち → ✅
 
 ---
 

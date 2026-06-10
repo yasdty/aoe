@@ -127,6 +127,28 @@ namespace AoE.RTS.Selection
                 return true;
             }
 
+            Blacksmith blacksmith = selectionManager.SelectedBlacksmith;
+            if (blacksmith != null)
+            {
+                AppendBuildingHealthInfo(
+                    blacksmith.Data != null ? blacksmith.Data.displayName : "Blacksmith",
+                    blacksmith.GetComponent<BuildingHealth>(),
+                    lines,
+                    out title);
+                return true;
+            }
+
+            Market market = selectionManager.SelectedMarket;
+            if (market != null)
+            {
+                AppendBuildingHealthInfo(
+                    market.Data != null ? market.Data.displayName : "Market",
+                    market.GetComponent<BuildingHealth>(),
+                    lines,
+                    out title);
+                return true;
+            }
+
             BuildingHealth placedBuilding = selectionManager.SelectedPlacedBuilding;
             if (placedBuilding != null)
             {

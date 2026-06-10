@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 44 ✅（Defense — Palisade / Stone Wall / Watch Tower）。**次: Phase 45 Market。**
+> **最終更新:** Phase 45 ✅（Market — 資源売買 MVP）。**次: Phase 46 Civilization。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -79,7 +79,7 @@
 | 42 | Age Up + Gameplay Balance | `Phase10.unity` | ✅ 完了（M4） |
 | 43 | Blacksmith & Tech | `Phase10.unity` | ✅ 完了（M4） |
 | 44 | Defense | `Phase10.unity` | ✅ 完了（M4） |
-| 45 | Market | `Phase10.unity` | ⬜ 未着手（M4） |
+| 45 | Market | `Phase10.unity` | ✅ 完了（M4） |
 | 46 | Civilization | `Phase10.unity` | ⬜ 未着手（M4） |
 | 47 | Second TC | `Phase10.unity` | ⬜ 未着手（M4） |
 | 48 | RTS UX Polish | `Phase10.unity` | ⬜ 未着手（M4）— 壁 Shift+ドラッグ連続配置含む |
@@ -200,7 +200,7 @@
 | 資源ノード枯渇 | ✅ | 色変化・採集不可 |
 | 共有木の競合採集 | ✅ | Phase 9/10（先に切った側が取得） |
 | Lumber Camp | ✅ | 100 Wood / 6 秒 / Wood Drop-off 拠点 |
-| 市場・交易 | ❌ | |
+| 市場・交易 | ✅ | Phase 45 — Market + Food/Wood/Stone ↔ Gold 固定レート |
 | 農業（Farm） | ✅ | 60 Wood / 8 秒 / 250 Food 容量・枯渇で Pool 返却 |
 | 漁業 | ❌ | |
 
@@ -525,7 +525,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **フォーメーション** | 隊列・スタンス | スタンス + 攻撃移動 ✅（Phase 40）/ 隊列 ✅（Phase 41） | M4 Phase 42+ |
 | **壁** | 石壁・塔 | Palisade / Stone Wall / Watch Tower ✅（Phase 44） | M4 Phase 45+ |
 | **船** | 海上戦・貿易 | ❌ | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
-| **市場** | 資源交易 | ❌ | M4 Phase 45 |
+| **市場** | 資源交易 | Market + 固定レート売買 ✅（Phase 45） | M4 Phase 46+ |
 | **テクノロジー** | Dark→Imperial | Feudal 昇格 ✅（Phase 42）/ Blacksmith 研究 1 系統 ✅（Phase 43） | M4 Phase 44+ |
 | **マルチプレイ** | LAN/オンライン | ❌（基盤 30〜40%） | M6 Phase 54〜58 |
 | **マップ** | ランダムマップ | 固定 Plane（Phase 35 で拡大） | ✅ Sandbox / ランダムは M8 |
@@ -1031,7 +1031,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・7 建築・Militia・1 CPU — **Dark Age 垂直スライス**（全体 ~15%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 45 Market** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
+| 次に何を作るべき？ | **Phase 46 Civilization** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

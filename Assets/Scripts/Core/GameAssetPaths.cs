@@ -23,6 +23,8 @@ namespace AoE.RTS.Core
         public const string DefaultPalisadeWallData = "Assets/Data/BuildingData/PalisadeWallData.asset";
         public const string DefaultStoneWallData = "Assets/Data/BuildingData/StoneWallData.asset";
         public const string DefaultWatchTowerData = "Assets/Data/BuildingData/WatchTowerData.asset";
+        public const string DefaultMarketData = "Assets/Data/BuildingData/MarketData.asset";
+        public const string DefaultMarketTradeData = "Assets/Data/MarketData/DefaultMarketTradeRates.asset";
         public const string FeudalAgeData = "Assets/Data/AgeData/FeudalAgeData.asset";
         public const string MilitiaData = "Assets/Data/UnitData/MilitiaData.asset";
         public const string ManAtArmsData = "Assets/Data/UnitData/ManAtArmsData.asset";

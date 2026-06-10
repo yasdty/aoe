@@ -214,6 +214,8 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData palisadeWallData = Phase1SceneBuilder.EnsurePalisadeWallData();
             PlacedBuildingData stoneWallData = Phase1SceneBuilder.EnsureStoneWallData();
             PlacedBuildingData watchTowerData = Phase1SceneBuilder.EnsureWatchTowerData();
+            PlacedBuildingData marketData = Phase1SceneBuilder.EnsureMarketData();
+            MarketTradeData marketTradeData = Phase1SceneBuilder.EnsureMarketTradeData();
             PlacedBuildingData millData = Phase1SceneBuilder.EnsureMillData();
             UnitData manAtArmsData = Phase1SceneBuilder.EnsureManAtArmsData();
             TechnologyData infantryUpgradeTech = Phase1SceneBuilder.EnsureInfantryUpgradeTech(militiaData, manAtArmsData);
@@ -255,6 +257,8 @@ namespace AoE.RTS.EditorTools
                 palisadeWallData,
                 stoneWallData,
                 watchTowerData,
+                marketData,
+                marketTradeData,
                 millData,
                 infantryUpgradeTech,
                 villagerData,
@@ -562,6 +566,55 @@ namespace AoE.RTS.EditorTools
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             Debug.Log("Added Defense wiring. Save the scene (Ctrl+S) if needed.");
+        }
+
+        [MenuItem("AoE/Add Market (Phase45)", true)]
+        static bool ValidateAddMarket() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Market (Phase45)")]
+        public static void AddMarketToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            PlacedBuildingData marketData = Phase1SceneBuilder.EnsureMarketData();
+            MarketTradeData marketTradeData = Phase1SceneBuilder.EnsureMarketTradeData();
+
+            SelectionManager selectionManager = Object.FindAnyObjectByType<SelectionManager>();
+            if (selectionManager != null)
+            {
+                MarketPanelView marketPanel = selectionManager.GetComponent<MarketPanelView>();
+                if (marketPanel == null)
+                    marketPanel = selectionManager.gameObject.AddComponent<MarketPanelView>();
+
+                SerializedObject serializedMarketPanel = new SerializedObject(marketPanel);
+                serializedMarketPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+                serializedMarketPanel.FindProperty("tradeRates").objectReferenceValue = marketTradeData;
+                serializedMarketPanel.ApplyModifiedPropertiesWithoutUndo();
+            }
+            else
+            {
+                Debug.LogWarning("SelectionManager not found — MarketPanelView was not added.");
+            }
+
+            BuildingPlacementManager placementManager = Object.FindAnyObjectByType<BuildingPlacementManager>();
+            if (placementManager != null)
+            {
+                SerializedObject serializedPlacement = new SerializedObject(placementManager);
+                serializedPlacement.FindProperty("marketData").objectReferenceValue = marketData;
+                serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            ResourceHudView resourceHud = Object.FindAnyObjectByType<ResourceHudView>();
+            if (resourceHud != null)
+            {
+                SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
+                serializedResourceHud.FindProperty("marketData").objectReferenceValue = marketData;
+                serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added Market wiring. Save the scene (Ctrl+S) if needed.");
         }
 
         static void EnsureAttackMoveManager()
@@ -880,6 +933,8 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData palisadeWallData,
             PlacedBuildingData stoneWallData,
             PlacedBuildingData watchTowerData,
+            PlacedBuildingData marketData,
+            MarketTradeData marketTradeData,
             PlacedBuildingData millData,
             TechnologyData infantryUpgradeTech,
             UnitData villagerData,
@@ -1033,6 +1088,7 @@ namespace AoE.RTS.EditorTools
             selectionManagerObject.AddComponent<ArcheryRangePanelView>();
             selectionManagerObject.AddComponent<StablePanelView>();
             selectionManagerObject.AddComponent<BlacksmithPanelView>();
+            selectionManagerObject.AddComponent<MarketPanelView>();
             selectionManagerObject.AddComponent<UnitStancePanelView>();
             UnitHpBarView hpBarView = selectionManagerObject.AddComponent<UnitHpBarView>();
             SelectionInfoPanelView infoPanelView = selectionManagerObject.AddComponent<SelectionInfoPanelView>();
@@ -1085,6 +1141,12 @@ namespace AoE.RTS.EditorTools
             serializedBlacksmithPanel.FindProperty("infantryUpgradeTech").objectReferenceValue = infantryUpgradeTech;
             serializedBlacksmithPanel.ApplyModifiedPropertiesWithoutUndo();
 
+            MarketPanelView marketPanel = selectionManagerObject.GetComponent<MarketPanelView>();
+            SerializedObject serializedMarketPanel = new SerializedObject(marketPanel);
+            serializedMarketPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedMarketPanel.FindProperty("tradeRates").objectReferenceValue = marketTradeData;
+            serializedMarketPanel.ApplyModifiedPropertiesWithoutUndo();
+
             UnitStancePanelView stancePanel = selectionManagerObject.GetComponent<UnitStancePanelView>();
             SerializedObject serializedStancePanel = new SerializedObject(stancePanel);
             serializedStancePanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
@@ -1130,6 +1192,7 @@ namespace AoE.RTS.EditorTools
             serializedPlacement.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
             serializedPlacement.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
             serializedPlacement.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
+            serializedPlacement.FindProperty("marketData").objectReferenceValue = marketData;
             serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
@@ -1142,6 +1205,7 @@ namespace AoE.RTS.EditorTools
             serializedResourceHud.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
             serializedResourceHud.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
             serializedResourceHud.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
+            serializedResourceHud.FindProperty("marketData").objectReferenceValue = marketData;
             serializedResourceHud.FindProperty("millData").objectReferenceValue = millData;
             serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
 

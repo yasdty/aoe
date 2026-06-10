@@ -322,5 +322,32 @@ namespace AoE.RTS.Buildings
             cached.maxHp = 300f;
             return cached;
         }
+
+        public static PlacedBuildingData ResolveMarket(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultMarketData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.Market;
+            cached.displayName = "Market";
+            cached.requiredAge = GameAge.Feudal;
+            cached.woodCost = 175f;
+            cached.buildTime = 60f;
+            cached.footprintWidth = 6f;
+            cached.footprintDepth = 6f;
+            cached.buildingHeight = 3.5f;
+            cached.housingProvided = 0;
+            cached.maxHp = 400f;
+            cached.defaultColor = new Color(0.58f, 0.48f, 0.32f);
+            cached.selectedColor = new Color(0.85f, 0.8f, 0.55f);
+            return cached;
+        }
     }
 }

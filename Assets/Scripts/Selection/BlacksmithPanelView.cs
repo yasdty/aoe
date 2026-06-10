@@ -19,6 +19,8 @@ namespace AoE.RTS.Selection
 
         void OnGUI()
         {
+            GameUiInput.BeginHudLayoutFrame();
+
             if (selectionManager == null)
                 return;
 
@@ -31,6 +33,7 @@ namespace AoE.RTS.Selection
                 return;
 
             Rect panelRect = new Rect(Margin, Screen.height - PanelHeight - Margin, PanelWidth, PanelHeight);
+            GameUiInput.ExpandHudPanelScreenRect(panelRect);
             GUI.Box(panelRect, GUIContent.none);
 
             GUILayout.BeginArea(panelRect);

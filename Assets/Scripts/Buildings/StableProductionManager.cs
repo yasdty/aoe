@@ -64,6 +64,13 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
+                if (!PopulationManager.CanTrainUnit(job.stable.Team))
+                {
+                    job.remainingSeconds = 0f;
+                    activeJobs[i] = job;
+                    continue;
+                }
+
                 Unit unit = UnitSpawner.Spawn(
                     job.unitData,
                     job.stable.GetUnitSpawnPosition(),

@@ -17,7 +17,8 @@ namespace AoE.RTS.Buildings
         Blacksmith = 8,
         PalisadeWall = 9,
         StoneWall = 10,
-        WatchTower = 11
+        WatchTower = 11,
+        Market = 12
     }
 
     [CreateAssetMenu(fileName = "PlacedBuildingData", menuName = "AoE/Placed Building Data")]
