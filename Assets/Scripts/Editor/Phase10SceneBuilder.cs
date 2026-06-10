@@ -712,7 +712,11 @@ namespace AoE.RTS.EditorTools
 
             GameObject resourceManagerObject = new GameObject("ResourceManager");
             resourceManagerObject.transform.SetParent(systems.transform);
-            resourceManagerObject.AddComponent<ResourceManager>();
+            ResourceManager resourceManager = resourceManagerObject.AddComponent<ResourceManager>();
+            SerializedObject serializedResourceManager = new SerializedObject(resourceManager);
+            serializedResourceManager.FindProperty("initialPlayerFood").floatValue = 200f;
+            serializedResourceManager.FindProperty("initialEnemyFood").floatValue = 0f;
+            serializedResourceManager.ApplyModifiedPropertiesWithoutUndo();
 
             GameObject gatherManagerObject = new GameObject("GatherManager");
             gatherManagerObject.transform.SetParent(systems.transform);

@@ -8,7 +8,7 @@ namespace AoE.RTS.Economy
         static ResourceManager instance;
 
         [SerializeField] float initialPlayerFood = 200f;
-        [SerializeField] float initialEnemyFood = 200f;
+        [SerializeField] float initialEnemyFood;
 
         float playerWood;
         float enemyWood;
