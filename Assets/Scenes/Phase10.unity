@@ -254,7 +254,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Economy.ResourceManager
   initialPlayerFood: 200
-  initialEnemyFood: 0
+  initialPlayerWood: 200
+  initialEnemyFood: 200
+  initialEnemyWood: 200
 --- !u!1 &19489770
 GameObject:
   m_ObjectHideFlags: 0

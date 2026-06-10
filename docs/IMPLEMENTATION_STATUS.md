@@ -458,9 +458,11 @@ CpuEconomyAiManager / CpuMilitaryAiManager（直接 Manager 呼び出し）
 | 要素 | 配置 |
 |------|------|
 | Player TownCenter | (0, 0, 0) |
-| CPU TownCenter | (0, 0, -35) |
-| カメラ焦点 | (0, 0, -17) 俯瞰 |
-| CPU 初期 Villager | 3 体（CPU TC 付近） |
+| CPU TownCenter | (0, 0, -60) |
+| カメラ焦点 | (0, 0, -30) 俯瞰 |
+| 開始資源（Classic） | 両チーム Food **200** / Wood **200** / Gold **0** / Stone **0** |
+| Player 初期 Villager | **3 体**（Player TC 付近） |
+| CPU 初期 Villager | **3 体**（CPU TC 付近） |
 
 ### Systems オブジェクト（Phase 10）
 

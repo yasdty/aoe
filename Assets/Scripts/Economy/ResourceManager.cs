@@ -5,10 +5,15 @@ namespace AoE.RTS.Economy
 {
     public class ResourceManager : MonoBehaviour
     {
+        const float ClassicStartFood = 200f;
+        const float ClassicStartWood = 200f;
+
         static ResourceManager instance;
 
-        [SerializeField] float initialPlayerFood = 200f;
-        [SerializeField] float initialEnemyFood;
+        [SerializeField] float initialPlayerFood = ClassicStartFood;
+        [SerializeField] float initialPlayerWood = ClassicStartWood;
+        [SerializeField] float initialEnemyFood = ClassicStartFood;
+        [SerializeField] float initialEnemyWood = ClassicStartWood;
 
         float playerWood;
         float enemyWood;
@@ -28,7 +33,9 @@ namespace AoE.RTS.Economy
         {
             instance = this;
             playerFood = initialPlayerFood;
+            playerWood = initialPlayerWood;
             enemyFood = initialEnemyFood;
+            enemyWood = initialEnemyWood;
         }
 
         void OnDestroy()

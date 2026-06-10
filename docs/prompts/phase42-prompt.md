@@ -146,7 +146,7 @@ public enum GameAge { Dark, Feudal } // MVP 2 時代のみ
 4. **Age Up** — TC 選択 → Feudal 昇格 → Archery Range / Stable が **配置可能**に
 5. Dark Age 中 — Feudal 専建築は **不可**
 6. CPU 攻撃波・Formation・Attack-Move 回帰
-7. **CPU 開始資源** — Wood/Food/Gold/Stone すべて **0**（Player は Food 200 のまま）
+7. **開始状態（AoE2 Classic）** — 両チーム Food/Wood **200**、Gold/Stone **0**、村民 **3** 体
 8. Console エラーなし
 
 ---

@@ -82,6 +82,13 @@ namespace AoE.RTS.EditorTools
             new Vector3(-10f, 0f, -76f)
         };
 
+        static readonly Vector3[] PlayerVillagerPositions =
+        {
+            new Vector3(-5f, 1f, 5f),
+            new Vector3(5f, 1f, 5f),
+            new Vector3(0f, 1f, 8f)
+        };
+
         static readonly Vector3[] CpuVillagerPositions =
         {
             new Vector3(-5f, 1f, -55f),
@@ -223,7 +230,8 @@ namespace AoE.RTS.EditorTools
             CreateHuntableAnimals(deerData, sheepData);
             CreateBoars(boarData);
             CreateMineralMines(goldMineData, stoneMineData);
-            CreateCpuVillagers(villagerData);
+            CreateStartingVillagers(villagerData, PlayerVillagerPositions, UnitTeam.Player);
+            CreateStartingVillagers(villagerData, CpuVillagerPositions, UnitTeam.Enemy);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
             Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
             CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData, archeryRangeData, stableData, millData, villagerData, militiaData);
@@ -531,17 +539,91 @@ namespace AoE.RTS.EditorTools
             return townCenterObject;
         }
 
-        static void CreateCpuVillagers(UnitData villagerData)
+        static void CreateStartingVillagers(UnitData villagerData, Vector3[] positions, UnitTeam team)
         {
-            for (int i = 0; i < CpuVillagerPositions.Length; i++)
+            for (int i = 0; i < positions.Length; i++)
             {
                 GameObject unitObject = Phase1SceneBuilder.CreateUnit(
                     villagerData,
-                    CpuVillagerPositions[i],
-                    UnitTeam.Enemy);
+                    positions[i],
+                    team);
                 Unit unit = unitObject.GetComponent<Unit>();
                 if (unit != null)
-                    unit.SetTeam(UnitTeam.Enemy);
+                    unit.SetTeam(team);
+            }
+        }
+
+        [MenuItem("AoE/Sync AoE2 Classic Start (Phase10)", true)]
+        static bool ValidateSyncAoE2ClassicStart() => !EditorApplication.isPlaying;
+
+        /// <summary>
+        /// 既存 Phase10 シーンを AoE2 Classic 開始（200F/200W、両チーム村民3）に揃える。
+        /// </summary>
+        [MenuItem("AoE/Sync AoE2 Classic Start (Phase10)")]
+        public static void SyncAoE2ClassicStartToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
+            ApplyClassicStartingResourcesToScene();
+            EnsureStartingVillagerCount(villagerData, UnitTeam.Player, PlayerVillagerPositions);
+            EnsureStartingVillagerCount(villagerData, UnitTeam.Enemy, CpuVillagerPositions);
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Synced AoE2 Classic start: 200 Food + 200 Wood, 3 Villagers per team. Save the scene (Ctrl+S).");
+        }
+
+        public static void BatchSyncPhase10SceneClassicStart()
+        {
+            EditorSceneManager.OpenScene(ScenePath);
+            SyncAoE2ClassicStartToOpenScene();
+            EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+        }
+
+        static void ApplyClassicStartingResourcesToScene()
+        {
+            ResourceManager resourceManager = Object.FindAnyObjectByType<ResourceManager>();
+            if (resourceManager == null)
+            {
+                Debug.LogWarning("ResourceManager not found — starting resources were not updated.");
+                return;
+            }
+
+            SerializedObject serialized = new SerializedObject(resourceManager);
+            serialized.FindProperty("initialPlayerFood").floatValue = 200f;
+            serialized.FindProperty("initialPlayerWood").floatValue = 200f;
+            serialized.FindProperty("initialEnemyFood").floatValue = 200f;
+            serialized.FindProperty("initialEnemyWood").floatValue = 200f;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(resourceManager);
+        }
+
+        static void EnsureStartingVillagerCount(UnitData villagerData, UnitTeam team, Vector3[] spawnPositions)
+        {
+            Unit[] units = Object.FindObjectsByType<Unit>(FindObjectsSortMode.None);
+            int villagerCount = 0;
+            for (int i = 0; i < units.Length; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || unit.Team != team || unit.Data == null)
+                    continue;
+
+                if (unit.Data.displayName != "Villager")
+                    continue;
+
+                villagerCount++;
+            }
+
+            for (int i = villagerCount; i < spawnPositions.Length; i++)
+            {
+                GameObject unitObject = Phase1SceneBuilder.CreateUnit(
+                    villagerData,
+                    spawnPositions[i],
+                    team);
+                Unit unit = unitObject.GetComponent<Unit>();
+                if (unit != null)
+                    unit.SetTeam(team);
             }
         }
 
@@ -715,7 +797,9 @@ namespace AoE.RTS.EditorTools
             ResourceManager resourceManager = resourceManagerObject.AddComponent<ResourceManager>();
             SerializedObject serializedResourceManager = new SerializedObject(resourceManager);
             serializedResourceManager.FindProperty("initialPlayerFood").floatValue = 200f;
-            serializedResourceManager.FindProperty("initialEnemyFood").floatValue = 0f;
+            serializedResourceManager.FindProperty("initialPlayerWood").floatValue = 200f;
+            serializedResourceManager.FindProperty("initialEnemyFood").floatValue = 200f;
+            serializedResourceManager.FindProperty("initialEnemyWood").floatValue = 200f;
             serializedResourceManager.ApplyModifiedPropertiesWithoutUndo();
 
             GameObject gatherManagerObject = new GameObject("GatherManager");
