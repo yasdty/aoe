@@ -39,6 +39,16 @@ namespace AoE.RTS.Units
                     continue;
 
                 unit.TickMovement(fixedDeltaTime);
+            }
+
+            UnitSeparation.Apply(units, fixedDeltaTime);
+
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || !unit.IsAlive)
+                    continue;
+
                 UnitSpatialIndex.UpdatePosition(unit, unit.transform.position);
             }
         }

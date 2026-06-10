@@ -1,6 +1,6 @@
 # Phase 41 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜40 完了（M3 Stance & Attack-Move 含む）  
 > **マイルストン:** M3 Military — **Formation（隊列移動・軽量 Separation）** — **M3 最終 Phase**  
 > **ロードマップ:** [07_M3_MILITARY_PHASES.md](../07_M3_MILITARY_PHASES.md)  
@@ -169,9 +169,9 @@ UnitSeparation.Apply(units) — 同一 Team、距離 < minSep（例 1.2m）
 
 ## ⑧ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 41 ✅、**M3 Military ✅ 完了**
-- [ ] `07_M3_MILITARY_PHASES.md` — Phase 41 ✅、一覧表更新
-- [ ] 本プロンプト — Play 確認待ち → ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 41 ✅、**M3 Military ✅ 完了**
+- [x] `07_M3_MILITARY_PHASES.md` — Phase 41 ✅、一覧表更新
+- [x] 本プロンプト — ✅
 - [ ] `08_M4_GAMEPLAY_PHASES.md` — 必要なら Phase 42 への導線確認のみ（Balance 実装は Phase 42）
 
 ---

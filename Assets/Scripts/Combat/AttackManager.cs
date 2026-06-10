@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
+using AoE.RTS.Selection;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -294,6 +295,8 @@ namespace AoE.RTS.Combat
             if (instance == null || target == null || attackers == null || !target.IsAlive)
                 return;
 
+            CancelFormationUnlessAttackMoving(attackers);
+
             for (int i = 0; i < attackers.Count; i++)
             {
                 Unit attacker = attackers[i];
@@ -324,6 +327,8 @@ namespace AoE.RTS.Combat
         {
             if (instance == null || targetBuilding == null || attackers == null || !targetBuilding.IsAlive)
                 return;
+
+            CancelFormationUnlessAttackMoving(attackers);
 
             for (int i = 0; i < attackers.Count; i++)
             {
@@ -401,6 +406,21 @@ namespace AoE.RTS.Combat
             {
                 if (instance.activeJobs[i].attacker == attacker)
                     instance.activeJobs.RemoveAt(i);
+            }
+        }
+
+        static void CancelFormationUnlessAttackMoving(IReadOnlyList<Unit> units)
+        {
+            if (units == null || units.Count == 0)
+                return;
+
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || FormationMoveManager.IsUnitAttackMoving(unit))
+                    continue;
+
+                FormationMoveManager.CancelForUnit(unit);
             }
         }
 

@@ -54,7 +54,7 @@ namespace AoE.RTS.Commands
             AttackManager.CancelForUnits(units);
             AttackMoveManager.CancelForUnits(units);
             BoarAttackManager.CancelForUnits(units);
-            GroupMoveFormation.AssignMoveTargets(units, destination, spacing);
+            FormationMoveManager.Register(units, destination, spacing);
         }
     }
 

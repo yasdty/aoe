@@ -49,7 +49,7 @@
 
 **拡張フック:** Castle / Imperial は `AgeData` 追加のみで後挿入（コード rewrite 不要）
 
-**プロンプト:** [prompts/phase42-prompt.md](prompts/phase42-prompt.md)（未作成 — Balance Mode を先頭セクションに含める）
+**プロンプト:** [prompts/phase42-prompt.md](prompts/phase42-prompt.md)
 
 ---
 

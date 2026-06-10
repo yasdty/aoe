@@ -399,6 +399,7 @@ namespace AoE.RTS.EditorTools
 
             Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
             EnsureAttackMoveManager();
+            EnsureFormationMoveManager();
 
             SelectionManager selectionManager = Object.FindAnyObjectByType<SelectionManager>();
             if (selectionManager != null)
@@ -432,6 +433,33 @@ namespace AoE.RTS.EditorTools
             if (parent != null)
                 attackMoveObject.transform.SetParent(parent);
             attackMoveObject.AddComponent<AttackMoveManager>();
+        }
+
+        static void EnsureFormationMoveManager()
+        {
+            if (Object.FindAnyObjectByType<FormationMoveManager>() != null)
+                return;
+
+            GameObject systems = GameObject.Find("Systems");
+            Transform parent = systems != null ? systems.transform : null;
+            GameObject formationObject = new GameObject("FormationMoveManager");
+            if (parent != null)
+                formationObject.transform.SetParent(parent);
+            formationObject.AddComponent<FormationMoveManager>();
+        }
+
+        [MenuItem("AoE/Add Formation (Phase41)", true)]
+        static bool ValidateAddFormation() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Formation (Phase41)")]
+        public static void AddFormationToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            EnsureFormationMoveManager();
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added FormationMoveManager. Save the scene (Ctrl+S) if needed.");
         }
 
         static void EnsureUnitAggroManager()
@@ -641,6 +669,10 @@ namespace AoE.RTS.EditorTools
             GameObject attackMoveManagerObject = new GameObject("AttackMoveManager");
             attackMoveManagerObject.transform.SetParent(systems.transform);
             attackMoveManagerObject.AddComponent<AttackMoveManager>();
+
+            GameObject formationMoveManagerObject = new GameObject("FormationMoveManager");
+            formationMoveManagerObject.transform.SetParent(systems.transform);
+            formationMoveManagerObject.AddComponent<FormationMoveManager>();
 
             GameObject boarAggroManagerObject = new GameObject("BoarAggroManager");
             boarAggroManagerObject.transform.SetParent(systems.transform);

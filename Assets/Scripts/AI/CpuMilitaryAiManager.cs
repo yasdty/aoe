@@ -3,6 +3,7 @@ using AoE.RTS.Buildings;
 using AoE.RTS.Combat;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
+using AoE.RTS.Selection;
 using AoE.RTS.Spatial;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -348,7 +349,7 @@ namespace AoE.RTS.AI
             {
                 AttackManager.IssueAttack(attackWaveBuffer, target);
                 Debug.Log(
-                    $"[CPU Military] Attack wave: {attackWaveBuffer.Count} units at {FormatTime(Time.timeSinceLevelLoad)}");
+                    $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} at {FormatTime(Time.timeSinceLevelLoad)}");
                 return;
             }
 
@@ -360,7 +361,7 @@ namespace AoE.RTS.AI
                 {
                     AttackManager.IssueAttack(attackWaveBuffer, playerTownCenterHealth);
                     Debug.Log(
-                        $"[CPU Military] Attack wave: {attackWaveBuffer.Count} units → Town Center at {FormatTime(Time.timeSinceLevelLoad)}");
+                        $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} → Town Center at {FormatTime(Time.timeSinceLevelLoad)}");
                     return;
                 }
             }
@@ -369,15 +370,63 @@ namespace AoE.RTS.AI
                 ? playerTownCenter.transform.position
                 : attackWaveBuffer[0].transform.position;
             advanceTarget.y = 1f;
-            for (int i = 0; i < attackWaveBuffer.Count; i++)
-            {
-                Unit unit = attackWaveBuffer[i];
-                Vector3 offsetTarget = UnitPositionOffsets.ApplyRingOffset(advanceTarget, unit, 4f);
-                unit.SetMoveTarget(offsetTarget);
-            }
+            FormationMoveManager.Register(attackWaveBuffer, advanceTarget, 2f);
 
             Debug.Log(
-                $"[CPU Military] Attack wave: {attackWaveBuffer.Count} units advancing at {FormatTime(Time.timeSinceLevelLoad)}");
+                $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} advancing at {FormatTime(Time.timeSinceLevelLoad)}");
+        }
+
+        static string FormatWaveComposition(IReadOnlyList<Unit> units)
+        {
+            if (units == null || units.Count == 0)
+                return "0 units";
+
+            int militia = 0;
+            int spearman = 0;
+            int archer = 0;
+            int cavalry = 0;
+            int scout = 0;
+
+            for (int i = 0; i < units.Count; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || unit.Data == null)
+                    continue;
+
+                switch (unit.Data.displayName)
+                {
+                    case "Militia":
+                        militia++;
+                        break;
+                    case "Spearman":
+                        spearman++;
+                        break;
+                    case "Archer":
+                        archer++;
+                        break;
+                    case "Cavalry":
+                        cavalry++;
+                        break;
+                    case "Scout":
+                        scout++;
+                        break;
+                }
+            }
+
+            List<string> parts = new List<string>(5);
+            if (militia > 0)
+                parts.Add($"Militia×{militia}");
+            if (spearman > 0)
+                parts.Add($"Spearman×{spearman}");
+            if (archer > 0)
+                parts.Add($"Archer×{archer}");
+            if (cavalry > 0)
+                parts.Add($"Cavalry×{cavalry}");
+            if (scout > 0)
+                parts.Add($"Scout×{scout}");
+
+            string breakdown = parts.Count > 0 ? string.Join(", ", parts) : "mixed";
+            return $"{units.Count} units ({breakdown})";
         }
 
         void CollectCpuAttackUnits(List<Unit> buffer)

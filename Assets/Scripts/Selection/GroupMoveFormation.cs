@@ -11,23 +11,31 @@ namespace AoE.RTS.Selection
             if (units == null || units.Count == 0)
                 return;
 
-            GetGridDimensions(units.Count, out int columns, out int rows);
+            for (int i = 0; i < units.Count; i++)
+            {
+                TryGetSlotOffset(i, units.Count, spacing, out Vector3 offset);
+                units[i].SetMoveTarget(center + offset);
+            }
+        }
+
+        public static bool TryGetSlotOffset(int index, int count, float spacing, out Vector3 offset)
+        {
+            offset = Vector3.zero;
+            if (count <= 0 || index < 0 || index >= count)
+                return false;
+
+            GetGridDimensions(count, out int columns, out int rows);
 
             float centerColumn = (columns - 1) * 0.5f;
             float centerRow = (rows - 1) * 0.5f;
+            int column = index % columns;
+            int row = index / columns;
 
-            for (int i = 0; i < units.Count; i++)
-            {
-                int column = i % columns;
-                int row = i / columns;
-
-                Vector3 offset = new Vector3(
-                    (column - centerColumn) * spacing,
-                    0f,
-                    (row - centerRow) * spacing);
-
-                units[i].SetMoveTarget(center + offset);
-            }
+            offset = new Vector3(
+                (column - centerColumn) * spacing,
+                0f,
+                (row - centerRow) * spacing);
+            return true;
         }
 
         public static void GetGridDimensions(int count, out int columns, out int rows)

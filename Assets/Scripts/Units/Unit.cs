@@ -160,6 +160,7 @@ namespace AoE.RTS.Units
             AttackManager.CancelJobsForUnit(this);
             BoarAttackManager.CancelJobsForUnit(this);
             AttackMoveManager.CancelForUnit(this);
+            FormationMoveManager.CancelForUnit(this);
             SelectionManager.HandleUnitDied(this);
             UnitManager.Unregister(this);
 
