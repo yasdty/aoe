@@ -38,6 +38,7 @@ namespace AoE.RTS.Core
             state = MatchState.Playing;
             playerAge = GameAge.Dark;
             enemyAge = GameAge.Dark;
+            TechnologyState.Reset();
             GameplayBalance.SetMode(balanceMode);
         }
 

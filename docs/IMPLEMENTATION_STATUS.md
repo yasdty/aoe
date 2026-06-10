@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 42 ✅（Balance + Age Up + CPU Relaxed ペース）。**次: Phase 43 Blacksmith & Tech。**
+> **最終更新:** Phase 43 ✅（Blacksmith & Tech — Infantry Upgrade）。**次: Phase 44 Defense。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -77,8 +77,7 @@
 | 40 | Stance & Attack-Move | `Phase10.unity` | ✅ 完了（M3） |
 | 41 | Formation | `Phase10.unity` | ✅ 完了（M3） |
 | 42 | Age Up + Gameplay Balance | `Phase10.unity` | ✅ 完了（M4） |
-| 43 | Blacksmith & Tech | `Phase10.unity` | ⬜ 未着手（M4） |
-| 43 | Blacksmith & Tech | `Phase10.unity` | ⬜ 未着手（M4） |
+| 43 | Blacksmith & Tech | `Phase10.unity` | ✅ 完了（M4） |
 | 44 | Defense | `Phase10.unity` | ⬜ 未着手（M4） |
 | 45 | Market | `Phase10.unity` | ⬜ 未着手（M4） |
 | 46 | Civilization | `Phase10.unity` | ⬜ 未着手（M4） |
@@ -109,7 +108,7 @@
 
 **Milestone 3 Military:** ✅ 完了（Phase 36〜41）
 
-**Milestone 4 AoE Gameplay:** 🔄 進行中（Phase 42 ✅ — Phase 43 次）
+**Milestone 4 AoE Gameplay:** 🔄 進行中（Phase 43 ✅ — Phase 44 次）
 
 **Milestone 5 Visual / UI:** ⬜ 未着手（Phase 49〜53）
 
@@ -518,7 +517,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **建築** | 多数・時代進化 | TC / House / Barracks / Farm / Camps / Mill ✅ | M4 |
 | **人口** | Pop cap / House | Pop cap ✅ / 破壊時減少 ❌ | M4 Phase 48 |
 | **文明** | 各国固有ボーナス | ❌ 単一ルール | M4 Phase 46 |
-| **研究** | 鍛冶屋・大学 | ❌ | M4 Phase 43 |
+| **研究** | 鍛冶屋・大学 | Blacksmith + Infantry Upgrade ✅（Phase 43）/ 大学 ❌ | M4 Phase 44+ |
 | **軍事** | 歩兵・弓・騎兵・攻城等 | Militia 1 種 ✅ | M3 Phase 36〜41 |
 | **AI** | 経済・軍事・難易度 | CPU 4 資源 + Militia 波 ✅ | M3 CPU 拡張 |
 | **戦闘** | 遠近・装甲・相性 | 近接/遠距離 + Melee/Pierce 装甲 + Spearman 対騎兵 ✅（Phase 39） | M4+ |
@@ -526,7 +525,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **壁** | 石壁・塔 | ❌ | M4 Phase 44 |
 | **船** | 海上戦・貿易 | ❌ | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 | **市場** | 資源交易 | ❌ | M4 Phase 45 |
-| **テクノロジー** | Dark→Imperial | ❌ | M4 Phase 42〜43 |
+| **テクノロジー** | Dark→Imperial | Feudal 昇格 ✅（Phase 42）/ Blacksmith 研究 1 系統 ✅（Phase 43） | M4 Phase 44+ |
 | **マルチプレイ** | LAN/オンライン | ❌（基盤 30〜40%） | M6 Phase 54〜58 |
 | **マップ** | ランダムマップ | 固定 Plane（Phase 35 で拡大） | ✅ Sandbox / ランダムは M8 |
 | **勝敗** | 征服・遺跡等 | TC 破壊 ✅ | 拡張フック定義済み |
@@ -1031,7 +1030,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・7 建築・Militia・1 CPU — **Dark Age 垂直スライス**（全体 ~15%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 43 Blacksmith & Tech** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
+| 次に何を作るべき？ | **Phase 44 Defense（壁・塔）** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

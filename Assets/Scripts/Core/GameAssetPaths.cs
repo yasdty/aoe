@@ -22,6 +22,8 @@ namespace AoE.RTS.Core
         public const string DefaultBlacksmithData = "Assets/Data/BuildingData/BlacksmithData.asset";
         public const string FeudalAgeData = "Assets/Data/AgeData/FeudalAgeData.asset";
         public const string MilitiaData = "Assets/Data/UnitData/MilitiaData.asset";
+        public const string ManAtArmsData = "Assets/Data/UnitData/ManAtArmsData.asset";
+        public const string InfantryUpgradeTech = "Assets/Data/TechnologyData/InfantryUpgradeTech.asset";
         public const string SpearmanData = "Assets/Data/UnitData/SpearmanData.asset";
         public const string ArcherData = "Assets/Data/UnitData/ArcherData.asset";
         public const string CavalryData = "Assets/Data/UnitData/CavalryData.asset";

@@ -94,12 +94,16 @@ namespace AoE.RTS.Buildings
 
         public bool TryQueueMilitiaProduction()
         {
-            if (data == null || data.trainUnitData == null)
+            if (data == null)
+                return false;
+
+            UnitData unitData = BarracksTraining.ResolvePrimaryTrainUnit(this);
+            if (unitData == null)
                 return false;
 
             return BarracksProductionManager.TryQueueProduction(
                 this,
-                data.trainUnitData,
+                unitData,
                 data.ScaledTrainTime,
                 data.ScaledTrainWoodCost,
                 data.ScaledTrainFoodCost);

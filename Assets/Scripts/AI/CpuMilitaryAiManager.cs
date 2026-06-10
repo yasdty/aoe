@@ -137,11 +137,18 @@ namespace AoE.RTS.AI
 
         public void TickSimulation(float fixedDeltaTime)
         {
-            waveTimer -= fixedDeltaTime;
-            if (waveTimer <= 0f)
+            if (IsAttackGraceActive)
             {
                 waveTimer = ScaledAttackWaveIntervalSeconds;
-                LaunchAttackWave();
+            }
+            else
+            {
+                waveTimer -= fixedDeltaTime;
+                if (waveTimer <= 0f)
+                {
+                    waveTimer = ScaledAttackWaveIntervalSeconds;
+                    LaunchAttackWave();
+                }
             }
 
             evaluateTimer -= fixedDeltaTime;

@@ -34,6 +34,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData archeryRangeData;
         [SerializeField] PlacedBuildingData stableData;
+        [SerializeField] PlacedBuildingData blacksmithData;
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
@@ -145,6 +146,7 @@ namespace AoE.RTS.Buildings
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
             stableData = PlacedBuildingDataResolver.ResolveStable(ref stableData);
+            blacksmithData = PlacedBuildingDataResolver.ResolveBlacksmith(ref blacksmithData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
@@ -293,6 +295,33 @@ namespace AoE.RTS.Buildings
             }
 
             instance.activePlacementData = instance.stableData;
+            instance.isPlacementModeActive = true;
+            instance.placementOpenedFrame = Time.frameCount;
+            instance.ghostObject.SetActive(true);
+            instance.RefreshGhostFromPointer();
+        }
+
+        public static void EnterBlacksmithPlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.blacksmithData = PlacedBuildingDataResolver.ResolveBlacksmith(ref instance.blacksmithData);
+            if (instance.blacksmithData == null || !GameSessionManager.CanBuild(instance.blacksmithData, UnitTeam.Player))
+                return;
+
+            instance.stashedBuilders.Clear();
+            if (builders != null)
+            {
+                for (int i = 0; i < builders.Count; i++)
+                {
+                    Unit unit = builders[i];
+                    if (unit != null && unit.IsAlive && unit.Team == UnitTeam.Player)
+                        instance.stashedBuilders.Add(unit);
+                }
+            }
+
+            instance.activePlacementData = instance.blacksmithData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.ghostObject.SetActive(true);
@@ -720,6 +749,15 @@ namespace AoE.RTS.Buildings
                 Stable stable = RuntimeBuildingFactory.CreateStable(site.data, site.position, team);
                 if (stable != null && site.builder != null)
                     stable.SetTeam(site.builder.Team);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.Blacksmith)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                Blacksmith blacksmith = RuntimeBuildingFactory.CreateBlacksmith(site.data, site.position, team);
+                if (blacksmith != null && site.builder != null)
+                    blacksmith.SetTeam(site.builder.Team);
                 return;
             }
 

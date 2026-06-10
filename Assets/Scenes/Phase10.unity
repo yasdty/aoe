@@ -299,6 +299,50 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 22333633}
   m_Mesh: {fileID: 4300000, guid: e24942ea63469a54385f8d9cfbb618d6, type: 2}
+--- !u!1 &38522573
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 38522574}
+  - component: {fileID: 38522575}
+  m_Layer: 0
+  m_Name: BlacksmithResearchManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &38522574
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 38522573}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1100026793}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &38522575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 38522573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fbb9a48427919f43883bda17fb2931d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Buildings.BlacksmithResearchManager
 --- !u!1 &39396517
 GameObject:
   m_ObjectHideFlags: 0
@@ -4878,6 +4922,7 @@ MonoBehaviour:
   barracksData: {fileID: 0}
   archeryRangeData: {fileID: 0}
   stableData: {fileID: 0}
+  blacksmithData: {fileID: 11400000, guid: 2bb1e621986b7c8438fc99cfd0fa8476, type: 2}
   farmData: {fileID: 0}
   lumberCampData: {fileID: 0}
   miningCampData: {fileID: 0}
@@ -8490,6 +8535,7 @@ Transform:
   - {fileID: 1791947911}
   - {fileID: 1701010296}
   - {fileID: 1160346432}
+  - {fileID: 38522574}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1118097740
@@ -8906,6 +8952,7 @@ GameObject:
   - component: {fileID: 1160346435}
   - component: {fileID: 1160346434}
   - component: {fileID: 1160346433}
+  - component: {fileID: 1160346450}
   m_Layer: 0
   m_Name: SelectionManager
   m_TagString: Untagged
@@ -9037,6 +9084,7 @@ MonoBehaviour:
   barracksData: {fileID: 0}
   archeryRangeData: {fileID: 0}
   stableData: {fileID: 0}
+  blacksmithData: {fileID: 11400000, guid: 2bb1e621986b7c8438fc99cfd0fa8476, type: 2}
   farmData: {fileID: 0}
   lumberCampData: {fileID: 0}
   miningCampData: {fileID: 0}
@@ -9166,6 +9214,21 @@ MonoBehaviour:
   selectionBoxView: {fileID: 1160346448}
   dragThresholdPixels: 8
   groupMoveSpacing: 2
+--- !u!114 &1160346450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1160346431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df270ce176ce39045a881c42af578bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Selection.BlacksmithPanelView
+  selectionManager: {fileID: 1160346449}
+  input: {fileID: 1375805448}
+  infantryUpgradeTech: {fileID: 11400000, guid: 92eb752dd03851342b8c046f250a2ac2, type: 2}
 --- !u!1 &1172116320
 GameObject:
   m_ObjectHideFlags: 0
@@ -13254,6 +13317,11 @@ MonoBehaviour:
   stableData: {fileID: 0}
   barracksBuildDelaySeconds: 90
   attackWaveIntervalSeconds: 50
+  relaxedFirstAttackGraceSeconds: 120
+  relaxedBarracksBuildDelaySeconds: 90
+  relaxedAttackWaveIntervalSeconds: 300
+  relaxedMaxUnitsPerTypePerWave: 2
+  aggressiveMaxUnitsPerTypePerWave: 2
 --- !u!1 &1714436920
 GameObject:
   m_ObjectHideFlags: 0

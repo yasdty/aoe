@@ -14,7 +14,7 @@
 | Phase | 名称 | 目的 | 状態 |
 |-------|------|------|------|
 | 42 | Age Up + **Gameplay Balance** | **Phase 42 先頭:** Balance Mode 実装 → 時代昇格（Dark → Feudal MVP）・建築アンロック | ✅ 完了 |
-| 43 | Blacksmith & Tech | 鍛冶屋 + 歩兵 UP 1 系統（例: Militia → MAA） | ⬜ 未着手 |
+| 43 | Blacksmith & Tech | 鍛冶屋 + 歩兵 UP 1 系統（例: Militia → MAA） | ✅ 完了 |
 | 44 | Defense | 柵 / 石壁 / 箭塔 MVP | ⬜ 未着手 |
 | 45 | Market | 資源交易 MVP | ⬜ 未着手 |
 | 46 | Civilization | 文明ボーナス 1 種 Data 駆動 | ⬜ 未着手 |
@@ -53,9 +53,9 @@
 
 ---
 
-## Phase 43 — Blacksmith & Tech ⬜
+## Phase 43 — Blacksmith & Tech ✅
 
-**実装:** Blacksmith 建築 / `TechnologyData` / 研究キュー（TC 生産キューと同型パターン推奨）
+**実装:** Blacksmith 建築（Feudal 以降）/ `TechnologyData` + `TechnologyState` / `BlacksmithResearchManager`（1 件キュー）/ Infantry Upgrade（Militia → Man-at-Arms）/ Barracks 訓練差し替え / `GameplayBalance.Scale*` 経由コスト
 
 **プロンプト:** [prompts/phase43-prompt.md](prompts/phase43-prompt.md)
 
@@ -65,7 +65,7 @@
 
 **実装:** Palisade Wall / Stone Wall / Watch Tower — HP・攻撃・村民建築
 
-**プロンプト:** [prompts/phase44-prompt.md](prompts/phase44-prompt.md)（未作成）
+**プロンプト:** [prompts/phase44-prompt.md](prompts/phase44-prompt.md)
 
 ---
 

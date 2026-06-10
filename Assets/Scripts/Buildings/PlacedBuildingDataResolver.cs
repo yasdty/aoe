@@ -179,6 +179,33 @@ namespace AoE.RTS.Buildings
             return cached;
         }
 
+        public static PlacedBuildingData ResolveBlacksmith(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultBlacksmithData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.Blacksmith;
+            cached.displayName = "Blacksmith";
+            cached.requiredAge = GameAge.Feudal;
+            cached.woodCost = 150f;
+            cached.buildTime = 40f;
+            cached.footprintWidth = 6f;
+            cached.footprintDepth = 6f;
+            cached.buildingHeight = 3.5f;
+            cached.housingProvided = 0;
+            cached.maxHp = 300f;
+            cached.defaultColor = new Color(0.5f, 0.5f, 0.55f);
+            cached.selectedColor = new Color(0.85f, 0.85f, 0.95f);
+            return cached;
+        }
+
         public static PlacedBuildingData ResolveStable(ref PlacedBuildingData cached)
         {
             if (cached != null)

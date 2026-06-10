@@ -1,6 +1,6 @@
 # Phase 43 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 実装済み（Play 確認推奨）  
 > **前提:** Phase 1〜42 完了（M4 Gameplay Balance + Age Up）  
 > **マイルストン:** M4 AoE Gameplay — **Blacksmith & Tech**  
 > **ロードマップ:** [08_M4_GAMEPLAY_PHASES.md](../08_M4_GAMEPLAY_PHASES.md)  
@@ -110,9 +110,9 @@ public enum TechnologyKind { InfantryUpgrade } // MVP 1 種
 
 ## ⑥ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 43 ✅
-- [ ] `08_M4_GAMEPLAY_PHASES.md` — Phase 43 ✅
-- [ ] 本プロンプト — Play 確認待ち → ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 43 ✅
+- [x] `08_M4_GAMEPLAY_PHASES.md` — Phase 43 ✅
+- [x] 本プロンプト — Play 確認待ち → ✅
 
 ---
 

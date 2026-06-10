@@ -30,6 +30,7 @@ namespace AoE.RTS.Selection
         Barracks selectedBarracks;
         ArcheryRange selectedArcheryRange;
         Stable selectedStable;
+        Blacksmith selectedBlacksmith;
         BuildingHealth selectedPlacedBuilding;
         Component selectedResource;
 
@@ -41,6 +42,7 @@ namespace AoE.RTS.Selection
         public Barracks SelectedBarracks => selectedBarracks;
         public ArcheryRange SelectedArcheryRange => selectedArcheryRange;
         public Stable SelectedStable => selectedStable;
+        public Blacksmith SelectedBlacksmith => selectedBlacksmith;
         public BuildingHealth SelectedPlacedBuilding => selectedPlacedBuilding;
         public Component SelectedResource => selectedResource;
 
@@ -58,6 +60,7 @@ namespace AoE.RTS.Selection
                     || selectedBarracks != null
                     || selectedArcheryRange != null
                     || selectedStable != null
+                    || selectedBlacksmith != null
                     || selectedPlacedBuilding != null
                     || selectedResource != null;
             }
@@ -246,6 +249,13 @@ namespace AoE.RTS.Selection
             if (stable != null && stable.Team == UnitTeam.Player)
             {
                 SetStableSelection(stable);
+                return true;
+            }
+
+            Blacksmith blacksmith = hit.collider.GetComponentInParent<Blacksmith>();
+            if (blacksmith != null && blacksmith.Team == UnitTeam.Player)
+            {
+                SetBlacksmithSelection(blacksmith);
                 return true;
             }
 
@@ -939,6 +949,13 @@ namespace AoE.RTS.Selection
             stable.SetSelected(true);
         }
 
+        void SetBlacksmithSelection(Blacksmith blacksmith)
+        {
+            ClearAllSelection();
+            selectedBlacksmith = blacksmith;
+            blacksmith.SetSelected(true);
+        }
+
         void ClearTownCenterSelection()
         {
             if (selectedTownCenter != null)
@@ -975,12 +992,22 @@ namespace AoE.RTS.Selection
             }
         }
 
+        void ClearBlacksmithSelection()
+        {
+            if (selectedBlacksmith != null)
+            {
+                selectedBlacksmith.SetSelected(false);
+                selectedBlacksmith = null;
+            }
+        }
+
         void ClearBuildingSelection()
         {
             ClearTownCenterSelection();
             ClearBarracksSelection();
             ClearArcheryRangeSelection();
             ClearStableSelection();
+            ClearBlacksmithSelection();
             selectedPlacedBuilding = null;
         }
 

@@ -48,6 +48,11 @@ namespace AoE.RTS.Buildings
             return BuildingPool.RentStable(data, position, team);
         }
 
+        public static Blacksmith CreateBlacksmith(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            return CreateFreshBlacksmith(data, position, team);
+        }
+
         public static House CreateFreshHouse(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
             if (data == null)
@@ -114,6 +119,29 @@ namespace AoE.RTS.Buildings
             archeryRange.SetData(data);
             archeryRange.SetTeam(team);
             return archeryRange;
+        }
+
+        public static Blacksmith CreateFreshBlacksmith(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject blacksmithObject = EntityVisualBuilder.CreateBuildingShell(
+                "Blacksmith",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.Barracks);
+
+            ApplySharedMaterialIfMissingRendererTint(blacksmithObject);
+            ConfigureBuildingHealth(blacksmithObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
+
+            Blacksmith blacksmith = blacksmithObject.AddComponent<Blacksmith>();
+            blacksmith.SetData(data);
+            blacksmith.SetTeam(team);
+            return blacksmith;
         }
 
         public static Stable CreateFreshStable(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)

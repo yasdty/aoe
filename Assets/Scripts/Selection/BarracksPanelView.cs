@@ -44,8 +44,9 @@ namespace AoE.RTS.Selection
             bool canAffordSpearmanFood = ResourceManager.Food >= data.ScaledSecondaryTrainFoodCost;
             bool canAffordSpearman = canAffordSpearmanWood && canAffordSpearmanFood;
 
+            string primaryTrainName = BarracksTraining.GetPrimaryTrainDisplayName(barracks);
             GUI.enabled = !queueFull && !populationFull && canAffordMilitia && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button(BuildMilitiaLabel(data)))
+            if (GUILayout.Button(BuildPrimaryTrainLabel(primaryTrainName, data)))
                 CommandQueue.Enqueue(new TrainMilitiaCommand(barracks));
 
             GUI.enabled = !queueFull && !populationFull && canAffordSpearman && !GameSessionManager.IsGameOver;
@@ -83,15 +84,15 @@ namespace AoE.RTS.Selection
             GUILayout.EndArea();
         }
 
-        static string BuildMilitiaLabel(PlacedBuildingData data)
+        static string BuildPrimaryTrainLabel(string unitName, PlacedBuildingData data)
         {
             if (data.ScaledTrainWoodCost > 0f)
             {
-                return $"Create Militia (Q) ({Mathf.CeilToInt(data.ScaledTrainWoodCost)} Wood, "
+                return $"Create {unitName} (Q) ({Mathf.CeilToInt(data.ScaledTrainWoodCost)} Wood, "
                     + $"{Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)";
             }
 
-            return $"Create Militia (Q) ({Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)";
+            return $"Create {unitName} (Q) ({Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)";
         }
 
         static string BuildSpearmanLabel(PlacedBuildingData data)

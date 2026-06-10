@@ -14,6 +14,7 @@ namespace AoE.RTS.Selection
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData archeryRangeData;
         [SerializeField] PlacedBuildingData stableData;
+        [SerializeField] PlacedBuildingData blacksmithData;
         [SerializeField] PlacedBuildingData farmData;
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
@@ -39,6 +40,7 @@ namespace AoE.RTS.Selection
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
             stableData = PlacedBuildingDataResolver.ResolveStable(ref stableData);
+            blacksmithData = PlacedBuildingDataResolver.ResolveBlacksmith(ref blacksmithData);
             farmData = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             lumberCampData = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             miningCampData = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
@@ -64,13 +66,14 @@ namespace AoE.RTS.Selection
             PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             PlacedBuildingData archeryRange = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
             PlacedBuildingData stable = PlacedBuildingDataResolver.ResolveStable(ref stableData);
+            PlacedBuildingData blacksmith = PlacedBuildingDataResolver.ResolveBlacksmith(ref blacksmithData);
             PlacedBuildingData farm = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
             PlacedBuildingData lumberCamp = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
             PlacedBuildingData miningCamp = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
             PlacedBuildingData mill = PlacedBuildingDataResolver.ResolveMill(ref millData);
             float panelHeight = Padding * 2f + WoodLineHeight + ButtonGap + FoodLineHeight + ButtonGap
                 + GoldLineHeight + ButtonGap + StoneLineHeight + ButtonGap + PopLineHeight + ButtonGap
-                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
+                + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight + ButtonGap + ButtonHeight;
             Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
             GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
 
@@ -163,6 +166,24 @@ namespace AoE.RTS.Selection
             }
             y += ButtonHeight + ButtonGap;
 
+            Rect blacksmithButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            int blacksmithWoodCost = Mathf.CeilToInt(blacksmith.ScaledWoodCost);
+            bool canBuildBlacksmith = GameSessionManager.CanBuild(blacksmith, UnitTeam.Player);
+            bool canAffordBlacksmith = ResourceManager.Wood >= blacksmith.ScaledWoodCost;
+            GUI.enabled = canBuildBlacksmith && canAffordBlacksmith && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    blacksmithButtonRect,
+                    canBuildBlacksmith
+                        ? $"Build Blacksmith ({blacksmithWoodCost} Wood)"
+                        : "Blacksmith (Feudal Age)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterBlacksmithPlacementMode(builders);
+            }
+            y += ButtonHeight + ButtonGap;
+
             Rect farmButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
             int farmWoodCost = Mathf.CeilToInt(farm.ScaledWoodCost);
             bool canAffordFarm = ResourceManager.Wood >= farm.ScaledWoodCost;
@@ -224,7 +245,7 @@ namespace AoE.RTS.Selection
             else
             {
                 GameUiInput.ClearHudHintScreenRect();
-                if (!canAffordHouse && !canAffordBarracks && !canAffordArcheryRange && !canAffordStable && !canAffordFarm && !canAffordLumberCamp && !canAffordMiningCamp && !canAffordMill)
+                if (!canAffordHouse && !canAffordBarracks && !canAffordArcheryRange && !canAffordStable && !canAffordBlacksmith && !canAffordFarm && !canAffordLumberCamp && !canAffordMiningCamp && !canAffordMill)
                 {
                     Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
                     GUI.Label(hintRect, "Need more Wood.");

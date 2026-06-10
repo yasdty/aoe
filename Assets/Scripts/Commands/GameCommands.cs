@@ -573,6 +573,26 @@ namespace AoE.RTS.Commands
         }
     }
 
+    public sealed class ResearchInfantryUpgradeCommand : IGameCommand
+    {
+        readonly Blacksmith blacksmith;
+
+        public string DebugName => "ResearchInfantryUpgrade";
+
+        public ResearchInfantryUpgradeCommand(Blacksmith blacksmith)
+        {
+            this.blacksmith = blacksmith;
+        }
+
+        public void Execute()
+        {
+            if (blacksmith == null)
+                return;
+
+            blacksmith.TryQueueInfantryUpgrade();
+        }
+    }
+
     public sealed class SetRallyPointCommand : IGameCommand
     {
         readonly TownCenter townCenter;

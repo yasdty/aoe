@@ -20,8 +20,11 @@ namespace AoE.RTS.EditorTools
     public static class Phase10SceneBuilder
     {
         const string ScenePath = "Assets/Scenes/Phase10.unity";
-        const float DefaultAttackWaveIntervalSeconds = 50f;
-        const float DefaultBarracksBuildDelaySeconds = 90f;
+        const float DefaultAttackWaveIntervalSeconds = 30f;
+        const float DefaultBarracksBuildDelaySeconds = 60f;
+        const float DefaultRelaxedFirstAttackGraceSeconds = 120f;
+        const float DefaultRelaxedBarracksBuildDelaySeconds = 90f;
+        const float DefaultRelaxedAttackWaveIntervalSeconds = 300f;
 
         static readonly Vector3 PlayerTownCenterPosition = Vector3.zero;
         static readonly Vector3 CpuTownCenterPosition = new Vector3(0f, 0f, -60f);
@@ -207,12 +210,14 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData barracksData = Phase1SceneBuilder.EnsureBarracksData(militiaData, spearmanData);
             PlacedBuildingData archeryRangeData = Phase1SceneBuilder.EnsureArcheryRangeData(archerData);
             PlacedBuildingData stableData = Phase1SceneBuilder.EnsureStableData(cavalryData, scoutData);
+            PlacedBuildingData blacksmithData = Phase1SceneBuilder.EnsureBlacksmithData();
             PlacedBuildingData millData = Phase1SceneBuilder.EnsureMillData();
+            UnitData manAtArmsData = Phase1SceneBuilder.EnsureManAtArmsData();
+            TechnologyData infantryUpgradeTech = Phase1SceneBuilder.EnsureInfantryUpgradeTech(militiaData, manAtArmsData);
             Phase1SceneBuilder.EnsureFarmData();
             Phase1SceneBuilder.EnsureLumberCampData();
             Phase1SceneBuilder.EnsureMiningCampData();
             Phase1SceneBuilder.EnsureMillData();
-            Phase1SceneBuilder.EnsureBlacksmithData();
             Phase1SceneBuilder.EnsureFeudalAgeData();
             InputActionAsset inputActions = RTSInputActionsFactory.EnsureAsset();
             if (inputActions == null)
@@ -236,7 +241,18 @@ namespace AoE.RTS.EditorTools
             CreateStartingVillagers(villagerData, CpuVillagerPositions, UnitTeam.Enemy);
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
             Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
-            CreateManagers(inputActions, cameraRig.GetComponent<UnityEngine.Camera>(), houseData, barracksData, archeryRangeData, stableData, millData, villagerData, militiaData);
+            CreateManagers(
+                inputActions,
+                cameraRig.GetComponent<UnityEngine.Camera>(),
+                houseData,
+                barracksData,
+                archeryRangeData,
+                stableData,
+                blacksmithData,
+                millData,
+                infantryUpgradeTech,
+                villagerData,
+                militiaData);
 
             Phase1SceneBuilder.AssignInputActionsToReaders(inputActions);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -430,6 +446,69 @@ namespace AoE.RTS.EditorTools
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             Debug.Log("Added AttackMoveManager + UnitStancePanelView and refreshed input actions. Save the scene (Ctrl+S) if needed.");
+        }
+
+        [MenuItem("AoE/Add Blacksmith & Tech (Phase43)", true)]
+        static bool ValidateAddBlacksmithTech() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Blacksmith & Tech (Phase43)")]
+        public static void AddBlacksmithTechToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            UnitData militiaData = Phase1SceneBuilder.EnsureMilitiaData();
+            UnitData manAtArmsData = Phase1SceneBuilder.EnsureManAtArmsData();
+            TechnologyData infantryUpgradeTech = Phase1SceneBuilder.EnsureInfantryUpgradeTech(militiaData, manAtArmsData);
+            PlacedBuildingData blacksmithData = Phase1SceneBuilder.EnsureBlacksmithData();
+
+            GameObject systems = GameObject.Find("Systems");
+            Transform systemsTransform = systems != null ? systems.transform : null;
+            if (Object.FindAnyObjectByType<BlacksmithResearchManager>() == null)
+            {
+                GameObject blacksmithResearchObject = new GameObject("BlacksmithResearchManager");
+                if (systemsTransform != null)
+                    blacksmithResearchObject.transform.SetParent(systemsTransform);
+                blacksmithResearchObject.AddComponent<BlacksmithResearchManager>();
+            }
+
+            SelectionManager selectionManager = Object.FindAnyObjectByType<SelectionManager>();
+            if (selectionManager != null)
+            {
+                BlacksmithPanelView blacksmithPanel = selectionManager.GetComponent<BlacksmithPanelView>();
+                if (blacksmithPanel == null)
+                    blacksmithPanel = selectionManager.gameObject.AddComponent<BlacksmithPanelView>();
+
+                RTSInputReader inputReader = Object.FindAnyObjectByType<RTSInputReader>();
+                SerializedObject serializedBlacksmithPanel = new SerializedObject(blacksmithPanel);
+                serializedBlacksmithPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+                serializedBlacksmithPanel.FindProperty("input").objectReferenceValue = inputReader;
+                serializedBlacksmithPanel.FindProperty("infantryUpgradeTech").objectReferenceValue = infantryUpgradeTech;
+                serializedBlacksmithPanel.ApplyModifiedPropertiesWithoutUndo();
+            }
+            else
+            {
+                Debug.LogWarning("SelectionManager not found — BlacksmithPanelView was not added.");
+            }
+
+            BuildingPlacementManager placementManager = Object.FindAnyObjectByType<BuildingPlacementManager>();
+            if (placementManager != null)
+            {
+                SerializedObject serializedPlacement = new SerializedObject(placementManager);
+                serializedPlacement.FindProperty("blacksmithData").objectReferenceValue = blacksmithData;
+                serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            ResourceHudView resourceHud = Object.FindAnyObjectByType<ResourceHudView>();
+            if (resourceHud != null)
+            {
+                SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
+                serializedResourceHud.FindProperty("blacksmithData").objectReferenceValue = blacksmithData;
+                serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added Blacksmith & Tech wiring. Save the scene (Ctrl+S) if needed.");
         }
 
         static void EnsureAttackMoveManager()
@@ -744,7 +823,9 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData barracksData,
             PlacedBuildingData archeryRangeData,
             PlacedBuildingData stableData,
+            PlacedBuildingData blacksmithData,
             PlacedBuildingData millData,
+            TechnologyData infantryUpgradeTech,
             UnitData villagerData,
             UnitData militiaData)
         {
@@ -845,6 +926,10 @@ namespace AoE.RTS.EditorTools
             stableProductionObject.transform.SetParent(systems.transform);
             stableProductionObject.AddComponent<StableProductionManager>();
 
+            GameObject blacksmithResearchObject = new GameObject("BlacksmithResearchManager");
+            blacksmithResearchObject.transform.SetParent(systems.transform);
+            blacksmithResearchObject.AddComponent<BlacksmithResearchManager>();
+
             GameObject resourceManagerObject = new GameObject("ResourceManager");
             resourceManagerObject.transform.SetParent(systems.transform);
             ResourceManager resourceManager = resourceManagerObject.AddComponent<ResourceManager>();
@@ -887,6 +972,7 @@ namespace AoE.RTS.EditorTools
             selectionManagerObject.AddComponent<BarracksPanelView>();
             selectionManagerObject.AddComponent<ArcheryRangePanelView>();
             selectionManagerObject.AddComponent<StablePanelView>();
+            selectionManagerObject.AddComponent<BlacksmithPanelView>();
             selectionManagerObject.AddComponent<UnitStancePanelView>();
             UnitHpBarView hpBarView = selectionManagerObject.AddComponent<UnitHpBarView>();
             SelectionInfoPanelView infoPanelView = selectionManagerObject.AddComponent<SelectionInfoPanelView>();
@@ -932,6 +1018,13 @@ namespace AoE.RTS.EditorTools
             serializedStablePanel.FindProperty("input").objectReferenceValue = inputReader;
             serializedStablePanel.ApplyModifiedPropertiesWithoutUndo();
 
+            BlacksmithPanelView blacksmithPanel = selectionManagerObject.GetComponent<BlacksmithPanelView>();
+            SerializedObject serializedBlacksmithPanel = new SerializedObject(blacksmithPanel);
+            serializedBlacksmithPanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
+            serializedBlacksmithPanel.FindProperty("input").objectReferenceValue = inputReader;
+            serializedBlacksmithPanel.FindProperty("infantryUpgradeTech").objectReferenceValue = infantryUpgradeTech;
+            serializedBlacksmithPanel.ApplyModifiedPropertiesWithoutUndo();
+
             UnitStancePanelView stancePanel = selectionManagerObject.GetComponent<UnitStancePanelView>();
             SerializedObject serializedStancePanel = new SerializedObject(stancePanel);
             serializedStancePanel.FindProperty("selectionManager").objectReferenceValue = selectionManager;
@@ -973,6 +1066,7 @@ namespace AoE.RTS.EditorTools
             serializedPlacement.FindProperty("barracksData").objectReferenceValue = barracksData;
             serializedPlacement.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;
             serializedPlacement.FindProperty("stableData").objectReferenceValue = stableData;
+            serializedPlacement.FindProperty("blacksmithData").objectReferenceValue = blacksmithData;
             serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
@@ -981,6 +1075,7 @@ namespace AoE.RTS.EditorTools
             serializedResourceHud.FindProperty("barracksData").objectReferenceValue = barracksData;
             serializedResourceHud.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;
             serializedResourceHud.FindProperty("stableData").objectReferenceValue = stableData;
+            serializedResourceHud.FindProperty("blacksmithData").objectReferenceValue = blacksmithData;
             serializedResourceHud.FindProperty("millData").objectReferenceValue = millData;
             serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
 
@@ -999,6 +1094,9 @@ namespace AoE.RTS.EditorTools
             serializedCpuMilitary.FindProperty("stableData").objectReferenceValue = stableData;
             serializedCpuMilitary.FindProperty("barracksBuildDelaySeconds").floatValue = DefaultBarracksBuildDelaySeconds;
             serializedCpuMilitary.FindProperty("attackWaveIntervalSeconds").floatValue = DefaultAttackWaveIntervalSeconds;
+            serializedCpuMilitary.FindProperty("relaxedFirstAttackGraceSeconds").floatValue = DefaultRelaxedFirstAttackGraceSeconds;
+            serializedCpuMilitary.FindProperty("relaxedBarracksBuildDelaySeconds").floatValue = DefaultRelaxedBarracksBuildDelaySeconds;
+            serializedCpuMilitary.FindProperty("relaxedAttackWaveIntervalSeconds").floatValue = DefaultRelaxedAttackWaveIntervalSeconds;
             serializedCpuMilitary.ApplyModifiedPropertiesWithoutUndo();
 
             EditorUtility.SetDirty(resourceHud);

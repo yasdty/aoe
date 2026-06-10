@@ -36,6 +36,8 @@ namespace AoE.RTS.EditorTools
         const string DefaultArcheryRangeDataPath = GameAssetPaths.DefaultArcheryRangeData;
         const string DefaultStableDataPath = GameAssetPaths.DefaultStableData;
         const string MilitiaDataPath = GameAssetPaths.MilitiaData;
+        const string ManAtArmsDataPath = GameAssetPaths.ManAtArmsData;
+        const string InfantryUpgradeTechPath = GameAssetPaths.InfantryUpgradeTech;
         const string SpearmanDataPath = GameAssetPaths.SpearmanData;
         const string ArcherDataPath = GameAssetPaths.ArcherData;
         const string CavalryDataPath = GameAssetPaths.CavalryData;
@@ -77,7 +79,9 @@ namespace AoE.RTS.EditorTools
             EnsureBarracksData(militiaData, spearmanData);
             EnsureArcheryRangeData(archerData);
             EnsureStableData(cavalryData, scoutData);
+            UnitData manAtArmsData = EnsureManAtArmsData();
             EnsureBlacksmithData();
+            EnsureInfantryUpgradeTech(militiaData, manAtArmsData);
             EnsureFeudalAgeData();
             Debug.Log("Synced AoE2 game data assets.");
         }
@@ -1019,6 +1023,67 @@ namespace AoE.RTS.EditorTools
             return data;
         }
 
+        public static UnitData EnsureManAtArmsData()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/UnitData"))
+                AssetDatabase.CreateFolder("Assets/Data", "UnitData");
+
+            UnitData existing = AssetDatabase.LoadAssetAtPath<UnitData>(ManAtArmsDataPath);
+            if (existing != null)
+            {
+                bool dirty = SyncManAtArmsStats(existing);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            UnitData data = ScriptableObject.CreateInstance<UnitData>();
+            data.displayName = "Man-at-Arms";
+            SyncManAtArmsStats(data);
+            AssetDatabase.CreateAsset(data, ManAtArmsDataPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
+        public static TechnologyData EnsureInfantryUpgradeTech(UnitData militiaData = null, UnitData manAtArmsData = null)
+        {
+            if (militiaData == null)
+                militiaData = EnsureMilitiaData();
+            if (manAtArmsData == null)
+                manAtArmsData = EnsureManAtArmsData();
+
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+            if (!AssetDatabase.IsValidFolder("Assets/Data/TechnologyData"))
+                AssetDatabase.CreateFolder("Assets/Data", "TechnologyData");
+
+            TechnologyData existing = AssetDatabase.LoadAssetAtPath<TechnologyData>(InfantryUpgradeTechPath);
+            if (existing != null)
+            {
+                bool dirty = SyncInfantryUpgradeTech(existing, militiaData, manAtArmsData);
+                if (dirty)
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                }
+
+                return existing;
+            }
+
+            TechnologyData data = ScriptableObject.CreateInstance<TechnologyData>();
+            data.displayName = "Infantry Upgrade";
+            SyncInfantryUpgradeTech(data, militiaData, manAtArmsData);
+            AssetDatabase.CreateAsset(data, InfantryUpgradeTechPath);
+            AssetDatabase.SaveAssets();
+            return data;
+        }
+
         public static PlacedBuildingData EnsureBlacksmithData()
         {
             if (!AssetDatabase.IsValidFolder("Assets/Data"))
@@ -1631,6 +1696,40 @@ namespace AoE.RTS.EditorTools
             if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
             if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
             if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            return dirty;
+        }
+
+        static bool SyncManAtArmsStats(UnitData data)
+        {
+            bool dirty = false;
+            if (data.displayName != "Man-at-Arms") { data.displayName = "Man-at-Arms"; dirty = true; }
+            if (data.maxHp != 45f) { data.maxHp = 45f; dirty = true; }
+            if (data.moveSpeed != 5f) { data.moveSpeed = 5f; dirty = true; }
+            if (data.attack != 6f) { data.attack = 6f; dirty = true; }
+            dirty |= SyncUnitCombatProfile(data, AttackDamageType.Melee, 0f, 1f, UnitArmorClass.Infantry);
+            if (data.attackRange != 2f) { data.attackRange = 2f; dirty = true; }
+            if (data.attackCooldown != 1f) { data.attackCooldown = 1f; dirty = true; }
+            if (data.team != UnitTeam.Player) { data.team = UnitTeam.Player; dirty = true; }
+            if (data.defaultColor != new Color(0.35f, 0.42f, 0.58f))
+            {
+                data.defaultColor = new Color(0.35f, 0.42f, 0.58f);
+                dirty = true;
+            }
+
+            return dirty;
+        }
+
+        static bool SyncInfantryUpgradeTech(TechnologyData data, UnitData militiaData, UnitData manAtArmsData)
+        {
+            bool dirty = false;
+            if (data.kind != TechnologyKind.InfantryUpgrade) { data.kind = TechnologyKind.InfantryUpgrade; dirty = true; }
+            if (data.displayName != "Infantry Upgrade") { data.displayName = "Infantry Upgrade"; dirty = true; }
+            if (data.prerequisiteAge != GameAge.Feudal) { data.prerequisiteAge = GameAge.Feudal; dirty = true; }
+            if (data.foodCost != 100f) { data.foodCost = 100f; dirty = true; }
+            if (data.goldCost != 50f) { data.goldCost = 50f; dirty = true; }
+            if (data.researchTimeSeconds != 75f) { data.researchTimeSeconds = 75f; dirty = true; }
+            if (data.outputUnitData != manAtArmsData) { data.outputUnitData = manAtArmsData; dirty = true; }
+            if (data.replacesUnitData != militiaData) { data.replacesUnitData = militiaData; dirty = true; }
             return dirty;
         }
 
