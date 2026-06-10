@@ -8,9 +8,9 @@ namespace AoE.RTS.Buildings
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Collider))]
-    public class StoneWall : OrientedWallSegment
+    public class Gate : OrientedWallSegment
     {
-        protected override WallOccupancyKind GetOccupancyKind() => WallOccupancyKind.Wall;
+        protected override WallOccupancyKind GetOccupancyKind() => WallOccupancyKind.Gate;
 
         protected override void EnsureDataReference()
         {
@@ -18,7 +18,7 @@ namespace AoE.RTS.Buildings
                 return;
 
 #if UNITY_EDITOR
-            data = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultStoneWallData);
+            data = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultGateData);
 #endif
         }
     }

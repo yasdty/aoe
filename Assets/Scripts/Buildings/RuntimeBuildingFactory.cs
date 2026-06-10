@@ -54,14 +54,31 @@ namespace AoE.RTS.Buildings
             return CreateFreshBlacksmith(data, position, team);
         }
 
-        public static PalisadeWall CreatePalisadeWall(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        public static PalisadeWall CreatePalisadeWall(
+            PlacedBuildingData data,
+            Vector3 position,
+            UnitTeam team = UnitTeam.Player,
+            float orientationY = 0f)
         {
-            return CreateFreshPalisadeWall(data, position, team);
+            return CreateFreshPalisadeWall(data, position, team, orientationY);
         }
 
-        public static StoneWall CreateStoneWall(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        public static StoneWall CreateStoneWall(
+            PlacedBuildingData data,
+            Vector3 position,
+            UnitTeam team = UnitTeam.Player,
+            float orientationY = 0f)
         {
-            return CreateFreshStoneWall(data, position, team);
+            return CreateFreshStoneWall(data, position, team, orientationY);
+        }
+
+        public static Gate CreateGate(
+            PlacedBuildingData data,
+            Vector3 position,
+            UnitTeam team = UnitTeam.Player,
+            float orientationY = 0f)
+        {
+            return CreateFreshGate(data, position, team, orientationY);
         }
 
         public static WatchTower CreateWatchTower(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
@@ -220,14 +237,48 @@ namespace AoE.RTS.Buildings
             return blacksmith;
         }
 
-        public static PalisadeWall CreateFreshPalisadeWall(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        public static PalisadeWall CreateFreshPalisadeWall(
+            PlacedBuildingData data,
+            Vector3 position,
+            UnitTeam team = UnitTeam.Player,
+            float orientationY = 0f)
         {
-            return CreateFreshDefenseWall<PalisadeWall>("PalisadeWall", data, position, team);
+            return CreateFreshDefenseWall<PalisadeWall>("PalisadeWall", data, position, team, orientationY);
         }
 
-        public static StoneWall CreateFreshStoneWall(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
+        public static StoneWall CreateFreshStoneWall(
+            PlacedBuildingData data,
+            Vector3 position,
+            UnitTeam team = UnitTeam.Player,
+            float orientationY = 0f)
         {
-            return CreateFreshDefenseWall<StoneWall>("StoneWall", data, position, team);
+            return CreateFreshDefenseWall<StoneWall>("StoneWall", data, position, team, orientationY);
+        }
+
+        public static Gate CreateFreshGate(
+            PlacedBuildingData data,
+            Vector3 position,
+            UnitTeam team = UnitTeam.Player,
+            float orientationY = 0f)
+        {
+            if (data == null)
+                return null;
+
+            Vector3 worldPosition = ResolveWorldPosition(data, position);
+            GameObject gateObject = EntityVisualBuilder.CreateBuildingShell(
+                "Gate",
+                LayerMask.NameToLayer("Building"),
+                worldPosition,
+                new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth),
+                Vector3.zero,
+                PlaceholderVisualKind.House);
+
+            ApplySharedMaterialIfMissingRendererTint(gateObject);
+            ConfigureBuildingHealth(gateObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
+
+            Gate gate = gateObject.AddComponent<Gate>();
+            gate.PrepareForReuse(data, position, team, orientationY);
+            return gate;
         }
 
         public static WatchTower CreateFreshWatchTower(PlacedBuildingData data, Vector3 position, UnitTeam team = UnitTeam.Player)
@@ -256,7 +307,8 @@ namespace AoE.RTS.Buildings
             string objectName,
             PlacedBuildingData data,
             Vector3 position,
-            UnitTeam team)
+            UnitTeam team,
+            float orientationY = 0f)
             where TWall : MonoBehaviour
         {
             if (data == null)
@@ -275,10 +327,8 @@ namespace AoE.RTS.Buildings
             ConfigureBuildingHealth(wallObject, data.maxHp, data.meleeArmor, data.pierceArmor, team);
 
             TWall wall = wallObject.AddComponent<TWall>();
-            if (wall is PalisadeWall palisadeWall)
-                palisadeWall.SetData(data);
-            else if (wall is StoneWall stoneWall)
-                stoneWall.SetData(data);
+            if (wall is OrientedWallSegment orientedWall)
+                orientedWall.PrepareForReuse(data, position, team, orientationY);
 
             return wall;
         }

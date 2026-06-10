@@ -213,6 +213,7 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData blacksmithData = Phase1SceneBuilder.EnsureBlacksmithData();
             PlacedBuildingData palisadeWallData = Phase1SceneBuilder.EnsurePalisadeWallData();
             PlacedBuildingData stoneWallData = Phase1SceneBuilder.EnsureStoneWallData();
+            PlacedBuildingData gateData = Phase1SceneBuilder.EnsureGateData();
             PlacedBuildingData watchTowerData = Phase1SceneBuilder.EnsureWatchTowerData();
             PlacedBuildingData marketData = Phase1SceneBuilder.EnsureMarketData();
             MarketTradeData marketTradeData = Phase1SceneBuilder.EnsureMarketTradeData();
@@ -257,6 +258,7 @@ namespace AoE.RTS.EditorTools
                 blacksmithData,
                 palisadeWallData,
                 stoneWallData,
+                gateData,
                 watchTowerData,
                 marketData,
                 marketTradeData,
@@ -534,6 +536,7 @@ namespace AoE.RTS.EditorTools
 
             PlacedBuildingData palisadeWallData = Phase1SceneBuilder.EnsurePalisadeWallData();
             PlacedBuildingData stoneWallData = Phase1SceneBuilder.EnsureStoneWallData();
+            PlacedBuildingData gateData = Phase1SceneBuilder.EnsureGateData();
             PlacedBuildingData watchTowerData = Phase1SceneBuilder.EnsureWatchTowerData();
 
             GameObject systems = GameObject.Find("Systems");
@@ -553,6 +556,7 @@ namespace AoE.RTS.EditorTools
                 serializedPlacement.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
                 serializedPlacement.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
                 serializedPlacement.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
+                serializedPlacement.FindProperty("gateData").objectReferenceValue = gateData;
                 serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
             }
 
@@ -562,6 +566,7 @@ namespace AoE.RTS.EditorTools
                 SerializedObject serializedResourceHud = new SerializedObject(resourceHud);
                 serializedResourceHud.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
                 serializedResourceHud.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
+                serializedResourceHud.FindProperty("gateData").objectReferenceValue = gateData;
                 serializedResourceHud.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
                 serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
             }
@@ -1114,6 +1119,7 @@ namespace AoE.RTS.EditorTools
             PlacedBuildingData blacksmithData,
             PlacedBuildingData palisadeWallData,
             PlacedBuildingData stoneWallData,
+            PlacedBuildingData gateData,
             PlacedBuildingData watchTowerData,
             PlacedBuildingData marketData,
             MarketTradeData marketTradeData,
@@ -1379,6 +1385,7 @@ namespace AoE.RTS.EditorTools
             serializedPlacement.FindProperty("blacksmithData").objectReferenceValue = blacksmithData;
             serializedPlacement.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
             serializedPlacement.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
+            serializedPlacement.FindProperty("gateData").objectReferenceValue = gateData;
             serializedPlacement.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
             serializedPlacement.FindProperty("marketData").objectReferenceValue = marketData;
             serializedPlacement.FindProperty("townCenterPlacementData").objectReferenceValue = townCenterPlacementData;
@@ -1393,6 +1400,7 @@ namespace AoE.RTS.EditorTools
             serializedResourceHud.FindProperty("blacksmithData").objectReferenceValue = blacksmithData;
             serializedResourceHud.FindProperty("palisadeWallData").objectReferenceValue = palisadeWallData;
             serializedResourceHud.FindProperty("stoneWallData").objectReferenceValue = stoneWallData;
+            serializedResourceHud.FindProperty("gateData").objectReferenceValue = gateData;
             serializedResourceHud.FindProperty("watchTowerData").objectReferenceValue = watchTowerData;
             serializedResourceHud.FindProperty("marketData").objectReferenceValue = marketData;
             serializedResourceHud.FindProperty("townCenterPlacementData").objectReferenceValue = townCenterPlacementData;

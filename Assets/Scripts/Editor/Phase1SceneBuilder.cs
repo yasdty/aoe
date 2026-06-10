@@ -48,6 +48,7 @@ namespace AoE.RTS.EditorTools
         const string DefaultBlacksmithDataPath = GameAssetPaths.DefaultBlacksmithData;
         const string DefaultPalisadeWallDataPath = GameAssetPaths.DefaultPalisadeWallData;
         const string DefaultStoneWallDataPath = GameAssetPaths.DefaultStoneWallData;
+        const string DefaultGateDataPath = GameAssetPaths.DefaultGateData;
         const string DefaultWatchTowerDataPath = GameAssetPaths.DefaultWatchTowerData;
         const string DefaultMarketDataPath = GameAssetPaths.DefaultMarketData;
         const string DefaultMarketTradeDataPath = GameAssetPaths.DefaultMarketTradeData;
@@ -93,6 +94,7 @@ namespace AoE.RTS.EditorTools
             EnsureInfantryUpgradeTech(militiaData, manAtArmsData);
             EnsurePalisadeWallData();
             EnsureStoneWallData();
+            EnsureGateData();
             EnsureWatchTowerData();
             EnsureMarketData();
             EnsureMarketTradeData();
@@ -1411,6 +1413,26 @@ namespace AoE.RTS.EditorTools
                 pierceArmor: 8f,
                 towerAttack: 0f,
                 defaultColor: new Color(0.55f, 0.55f, 0.58f));
+        }
+
+        public static PlacedBuildingData EnsureGateData()
+        {
+            return EnsureDefenseBuildingData(
+                DefaultGateDataPath,
+                PlacedBuildingKind.Gate,
+                "Gate",
+                GameAge.Feudal,
+                woodCost: 30f,
+                stoneCost: 0f,
+                buildTime: 12f,
+                footprintWidth: 2f,
+                footprintDepth: 4f,
+                buildingHeight: 2.5f,
+                maxHp: 950f,
+                meleeArmor: 0f,
+                pierceArmor: 8f,
+                towerAttack: 0f,
+                defaultColor: new Color(0.62f, 0.5f, 0.35f));
         }
 
         public static PlacedBuildingData EnsureWatchTowerData()

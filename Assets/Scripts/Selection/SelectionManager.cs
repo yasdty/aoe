@@ -182,6 +182,13 @@ namespace AoE.RTS.Selection
 
         void HandlePlacementModeInput()
         {
+            if (BuildingPlacementManager.IsActiveWallPlacement())
+            {
+                if (input.WasCommandPressedThisFrame())
+                    BuildingPlacementManager.CancelPlacementMode();
+                return;
+            }
+
             if (input.WasSelectPressedThisFrame() && !ResourceHudView.IsPointerOverHud(input.PointerScreenPosition))
             {
                 dragStartScreen = input.PointerScreenPosition;
@@ -195,9 +202,13 @@ namespace AoE.RTS.Selection
                     isDragging = true;
             }
 
-            if (input.WasSelectReleasedThisFrame() && !isDragging
-                && !ResourceHudView.IsPointerOverHud(input.PointerScreenPosition))
-                CommandQueue.Enqueue(new BuildConfirmCommand(selectedUnits));
+            if (input.WasSelectReleasedThisFrame() && !ResourceHudView.IsPointerOverHud(input.PointerScreenPosition))
+            {
+                if (!isDragging)
+                    CommandQueue.Enqueue(new BuildConfirmCommand(selectedUnits));
+                else
+                    isDragging = false;
+            }
 
             if (input.WasCommandPressedThisFrame())
                 BuildingPlacementManager.CancelPlacementMode();
@@ -301,6 +312,13 @@ namespace AoE.RTS.Selection
             if (stoneWall != null && stoneWall.Team == UnitTeam.Player)
             {
                 SetPlacedBuildingSelection(stoneWall.GetComponent<BuildingHealth>());
+                return true;
+            }
+
+            Gate gate = hit.collider.GetComponentInParent<Gate>();
+            if (gate != null && gate.Team == UnitTeam.Player)
+            {
+                SetPlacedBuildingSelection(gate.GetComponent<BuildingHealth>());
                 return true;
             }
 

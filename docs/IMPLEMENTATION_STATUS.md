@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 48 ✅（RTS UX Polish — キュー取消/Shift+5/House Pop/建築 H·B/壁 Shift+配置部分）。**M4 完了。次: Phase 49 Wall & Gate（M5）。**
+> **最終更新:** Phase 49 ✅（Wall & Gate — 通行遮断/ドラッグ配置/Gate）。**次: Phase 50 Wall Age Grades（M5）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -82,9 +82,9 @@
 | 45 | Market | `Phase10.unity` | ✅ 完了（M4） |
 | 46 | Civilization | `Phase10.unity` | ✅ 完了（M4） |
 | 47 | Second TC | `Phase10.unity` | ✅ 完了（M4） |
-| 48 | RTS UX Polish | `Phase10.unity` | ✅ 完了（M4）— 壁は配置のみ・遮断/Gate は Phase 49 |
-| 49 | Wall & Gate System | `Phase10.unity` | ⬜ 未着手（M5）— **次** |
-| 50 | Wall Age Grades | `Phase10.unity` | ⬜ 未着手（M5） |
+| 48 | RTS UX Polish | `Phase10.unity` | ✅ 完了（M4） |
+| 49 | Wall & Gate System | `Phase10.unity` | ✅ 完了（M5）— 列ゴーストプレビューは Phase 52〜53 |
+| 50 | Wall Age Grades | `Phase10.unity` | ⬜ 未着手（M5）— **次** |
 | 51 | Localization (i18n) | `Phase10.unity` | ⬜ 未着手（M5） |
 | 52 | View Layer Split | `Phase10.unity` | ⬜ 未着手（M5） |
 | 53 | HUD Migration | `Phase10.unity` | ⬜ 未着手（M5） |
@@ -113,7 +113,7 @@
 
 **Milestone 4 AoE Gameplay:** ✅ 完了（Phase 42〜48）
 
-**Milestone 5 Gameplay Polish & Visual / UI:** ⬜ 未着手（Phase 49〜56 — **次: Phase 49 Wall & Gate**）
+**Milestone 5 Gameplay Polish & Visual / UI:** ⬜ 進行中（Phase 49 ✅ / **次: Phase 50**）
 
 **Milestone 6 Multiplayer Foundation:** ⬜ 未着手（Phase 57〜61）
 
@@ -233,10 +233,11 @@
 | CPU 自動建築 | ✅ | House / Barracks（AI） |
 | 建築破壊・Pop 減少 | ✅ | Phase 48 — House 破壊時 `PopulationManager.RemoveHousing` |
 | 壁・塔（配置・HP） | ✅ | Phase 44 — Palisade / Stone Wall / Watch Tower |
-| 壁通行遮断 | ❌ | **M5 Phase 49** |
-| 壁 AoE2 型ドラッグ連続 | △ | Phase 48 — Shift+クリック連続のみ。真のドラッグ・接続は Phase 49 |
-| 城門（Gate） | ❌ | **M5 Phase 49** |
-| 時代別壁グレード | ❌ | **M5 Phase 50**（Dark 柵 → Feudal 石壁等） |
+| 壁通行遮断 | ✅ | Phase 49 — `WallOccupancyRegistry` |
+| 壁 AoE2 型ドラッグ連続 | ✅ | Phase 49 — ドラッグ確定でセグメント列 |
+| 壁ドラッグ列ゴースト | ⬜ | **Phase 52〜53** — ドラッグ中プレビュー（Phase 49 繰越） |
+| 城門（Gate） | ✅ | Phase 49 — 自軍通過可 / 敵軍ブロック |
+| 時代別壁グレード | ❌ | **M5 Phase 50**
 | 複数建築タイプ（修道院等） | ❌ | |
 
 ### Combat
@@ -543,7 +544,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **AI** | 経済・軍事・難易度 | CPU 4 資源 + Militia 波 ✅ | M3 CPU 拡張 |
 | **戦闘** | 遠近・装甲・相性 | 近接/遠距離 + Melee/Pierce 装甲 + Spearman 対騎兵 ✅（Phase 39） | M4+ |
 | **フォーメーション** | 隊列・スタンス | スタンス + 攻撃移動 ✅（Phase 40）/ 隊列 ✅（Phase 41） | M4 Phase 42+ |
-| **壁** | 石壁・塔・Gate | 配置・HP ✅（Phase 44）/ **遮断・Gate ❌ → M5 Phase 49** / 時代別 ❌ → Phase 50 |
+| **壁** | 石壁・塔・Gate | 遮断・Gate・ドラッグ列 ✅（Phase 49）/ 時代別 ❌ → Phase 50 / 列ゴースト → Phase 52〜53 |
 | **Localization** | 多言語 UI | ❌ — **M5 Phase 51** LanguageMap + 日本語 |
 | **船** | 海上戦・貿易 | ❌ | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 | **市場** | 資源交易 | Market + 固定レート売買 ✅（Phase 45） | M4 Phase 46+ |
@@ -574,7 +575,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 
 | 機能 | 説明 |
 |------|------|
-| 壁通行遮断・Gate | **M5 Phase 49** — 現状はすり抜け可能 |
+| 壁通行遮断・Gate | ✅ Phase 49 / **列ゴースト** → Phase 52〜53 |
 | 時代別壁グレード | **M5 Phase 50** — Age Up に伴う柵/石壁 |
 | 日本語 UI | **M5 Phase 51** — LanguageMap |
 | CPU 難易度・戦略バリエーション | 現状は Relaxed / Aggressive のみ |
@@ -587,7 +588,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | 機能 | 説明 |
 |------|------|
 | 騎兵・攻城兵器 | ✅ 騎兵 MVP（Phase 38）/ 攻城 ❌ |
-| 壁・塔・Gate | 配置 ✅ / 遮断・Gate ⬜ Phase 49 |
+| 壁・塔・Gate | 遮断・Gate ✅ / 列ゴースト ⬜ Phase 52〜53 |
 | 船・水上 | |
 | マップ生成 | |
 | セーブ / ロード | |
@@ -1046,7 +1047,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・Feudal 経済・多兵種・1 CPU — **Dark〜Feudal 垂直スライス**（全体 ~38%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 49 Wall & Gate** — [09_M5](09_M5_VISUAL_UI_PHASES.md) |
+| 次に何を作るべき？ | **Phase 50 Wall Age Grades** — [09_M5](09_M5_VISUAL_UI_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

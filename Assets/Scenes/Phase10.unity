@@ -1483,9 +1483,10 @@ MonoBehaviour:
   lumberCampData: {fileID: 0}
   miningCampData: {fileID: 0}
   millData: {fileID: 0}
-  palisadeWallData: {fileID: 0}
-  stoneWallData: {fileID: 0}
-  watchTowerData: {fileID: 0}
+  palisadeWallData: {fileID: 11400000, guid: 5cec63d68a73b1a48bea44edda574334, type: 2}
+  stoneWallData: {fileID: 11400000, guid: a1dfe9611fb1d8541861e6682b2201f5, type: 2}
+  gateData: {fileID: 11400000, guid: 3d7ef3be49ecbfa4a8f1af2896996bd9, type: 2}
+  watchTowerData: {fileID: 11400000, guid: d3642e41932365d44942a367176b0213, type: 2}
   marketData: {fileID: 0}
   townCenterPlacementData: {fileID: 0}
 --- !u!114 &198182943
@@ -12008,8 +12009,10 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses:
+  - MOTIONVECTORS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -15785,9 +15788,10 @@ MonoBehaviour:
   archeryRangeData: {fileID: 0}
   stableData: {fileID: 0}
   blacksmithData: {fileID: 0}
-  palisadeWallData: {fileID: 0}
-  stoneWallData: {fileID: 0}
-  watchTowerData: {fileID: 0}
+  palisadeWallData: {fileID: 11400000, guid: 5cec63d68a73b1a48bea44edda574334, type: 2}
+  stoneWallData: {fileID: 11400000, guid: a1dfe9611fb1d8541861e6682b2201f5, type: 2}
+  gateData: {fileID: 11400000, guid: 3d7ef3be49ecbfa4a8f1af2896996bd9, type: 2}
+  watchTowerData: {fileID: 11400000, guid: d3642e41932365d44942a367176b0213, type: 2}
   marketData: {fileID: 0}
   townCenterPlacementData: {fileID: 0}
   farmData: {fileID: 0}

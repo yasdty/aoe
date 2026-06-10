@@ -5,15 +5,24 @@
 > **実装状況:** [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)  
 > **前:** M4 AoE Gameplay / **次:** [10_M6_MULTIPLAYER_FOUNDATION.md](10_M6_MULTIPLAYER_FOUNDATION.md)（Phase 57〜61）
 
-> **2026-06 拡張:** Phase 44/48 の壁は **配置・HP のみ MVP**（通行遮断・Gate・AoE2 型ドラッグ未達）。本 M5 先頭で **本物の壁システム** と **i18n** を入れてから uGUI 移行する。
+> **2026-06 拡張:** Phase 44/48 の壁は配置・HP MVP。Phase 49 で **通行遮断・ドラッグ列配置・Gate** を実装。**ドラッグ中の列ゴーストプレビュー**は Phase 52〜53（View / HUD）で対応。
 
 ---
+
+## Phase 49 から Phase 52〜53 へ繰り越し（UI）
+
+| 項目 | Phase 49 | 繰越先 |
+|------|----------|--------|
+| ドラッグ確定で壁列を配置 | ✅ | — |
+| 通行遮断・Gate | ✅ | — |
+| **ドラッグ中の列ゴースト**（全セグメントを有効/無効色で表示） | ⬜ 意図的後回し | **Phase 52〜53** — `IPlacementPreviewView` / uGUI 移行時 |
+| 角・接続の見た目 polish | △ MVP | Phase 55 以降（任意） |
 
 ## Phase 一覧
 
 | Phase | 名称 | 目的 | 状態 |
 |-------|------|------|------|
-| 49 | **Wall & Gate System** | 通行遮断・ドラッグ連続配置・セグメント接続・**Gate（自軍通過）** | ⬜ 未着手 |
+| 49 | **Wall & Gate System** | 通行遮断・ドラッグ連続配置・セグメント接続・**Gate（自軍通過）** | ✅ 完了 |
 | 50 | **Wall Age Grades** | 時代に応じた柵/壁グレード（AoE2: 初期柵 → 昇格後の石壁等） | ⬜ 未着手 |
 | 51 | **Localization (i18n)** | LanguageMap + **日本語表示**（AoE2 Wiki 用語）/ EN↔JA 切替 | ⬜ 未着手 |
 | 52 | View Layer Split | Simulation / View 分離 + uGUI Canvas シェル | ⬜ 未着手 |
@@ -36,18 +45,18 @@
 
 ---
 
-## Phase 49 — Wall & Gate System ⬜
+## Phase 49 — Wall & Gate System ✅
 
-**Phase 44/48 との差分（必須）:**
+**Play 確認済（2026-06）:** ドラッグ列配置・通行遮断・Gate（自軍通過）OK。
 
-| 項目 | Phase 44/48 MVP | Phase 49 目標 |
-|------|-----------------|---------------|
-| 通行 | すり抜け可能 | **遮断** |
-| 配置 | 1 マス / Shift+クリック | **ドラッグ連続** + 隣接スナップ |
-| Gate | なし | **自軍通過可** |
-| 見た目 | 独立セグメント | 角・直線の接続（最低限） |
+**Phase 44/48 との差分:**
 
-**参考（AoE2 Wiki 日本語）:**  палисade → **フェンス** / 石壁 → **石の城壁** / 城門 → **門**（Gate）
+| 項目 | Phase 44/48 MVP | Phase 49 |
+|------|-----------------|----------|
+| 通行 | すり抜け可能 | **遮断** ✅ |
+| 配置 | Shift+クリック | **ドラッグ確定** ✅ |
+| Gate | なし | **自軍通過可** ✅ |
+| ドラッグ中ゴースト | — | **未実装** → Phase 52〜53 |
 
 **プロンプト:** [prompts/phase49-prompt.md](prompts/phase49-prompt.md)
 
@@ -64,7 +73,7 @@
 
 **実装方針:** `PlacedBuildingData.requiredAge` + 配置 HUD の自動差し替え / 既存 Palisade の「グレードアップ」は Data 駆動（rewrite 禁止）
 
-**プロンプト:** [prompts/phase50-prompt.md](prompts/phase50-prompt.md)（未作成）
+**プロンプト:** [prompts/phase50-prompt.md](prompts/phase50-prompt.md)
 
 ---
 
@@ -91,6 +100,7 @@
 **目的:** Manager 内 OnGUI を段階的に剥がす。
 
 - `IHudPresenter` / `ISelectionView` 等
+- **`IPlacementPreviewView`** — 単体ゴーストに加え **壁ドラッグ列プレビュー**（Phase 49 繰越）
 - Simulation Manager は View を直接参照しない
 - uGUI Canvas を Editor API 生成
 
@@ -101,6 +111,8 @@
 ## Phase 53 — HUD Migration ⬜
 
 **移行対象:** `ResourceHudView`, `ProductionPanelView`, `SelectionInfoPanelView`, `IdleUnitHudView`, `VictoryDefeatHudView` — **Phase 51 LanguageMap 必須**
+
+**配置 UX（Phase 49 繰越）:** 壁・Gate 配置中の **ドラッグ列ゴースト**（有効/無効色・資源不足時の打ち切り表示）を uGUI / Preview View で実装。
 
 **プロンプト:** [prompts/phase53-prompt.md](prompts/phase53-prompt.md)（未作成）
 

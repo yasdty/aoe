@@ -88,6 +88,15 @@ namespace AoE.RTS.Core
             if (building.GetComponent<Mill>() != null)
                 return "Mill";
 
+            if (building.GetComponent<Gate>() != null)
+                return "Gate";
+
+            if (building.GetComponent<PalisadeWall>() != null)
+                return "Palisade Wall";
+
+            if (building.GetComponent<StoneWall>() != null)
+                return "Stone Wall";
+
             return "Building";
         }
 

@@ -23,6 +23,7 @@ namespace AoE.RTS.Selection
         [SerializeField] PlacedBuildingData millData;
         [SerializeField] PlacedBuildingData palisadeWallData;
         [SerializeField] PlacedBuildingData stoneWallData;
+        [SerializeField] PlacedBuildingData gateData;
         [SerializeField] PlacedBuildingData watchTowerData;
         [SerializeField] PlacedBuildingData marketData;
         [SerializeField] PlacedBuildingData townCenterPlacementData;
@@ -38,7 +39,7 @@ namespace AoE.RTS.Selection
         const float ButtonHeight = 28f;
         const float ButtonGap = 4f;
         const float Padding = 8f;
-        const int BuildButtonCount = 14;
+        const int BuildButtonCount = 15;
 
         static ResourceHudView instance;
 
@@ -68,6 +69,7 @@ namespace AoE.RTS.Selection
             millData = PlacedBuildingDataResolver.ResolveMill(ref millData);
             palisadeWallData = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
             stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
+            gateData = PlacedBuildingDataResolver.ResolveGate(ref gateData);
             watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             marketData = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
             townCenterPlacementData = PlacedBuildingDataResolver.ResolveTownCenterPlacement(ref townCenterPlacementData);
@@ -133,6 +135,7 @@ namespace AoE.RTS.Selection
             PlacedBuildingData mill = PlacedBuildingDataResolver.ResolveMill(ref millData);
             PlacedBuildingData palisadeWall = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
             PlacedBuildingData stoneWall = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
+            PlacedBuildingData gate = PlacedBuildingDataResolver.ResolveGate(ref gateData);
             PlacedBuildingData watchTower = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             PlacedBuildingData market = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
             PlacedBuildingData townCenterPlacement = PlacedBuildingDataResolver.ResolveTownCenterPlacement(
@@ -346,6 +349,23 @@ namespace AoE.RTS.Selection
             }
             y += ButtonHeight + ButtonGap;
 
+            Rect gateButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
+            bool canBuildGate = GameSessionManager.CanBuild(gate, UnitTeam.Player);
+            bool canAffordGate = PlacementCostUtility.CanAfford(UnitTeam.Player, gate);
+            GUI.enabled = canBuildGate && canAffordGate && !inPlacementMode && !gameOver;
+            if (GUI.Button(
+                    gateButtonRect,
+                    canBuildGate
+                        ? $"Build Gate ({FormatPlacementCost(gate)})"
+                        : "Gate (Feudal Age + wall)"))
+            {
+                IReadOnlyList<Unit> builders = selectionManager != null
+                    ? selectionManager.SelectedUnits
+                    : null;
+                BuildingPlacementManager.EnterGatePlacementMode(builders);
+            }
+            y += ButtonHeight + ButtonGap;
+
             Rect watchTowerButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
             bool canBuildWatchTower = GameSessionManager.CanBuild(watchTower, UnitTeam.Player);
             bool canAffordWatchTower = PlacementCostUtility.CanAfford(UnitTeam.Player, watchTower);
@@ -404,7 +424,7 @@ namespace AoE.RTS.Selection
 
             bool canAffordAnyBuild = canAffordHouse || canAffordBarracks || canAffordArcheryRange || canAffordStable
                 || canAffordBlacksmith || canAffordFarm || canAffordLumberCamp || canAffordMiningCamp || canAffordMill
-                || canAffordPalisade || canAffordStoneWall || canAffordWatchTower || canAffordMarket
+                || canAffordPalisade || canAffordStoneWall || canAffordGate || canAffordWatchTower || canAffordMarket
                 || canAffordTownCenter;
             DrawPlacementHints(panelRect, inPlacementMode, canAffordAnyBuild);
         }
@@ -415,7 +435,7 @@ namespace AoE.RTS.Selection
             {
                 Rect hintRect = new Rect(Margin, panelRect.yMax + 4f, PanelWidth + 60f, 36f);
                 GameUiInput.SetHudHintScreenRect(GameUiInput.GuiRectToScreenRect(hintRect));
-                GUI.Label(hintRect, "Click ground to place. Esc / Right-click to cancel.\nShift+drag for wall segments.");
+                GUI.Label(hintRect, "Click to place. Walls: drag a line. Esc / Right-click to cancel.");
                 return;
             }
 

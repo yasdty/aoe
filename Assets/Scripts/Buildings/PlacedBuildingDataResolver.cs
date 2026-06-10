@@ -260,6 +260,34 @@ namespace AoE.RTS.Buildings
             return cached;
         }
 
+        public static PlacedBuildingData ResolveGate(ref PlacedBuildingData cached)
+        {
+            if (cached != null)
+                return cached;
+
+#if UNITY_EDITOR
+            cached = AssetDatabase.LoadAssetAtPath<PlacedBuildingData>(GameAssetPaths.DefaultGateData);
+            if (cached != null)
+                return cached;
+#endif
+
+            cached = ScriptableObject.CreateInstance<PlacedBuildingData>();
+            cached.kind = PlacedBuildingKind.Gate;
+            cached.displayName = "Gate";
+            cached.requiredAge = GameAge.Feudal;
+            cached.woodCost = 30f;
+            cached.buildTime = 12f;
+            cached.footprintWidth = 2f;
+            cached.footprintDepth = 4f;
+            cached.buildingHeight = 2.5f;
+            cached.housingProvided = 0;
+            cached.maxHp = 950f;
+            cached.meleeArmor = 0f;
+            cached.pierceArmor = 8f;
+            cached.defaultColor = new Color(0.62f, 0.5f, 0.35f);
+            return cached;
+        }
+
         public static PlacedBuildingData ResolveWatchTower(ref PlacedBuildingData cached)
         {
             if (cached != null)

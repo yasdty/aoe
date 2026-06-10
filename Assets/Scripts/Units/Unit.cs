@@ -236,14 +236,19 @@ namespace AoE.RTS.Units
             float speed = data != null ? data.moveSpeed : 5f;
             float step = speed * deltaTime;
 
-            if (distance <= step)
+            Vector3 nextPosition = distance <= step
+                ? target
+                : position + toTarget / distance * step;
+
+            if (WallOccupancyRegistry.IsMovementBlockedAlongPath(position, nextPosition, team))
             {
-                transform.position = target;
                 moveTarget = null;
                 return;
             }
 
-            transform.position = position + toTarget / distance * step;
+            transform.position = nextPosition;
+            if (distance <= step)
+                moveTarget = null;
         }
 
         public void NotifyStateChanged()

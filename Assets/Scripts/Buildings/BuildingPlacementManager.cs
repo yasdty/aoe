@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
+using AoE.RTS.Selection;
 using AoE.RTS.Units;
 using AoE.RTS.Visuals;
 using UnityEngine;
@@ -15,16 +16,19 @@ namespace AoE.RTS.Buildings
         {
             public PlacedBuildingData data;
             public Unit builder;
+            public Unit queuedBuilder;
             public Vector3 position;
             public float remainingTime;
             public bool builderArrived;
             public GameObject siteVisual;
+            public float wallOrientationY;
         }
 
         const float BuilderReachPadding = 1.5f;
         const float ApproachReachDistance = 2.5f;
         const float GroundRayDistance = 1000f;
         const float MinSiteSeparation = 5f;
+        const float WallDragThresholdPixels = 8f;
 
         static BuildingPlacementManager instance;
 
@@ -37,6 +41,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] PlacedBuildingData blacksmithData;
         [SerializeField] PlacedBuildingData palisadeWallData;
         [SerializeField] PlacedBuildingData stoneWallData;
+        [SerializeField] PlacedBuildingData gateData;
         [SerializeField] PlacedBuildingData watchTowerData;
         [SerializeField] PlacedBuildingData marketData;
         [SerializeField] PlacedBuildingData townCenterPlacementData;
@@ -50,6 +55,7 @@ namespace AoE.RTS.Buildings
         readonly List<ConstructionSite> sites = new List<ConstructionSite>();
         readonly List<Unit> stashedBuilders = new List<Unit>();
         readonly List<Unit> builderLookupBuffer = new List<Unit>();
+        readonly List<Vector3> wallLineBuffer = new List<Vector3>();
 
         GameObject ghostObject;
         Renderer ghostRenderer;
@@ -58,12 +64,18 @@ namespace AoE.RTS.Buildings
         bool ghostValid;
         bool isPlacementModeActive;
         int placementOpenedFrame = -1;
-        bool wallDragHasAnchor;
-        Vector3 lastWallDragPosition;
-        bool placementDragOriginCaptured;
-        Vector3 placementDragOrigin;
+        int wallLineBuilderCursor;
+        bool wallDragTracking;
+        Vector2 wallDragStartScreen;
 
         public static bool IsPlacementModeActive => instance != null && instance.isPlacementModeActive;
+
+        public static bool IsActiveWallPlacement()
+        {
+            return instance != null
+                && instance.isPlacementModeActive
+                && IsWallKind(instance.activePlacementData);
+        }
 
         public static bool IsUnitBuilding(Unit unit)
         {
@@ -158,6 +170,7 @@ namespace AoE.RTS.Buildings
             blacksmithData = PlacedBuildingDataResolver.ResolveBlacksmith(ref blacksmithData);
             palisadeWallData = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
             stoneWallData = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
+            gateData = PlacedBuildingDataResolver.ResolveGate(ref gateData);
             watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             marketData = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
             townCenterPlacementData = PlacedBuildingDataResolver.ResolveTownCenterPlacement(ref townCenterPlacementData);
@@ -225,8 +238,7 @@ namespace AoE.RTS.Buildings
 
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -259,8 +271,7 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = instance.barracksData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -288,8 +299,7 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = instance.archeryRangeData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -317,8 +327,7 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = instance.stableData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -346,8 +355,7 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = instance.blacksmithData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -374,6 +382,18 @@ namespace AoE.RTS.Buildings
                 return;
 
             BeginPlacementMode(builders, instance.stoneWallData);
+        }
+
+        public static void EnterGatePlacementMode(IReadOnlyList<Unit> builders)
+        {
+            if (instance == null || GameSessionManager.IsGameOver)
+                return;
+
+            instance.gateData = PlacedBuildingDataResolver.ResolveGate(ref instance.gateData);
+            if (instance.gateData == null || !GameSessionManager.CanBuild(instance.gateData, UnitTeam.Player))
+                return;
+
+            BeginPlacementMode(builders, instance.gateData);
         }
 
         public static void EnterWatchTowerPlacementMode(IReadOnlyList<Unit> builders)
@@ -456,8 +476,8 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = placementData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
+            instance.wallDragTracking = false;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -485,8 +505,7 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = instance.farmData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -514,8 +533,7 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = instance.lumberCampData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -543,8 +561,7 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = instance.miningCampData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -572,8 +589,7 @@ namespace AoE.RTS.Buildings
             instance.activePlacementData = instance.millData;
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
             instance.ghostObject.SetActive(true);
             instance.RefreshGhostFromPointer();
         }
@@ -588,8 +604,8 @@ namespace AoE.RTS.Buildings
             instance.ghostObject.SetActive(false);
             instance.stashedBuilders.Clear();
             instance.placementOpenedFrame = -1;
-            instance.wallDragHasAnchor = false;
-            instance.placementDragOriginCaptured = false;
+            instance.wallLineBuilderCursor = 0;
+            instance.wallDragTracking = false;
         }
 
         public static bool TryConfirmPlacement(IReadOnlyList<Unit> builders)
@@ -603,25 +619,135 @@ namespace AoE.RTS.Buildings
             return instance.TryConfirmAtGhostPosition(builders);
         }
 
-        bool TryConfirmAtGhostPosition(IReadOnlyList<Unit> builders)
+        public static bool TryConfirmWallDragLine(
+            Vector2 startScreen,
+            Vector2 endScreen)
         {
-            Unit builder = ResolveIdleBuilder(builders);
+            if (instance == null || !instance.isPlacementModeActive || !IsWallKind(instance.activePlacementData))
+                return false;
+
+            if (Time.frameCount <= instance.placementOpenedFrame)
+                return false;
+
+            IReadOnlyList<Unit> builders = instance.stashedBuilders.Count > 0
+                ? instance.stashedBuilders
+                : null;
+
+            if (!instance.TryScreenToPlacementPosition(startScreen, out Vector3 startWorld)
+                || !instance.TryScreenToPlacementPosition(endScreen, out Vector3 endWorld))
+                return false;
+
+            WallPlacementUtility.GetWallLinePositions(
+                startWorld,
+                endWorld,
+                instance.activePlacementData,
+                instance.wallLineBuffer,
+                out float orientationY);
+
+            Unit builder = instance.PickNextWallLineBuilder(builders);
             if (builder == null)
                 return false;
 
+            int placedCount = 0;
+            for (int i = 0; i < instance.wallLineBuffer.Count; i++)
+            {
+                if (!instance.TryQueueWallSegmentAt(
+                        instance.wallLineBuffer[i],
+                        instance.activePlacementData,
+                        builder,
+                        orientationY,
+                        assignBuilderNow: i == 0))
+                    break;
+
+                placedCount++;
+            }
+
+            if (placedCount > 0)
+                CancelPlacementMode();
+
+            return placedCount > 0;
+        }
+
+        bool TryQueueWallSegmentAt(
+            Vector3 placementPosition,
+            PlacedBuildingData placementData,
+            Unit builder,
+            float wallOrientationY,
+            bool assignBuilderNow)
+        {
+            if (builder == null || placementData == null)
+                return false;
+
+            if (!GameSessionManager.CanBuild(placementData, builder.Team))
+                return false;
+
+            Vector3 snapped = SnapToFootprint(placementPosition);
+            if (!CanPlaceBuildingAt(snapped, placementData))
+                return false;
+
+            if (!PlacementCostUtility.TrySpend(UnitTeam.Player, placementData))
+                return false;
+
+            if (assignBuilderNow)
+            {
+                builderLookupBuffer.Clear();
+                builderLookupBuffer.Add(builder);
+                GatherManager.CancelForUnits(builderLookupBuffer);
+                FoodGatherManager.CancelForUnits(builderLookupBuffer);
+                MineralGatherManager.CancelForUnits(builderLookupBuffer);
+                RemoveIncompleteSitesForBuilder(builder);
+
+                Vector3 approach = GetBuildApproachPosition(snapped, placementData, builder);
+                builder.SetMoveTarget(approach);
+            }
+
+            sites.Add(new ConstructionSite
+            {
+                data = placementData,
+                builder = assignBuilderNow ? builder : null,
+                queuedBuilder = assignBuilderNow ? null : builder,
+                position = snapped,
+                remainingTime = placementData.ScaledBuildTime,
+                builderArrived = false,
+                siteVisual = CreateConstructionVisual(placementData, snapped),
+                wallOrientationY = wallOrientationY
+            });
+
+            return true;
+        }
+
+        bool TryConfirmAtGhostPosition(IReadOnlyList<Unit> builders)
+        {
+            IReadOnlyList<Unit> resolvedBuilders = stashedBuilders.Count > 0 ? stashedBuilders : builders;
             if (!TryGetPointerPlacementPosition(out Vector3 placementPosition))
                 return false;
 
-            PlacedBuildingData placementData = activePlacementData;
+            float orientationY = ResolveWallOrientationForPosition(placementPosition, activePlacementData);
+            if (!TryQueueConstructionAt(placementPosition, activePlacementData, resolvedBuilders, orientationY))
+                return false;
+
+            CancelPlacementMode();
+            return true;
+        }
+
+        bool TryQueueConstructionAt(
+            Vector3 placementPosition,
+            PlacedBuildingData placementData,
+            IReadOnlyList<Unit> builders,
+            float wallOrientationY)
+        {
+            Unit builder = PickNextWallLineBuilder(builders);
+            if (builder == null)
+                return false;
+
             if (!GameSessionManager.CanBuild(placementData, builder.Team))
                 return false;
 
             if (placementData.kind == PlacedBuildingKind.TownCenter && !CanPlaceAdditionalTownCenter(builder.Team))
                 return false;
 
-            ghostPosition = placementPosition;
-            ghostValid = CanPlaceAt(ghostPosition, placementData);
-            if (!ghostValid)
+            ghostPosition = SnapToFootprint(placementPosition);
+            if (!CanPlaceBuildingAt(ghostPosition, placementData))
                 return false;
 
             if (!PlacementCostUtility.TrySpend(UnitTeam.Player, placementData))
@@ -644,33 +770,81 @@ namespace AoE.RTS.Buildings
                 position = ghostPosition,
                 remainingTime = placementData.ScaledBuildTime,
                 builderArrived = false,
-                siteVisual = CreateConstructionVisual(placementData, ghostPosition)
+                siteVisual = CreateConstructionVisual(placementData, ghostPosition),
+                wallOrientationY = wallOrientationY
             });
-
-            bool keepMode = ShouldKeepWallPlacementMode();
-            if (keepMode)
-            {
-                lastWallDragPosition = ghostPosition;
-                wallDragHasAnchor = true;
-                placementOpenedFrame = Time.frameCount;
-            }
-            else
-            {
-                CancelPlacementMode();
-            }
 
             return true;
         }
 
-        static bool ShouldKeepWallPlacementMode()
+        Unit PickNextWallLineBuilder(IReadOnlyList<Unit> builders)
         {
-            if (instance == null || instance.activePlacementData == null)
+            if (stashedBuilders.Count > 0)
+            {
+                int attempts = stashedBuilders.Count;
+                for (int i = 0; i < attempts; i++)
+                {
+                    int index = (wallLineBuilderCursor + i) % stashedBuilders.Count;
+                    Unit candidate = stashedBuilders[index];
+                    if (candidate != null && candidate.IsAlive && !IsBuilderBusy(candidate))
+                    {
+                        wallLineBuilderCursor = index + 1;
+                        return candidate;
+                    }
+                }
+            }
+
+            return ResolveIdleBuilder(builders);
+        }
+
+        static float ResolveWallOrientationForPosition(Vector3 position, PlacedBuildingData data)
+        {
+            if (data == null || data.kind == PlacedBuildingKind.Gate)
+                return ResolveGateOrientation(position);
+
+            if (!IsWallKind(data))
+                return 0f;
+
+            return 0f;
+        }
+
+        static float ResolveGateOrientation(Vector3 position)
+        {
+            // Default gate faces north-south; extend later with nearest wall heading.
+            return 0f;
+        }
+
+        bool TryScreenToPlacementPosition(Vector2 screenPosition, out Vector3 placementPosition)
+        {
+            placementPosition = ghostPosition;
+            if (mainCamera == null)
                 return false;
 
-            if (!IsWallKind(instance.activePlacementData))
+            Ray ray = mainCamera.ScreenPointToRay(screenPosition);
+            if (!Physics.Raycast(ray, out RaycastHit hit, GroundRayDistance, GameLayers.GroundMask))
                 return false;
 
-            return instance.input != null && instance.input.IsShiftHeld;
+            placementPosition = SnapToFootprint(hit.point);
+            return true;
+        }
+
+        bool CanPlaceBuildingAt(Vector3 position, PlacedBuildingData data)
+        {
+            if (data == null)
+                return false;
+
+            if (data.kind == PlacedBuildingKind.Gate)
+                return CanPlaceGateAt(position, data);
+
+            return CanPlaceAt(position, data);
+        }
+
+        bool CanPlaceGateAt(Vector3 position, PlacedBuildingData data)
+        {
+            if (!CanPlaceAt(position, data))
+                return false;
+
+            return WallOccupancyRegistry.IsAdjacentToWall(position, 6f);
         }
 
         static bool IsWallKind(PlacedBuildingData data)
@@ -795,47 +969,38 @@ namespace AoE.RTS.Buildings
             }
 
             RefreshGhostFromPointer();
-            TryWallShiftDragPlacement();
+
+            if (IsWallKind(activePlacementData))
+                UpdateWallDragInput();
         }
 
-        void TryWallShiftDragPlacement()
+        void UpdateWallDragInput()
         {
-            if (!IsWallKind(activePlacementData) || input == null || !input.IsShiftHeld || !input.IsSelectPressed)
+            if (input == null)
                 return;
 
-            if (Time.frameCount <= placementOpenedFrame || !ghostValid)
+            Vector2 pointer = input.PointerScreenPosition;
+            if (ResourceHudView.IsPointerOverHud(pointer))
                 return;
 
-            if (wallDragHasAnchor)
+            if (input.WasSelectPressedThisFrame())
             {
-                Vector3 delta = ghostPosition - lastWallDragPosition;
-                delta.y = 0f;
-                float minDist = GetWallDragMinDistance(activePlacementData);
-                if (delta.sqrMagnitude < minDist * minDist)
-                    return;
+                wallDragTracking = true;
+                wallDragStartScreen = pointer;
             }
-            else if (placementDragOriginCaptured)
-            {
-                Vector3 delta = ghostPosition - placementDragOrigin;
-                delta.y = 0f;
-                float minDist = GetWallDragMinDistance(activePlacementData);
-                if (delta.sqrMagnitude < minDist * minDist)
-                    return;
-            }
+
+            if (!input.WasSelectReleasedThisFrame() || !wallDragTracking)
+                return;
+
+            wallDragTracking = false;
+            if (Time.frameCount <= placementOpenedFrame)
+                return;
+
+            float thresholdSq = WallDragThresholdPixels * WallDragThresholdPixels;
+            if ((pointer - wallDragStartScreen).sqrMagnitude >= thresholdSq)
+                TryConfirmWallDragLine(wallDragStartScreen, pointer);
             else
-            {
-                return;
-            }
-
-            TryConfirmAtGhostPosition(stashedBuilders);
-        }
-
-        float GetWallDragMinDistance(PlacedBuildingData data)
-        {
-            if (data == null)
-                return MinSiteSeparation;
-
-            return Mathf.Max(1f, Mathf.Min(data.footprintWidth, data.footprintDepth) * 0.95f);
+                TryConfirmAtGhostPosition(stashedBuilders);
         }
 
         void RefreshGhostFromPointer()
@@ -847,18 +1012,8 @@ namespace AoE.RTS.Buildings
                 return;
 
             ghostPosition = placementPosition;
-            ghostValid = CanPlaceAt(ghostPosition, activePlacementData);
+            ghostValid = CanPlaceBuildingAt(ghostPosition, activePlacementData);
             UpdateGhostVisual(activePlacementData, ghostPosition, ghostValid);
-            CapturePlacementDragOriginIfNeeded();
-        }
-
-        void CapturePlacementDragOriginIfNeeded()
-        {
-            if (placementDragOriginCaptured)
-                return;
-
-            placementDragOrigin = ghostPosition;
-            placementDragOriginCaptured = true;
         }
 
         bool TryGetPointerPlacementPosition(out Vector3 placementPosition)
@@ -882,6 +1037,9 @@ namespace AoE.RTS.Buildings
                 ConstructionSite site = sites[i];
                 if (site.builder == null)
                 {
+                    if (site.queuedBuilder != null && site.queuedBuilder.IsAlive)
+                        continue;
+
                     DestroySiteVisual(site.siteVisual);
                     sites.RemoveAt(i);
                     continue;
@@ -916,7 +1074,31 @@ namespace AoE.RTS.Buildings
                 }
 
                 CompleteConstruction(ref site);
+                AssignBuilderToNextQueuedWallSite(site.builder);
                 sites.RemoveAt(i);
+            }
+        }
+
+        void AssignBuilderToNextQueuedWallSite(Unit completedBuilder)
+        {
+            if (completedBuilder == null || !completedBuilder.IsAlive)
+                return;
+
+            for (int i = 0; i < sites.Count; i++)
+            {
+                ConstructionSite site = sites[i];
+                if (site.builder != null || site.queuedBuilder != completedBuilder)
+                    continue;
+
+                site.builder = completedBuilder;
+                site.queuedBuilder = null;
+                site.builderArrived = false;
+
+                PlacedBuildingData siteData = site.data ?? activePlacementData ?? houseData;
+                Vector3 approach = GetBuildApproachPosition(site.position, siteData, completedBuilder);
+                completedBuilder.SetMoveTarget(approach);
+                sites[i] = site;
+                return;
             }
         }
 
@@ -1002,14 +1184,21 @@ namespace AoE.RTS.Buildings
             if (site.data.kind == PlacedBuildingKind.PalisadeWall)
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
-                RuntimeBuildingFactory.CreatePalisadeWall(site.data, site.position, team);
+                RuntimeBuildingFactory.CreatePalisadeWall(site.data, site.position, team, site.wallOrientationY);
                 return;
             }
 
             if (site.data.kind == PlacedBuildingKind.StoneWall)
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
-                RuntimeBuildingFactory.CreateStoneWall(site.data, site.position, team);
+                RuntimeBuildingFactory.CreateStoneWall(site.data, site.position, team, site.wallOrientationY);
+                return;
+            }
+
+            if (site.data.kind == PlacedBuildingKind.Gate)
+            {
+                UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
+                RuntimeBuildingFactory.CreateGate(site.data, site.position, team, site.wallOrientationY);
                 return;
             }
 
@@ -1114,17 +1303,27 @@ namespace AoE.RTS.Buildings
             }
         }
 
-        bool IsSitePositionOccupied(Vector3 position)
+        bool IsSitePositionOccupied(Vector3 position, PlacedBuildingData data)
         {
+            float minSeparation = GetMinSiteSeparation(data);
+            float minSeparationSq = minSeparation * minSeparation;
             for (int i = 0; i < sites.Count; i++)
             {
                 Vector3 delta = sites[i].position - position;
                 delta.y = 0f;
-                if (delta.sqrMagnitude < MinSiteSeparation * MinSiteSeparation)
+                if (delta.sqrMagnitude < minSeparationSq)
                     return true;
             }
 
             return false;
+        }
+
+        static float GetMinSiteSeparation(PlacedBuildingData data)
+        {
+            if (IsWallKind(data))
+                return Mathf.Max(0.5f, WallPlacementUtility.GetSegmentLength(data) * 0.85f);
+
+            return MinSiteSeparation;
         }
 
         bool CanPlaceAt(Vector3 position, PlacedBuildingData data)
@@ -1144,10 +1343,46 @@ namespace AoE.RTS.Buildings
 
             int mask = GameLayers.BuildingMask | GameLayers.ResourceMask;
             Collider[] overlaps = Physics.OverlapBox(center, halfExtents, Quaternion.identity, mask);
-            if (overlaps.Length > 0)
+            if (overlaps.Length > 0 && !CanIgnoreWallBuildingOverlap(data, overlaps))
                 return false;
 
-            return !IsSitePositionOccupied(position);
+            return !IsSitePositionOccupied(position, data);
+        }
+
+        static bool CanIgnoreWallBuildingOverlap(PlacedBuildingData data, Collider[] overlaps)
+        {
+            if (!IsWallKind(data))
+                return false;
+
+            for (int i = 0; i < overlaps.Length; i++)
+            {
+                if (!IsWallRelatedCollider(overlaps[i]))
+                    return false;
+            }
+
+            return overlaps.Length > 0;
+        }
+
+        static bool IsWallRelatedCollider(Collider overlap)
+        {
+            if (overlap == null)
+                return false;
+
+            if (overlap.GetComponentInParent<PalisadeWall>() != null
+                || overlap.GetComponentInParent<StoneWall>() != null
+                || overlap.GetComponentInParent<Gate>() != null)
+                return true;
+
+            Transform current = overlap.transform;
+            while (current != null)
+            {
+                if (current.name == "ConstructionSite")
+                    return true;
+
+                current = current.parent;
+            }
+
+            return false;
         }
 
         void CreateGhost()
