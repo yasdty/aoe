@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 47 ✅（Second TC — 2 台目建設 MVP）。**次: Phase 48 RTS UX Polish。**
+> **最終更新:** Phase 48 ✅（RTS UX Polish — キュー取消/Shift+5/House Pop/建築 H·B/壁 Shift+配置部分）。**M4 完了。次: Phase 49 Wall & Gate（M5）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -82,17 +82,20 @@
 | 45 | Market | `Phase10.unity` | ✅ 完了（M4） |
 | 46 | Civilization | `Phase10.unity` | ✅ 完了（M4） |
 | 47 | Second TC | `Phase10.unity` | ✅ 完了（M4） |
-| 48 | RTS UX Polish | `Phase10.unity` | ⬜ 未着手（M4）— 壁 Shift+ドラッグ連続配置含む |
-| 49 | View Layer Split | `Phase10.unity` | ⬜ 未着手（M5） |
-| 50 | HUD Migration | `Phase10.unity` | ⬜ 未着手（M5） |
-| 51 | Minimap | `Phase10.unity` | ⬜ 未着手（M5） |
-| 52 | Unit Animation | `Phase10.unity` | ⬜ 未着手（M5） |
-| 53 | Combat VFX & Audio | `Phase10.unity` | ⬜ 未着手（M5） |
-| 54 | Entity ID & PlayerId | `Phase10.unity` | ⬜ 未着手（M6） |
-| 55 | CPU Command Queue | `Phase10.unity` | ⬜ 未着手（M6） |
-| 56 | Deterministic Sim | `Phase10.unity` | ⬜ 未着手（M6） |
-| 57 | Replay & Snapshot | `Phase10.unity` | ⬜ 未着手（M6） |
-| 58 | Hotseat / Net Shell | `Phase10.unity` | ⬜ 未着手（M6） |
+| 48 | RTS UX Polish | `Phase10.unity` | ✅ 完了（M4）— 壁は配置のみ・遮断/Gate は Phase 49 |
+| 49 | Wall & Gate System | `Phase10.unity` | ⬜ 未着手（M5）— **次** |
+| 50 | Wall Age Grades | `Phase10.unity` | ⬜ 未着手（M5） |
+| 51 | Localization (i18n) | `Phase10.unity` | ⬜ 未着手（M5） |
+| 52 | View Layer Split | `Phase10.unity` | ⬜ 未着手（M5） |
+| 53 | HUD Migration | `Phase10.unity` | ⬜ 未着手（M5） |
+| 54 | Minimap | `Phase10.unity` | ⬜ 未着手（M5） |
+| 55 | Unit Animation | `Phase10.unity` | ⬜ 未着手（M5） |
+| 56 | Combat VFX & Audio | `Phase10.unity` | ⬜ 未着手（M5） |
+| 57 | Entity ID & PlayerId | `Phase10.unity` | ⬜ 未着手（M6） |
+| 58 | CPU Command Queue | `Phase10.unity` | ⬜ 未着手（M6） |
+| 59 | Deterministic Sim | `Phase10.unity` | ⬜ 未着手（M6） |
+| 60 | Replay & Snapshot | `Phase10.unity` | ⬜ 未着手（M6） |
+| 61 | Hotseat / Net Shell | `Phase10.unity` | ⬜ 未着手（M6） |
 
 **ゲームループ:** 採集 → 建築 → 生産 → 戦闘 → **勝敗判定**
 
@@ -108,11 +111,11 @@
 
 **Milestone 3 Military:** ✅ 完了（Phase 36〜41）
 
-**Milestone 4 AoE Gameplay:** 🔄 進行中（Phase 47 ✅ — Phase 48 次）
+**Milestone 4 AoE Gameplay:** ✅ 完了（Phase 42〜48）
 
-**Milestone 5 Visual / UI:** ⬜ 未着手（Phase 49〜53）
+**Milestone 5 Gameplay Polish & Visual / UI:** ⬜ 未着手（Phase 49〜56 — **次: Phase 49 Wall & Gate**）
 
-**Milestone 6 Multiplayer Foundation:** ⬜ 未着手（Phase 54〜58）
+**Milestone 6 Multiplayer Foundation:** ⬜ 未着手（Phase 57〜61）
 
 ---
 
@@ -138,6 +141,11 @@
 | ドラッグ矩形選択 | ✅ | Phase 2 以降 |
 | Shift 追加選択 | ✅ | |
 | Q キー Villager 生産 | ✅ | TownCenter 選択時 — **Q 連打でキュー追加**（最大 15） |
+| Shift+Q Villager ×5 | ✅ | Phase 48 — TC 選択時 |
+| Shift+Q Militia ×5 | ✅ | Phase 48 — Barracks 選択時 |
+| 生産キュー取消 | ✅ | Phase 48 — キュー行クリック + `ProductionQueueRefundUtility` |
+| H キー House 配置 | ✅ | Phase 48 — 村民選択時 `BuildHouse` |
+| B キー Barracks 配置 | ✅ | Phase 48 — 村民選択時 `BuildBarracks` |
 | Q キー Militia 生産 | ✅ | Barracks 選択時 Q |
 | E キー Spearman 生産 | ✅ | Barracks 選択時 E（Phase 37） |
 | Q/E Stable 生産 | ✅ | Cavalry / Scout（Phase 38） |
@@ -204,7 +212,7 @@
 | 文明ボーナス | ✅ | Phase 46 — `CivilizationData` + Player 採集 +10%（既定）/ 歩兵 HP ボーナス対応 |
 | 2 台目 TC | ✅ | Phase 47 — Feudal 以降 275W+100S / チーム最大 2 基 / 最寄り TC 搬入 |
 | CPU ペース切替 | ✅ | Play 中 `P` または HUD ボタンで Relaxed ↔ Aggressive |
-| Debug テスト | ✅ | Debug 時 `K`=TC ダメージ / `Shift+K`=CPU ウェーブ強制 |
+| Debug テスト | ✅ | Debug 時 **K**=選択 TC **または** 自軍 Placed Building に 150dmg / **Shift+K**=CPU ウェーブ強制 |
 | 農業（Farm） | ✅ | 60 Wood / 8 秒 / 250 Food 容量・枯渇で Pool 返却 |
 | 漁業 | ❌ | |
 
@@ -223,9 +231,12 @@
 | Villager による建築 | ✅ | 現場移動 → 建築タイマー |
 | 建築中断（移動命令） | ✅ | Wood 返金なし |
 | CPU 自動建築 | ✅ | House / Barracks（AI） |
-| 建築破壊・Pop 減少 | ❌ | House 破壊時 cap 減なし |
-| 壁・塔 | ✅ | Phase 44 — Palisade / Stone Wall / Watch Tower |
-| 城門（Gate） | ❌ | Phase 48 以降 |
+| 建築破壊・Pop 減少 | ✅ | Phase 48 — House 破壊時 `PopulationManager.RemoveHousing` |
+| 壁・塔（配置・HP） | ✅ | Phase 44 — Palisade / Stone Wall / Watch Tower |
+| 壁通行遮断 | ❌ | **M5 Phase 49** |
+| 壁 AoE2 型ドラッグ連続 | △ | Phase 48 — Shift+クリック連続のみ。真のドラッグ・接続は Phase 49 |
+| 城門（Gate） | ❌ | **M5 Phase 49** |
+| 時代別壁グレード | ❌ | **M5 Phase 50**（Dark 柵 → Feudal 石壁等） |
 | 複数建築タイプ（修道院等） | ❌ | |
 
 ### Combat
@@ -273,11 +284,14 @@
 | Stone 表示 | ✅ | `ResourceHudView` / `CpuHudView` |
 | CPU Wood / Pop | ✅ | `CpuHudView`（Phase 9/10） |
 | ゲーム時間・波カウントダウン | ✅ | `GameTimeHudView`（Phase 10） |
-| TC / Barracks 生産パネル | ✅ | OnGUI — Q キー + `Queue: N` 表示 |
-| 生産キュー UI | ✅ | Phase 31 — 先頭プログレス + キュー長 |
+| TC / Barracks 生産パネル | ✅ | OnGUI — Q キー + キュー行クリック取消 |
+| 生産キュー UI | ✅ | Phase 31 + Phase 48 取消 — 先頭プログレス + キュー長 + 返金 |
+| ユニット表示名 | ✅ | Phase 48 — `UnitDisplayNameUtility` / `ProductionQueueDisplayUtility` |
+| 文明ラベル | ✅ | Phase 46 — HUD 文明名 |
 | Idle カウント HUD | ✅ | Phase 32 — `IdleUnitHudView` |
 | 選択詳細パネル | ✅ | Phase 25 |
-| 本格 UI（uGUI / UI Toolkit） | ❌ | すべて OnGUI MVP |
+| 日本語 Localization | ❌ | **M5 Phase 51** — LanguageMap + AoE2 Wiki 用語 |
+| 本格 UI（uGUI / UI Toolkit） | ❌ | すべて OnGUI MVP — **M5 Phase 52〜53** |
 
 ### Engine Foundation（Phase 11〜16）
 
@@ -341,7 +355,7 @@ CpuEconomyAiManager / CpuMilitaryAiManager（直接 Manager 呼び出し）
 | **関連データ** | `Assets/Input/RTSInputActions.inputactions`（Editor 生成） |
 | **データフロー** | InputActionAsset → `RTSInputReader` プロパティ → Selection / Camera / UI |
 
-**アクション:** Select, Command, MoveCamera, Zoom, PointerPosition, TrainVillager
+**アクション:** Select, Command, MoveCamera, Zoom, PointerPosition, TrainVillager, BuildHouse, BuildBarracks
 
 ---
 
@@ -393,7 +407,9 @@ CpuEconomyAiManager / CpuMilitaryAiManager（直接 Manager 呼び出し）
 | **関連データ** | `BuildingData`（TC）, `PlacedBuildingData`（House, Barracks, Farm, LumberCamp） |
 | **データフロー** | HUD ボタン → 配置モード → クリック確定 → ConstructionSite → 完成時 Factory で建築生成 / Pop 加算 |
 
-**生産キュー:** TC・Barracks とも **FIFO 最大 15**（Phase 31 — 先頭ジョブのみ Tick、追加時 Spend）
+**生産キュー:** TC・Barracks 等 **FIFO 最大 15**（Phase 31）。Phase 48 で **取消 + 返金**（`ProductionQueueRefundUtility`）
+
+**Editor:** `AoE → Sync Input Actions` — Phase10 優先で Input 配線
 
 ---
 
@@ -520,22 +536,23 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 |------|------|----------------|--------------|
 | **資源** | Wood, Food, Gold, Stone | 4 資源 + Drop-off ✅ | M2.5 完了 |
 | **建築** | 多数・時代進化 | TC / House / Barracks / Farm / Camps / Mill ✅ | M4 |
-| **人口** | Pop cap / House | Pop cap ✅ / 破壊時減少 ❌ | M4 Phase 48 |
+| **人口** | Pop cap / House | Pop cap ✅ / 破壊時減少 ✅（Phase 48） | M4 完了 |
 | **文明** | 各国固有ボーナス | `CivilizationData` + 採集/歩兵 HP ボーナス MVP ✅（Phase 46） | M4 Phase 47+ |
 | **研究** | 鍛冶屋・大学 | Blacksmith + Infantry Upgrade ✅（Phase 43）/ 大学 ❌ | M4 Phase 44+ |
 | **軍事** | 歩兵・弓・騎兵・攻城等 | Militia 1 種 ✅ | M3 Phase 36〜41 |
 | **AI** | 経済・軍事・難易度 | CPU 4 資源 + Militia 波 ✅ | M3 CPU 拡張 |
 | **戦闘** | 遠近・装甲・相性 | 近接/遠距離 + Melee/Pierce 装甲 + Spearman 対騎兵 ✅（Phase 39） | M4+ |
 | **フォーメーション** | 隊列・スタンス | スタンス + 攻撃移動 ✅（Phase 40）/ 隊列 ✅（Phase 41） | M4 Phase 42+ |
-| **壁** | 石壁・塔 | Palisade / Stone Wall / Watch Tower ✅（Phase 44） | M4 Phase 45+ |
+| **壁** | 石壁・塔・Gate | 配置・HP ✅（Phase 44）/ **遮断・Gate ❌ → M5 Phase 49** / 時代別 ❌ → Phase 50 |
+| **Localization** | 多言語 UI | ❌ — **M5 Phase 51** LanguageMap + 日本語 |
 | **船** | 海上戦・貿易 | ❌ | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 | **市場** | 資源交易 | Market + 固定レート売買 ✅（Phase 45） | M4 Phase 46+ |
 | **テクノロジー** | Dark→Imperial | Feudal 昇格 ✅（Phase 42）/ Blacksmith 研究 1 系統 ✅（Phase 43） | M4 Phase 44+ |
-| **マルチプレイ** | LAN/オンライン | ❌（基盤 30〜40%） | M6 Phase 54〜58 |
+| **マルチプレイ** | LAN/オンライン | ❌（基盤 30〜40%） | M6 Phase 57〜61 |
 | **マップ** | ランダムマップ | 固定 Plane（Phase 35 で拡大） | ✅ Sandbox / ランダムは M8 |
 | **勝敗** | 征服・遺跡等 | TC 破壊 ✅ | 拡張フック定義済み |
-| **リプレイ** | あり | CommandLog のみ △ | M6 Phase 57 |
-| **UI** | 本格 HUD・ミニマップ | OnGUI MVP ✅ | M5 Phase 49〜51 |
+| **リプレイ** | あり | CommandLog のみ △ | M6 Phase 60 |
+| **UI** | 本格 HUD・ミニマップ | OnGUI MVP ✅ / i18n ❌ | M5 Phase 51〜54 |
 
 **総合（現状）:** Dark Age 経済 + 最小 RTS 操作 + Militia 戦。**M5 完了で AoE2 全体の約 50〜55%** を目標（§AoE2 Completion Analysis 投影表）。
 
@@ -545,33 +562,32 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 
 ### Critical（ゲームとして成立に必須）
 
-| 機能 | 説明 |
+| 機能 | 状態 |
 |------|------|
-| 勝敗条件 | TC 破壊・征服等のゲーム終了 |
-| 複数資源 or 食料 | 経済の深みが Wood のみで不足 |
-| パスファインディング / 衝突回避 | 大規模ユニット時に詰まる（NavMesh 禁止のため代替手法が必要） |
-| 建築・ユニット Object Pooling | 大量戦闘時の GC・Instantiate コスト |
-| Fixed Tick Simulation | フレームレート依存・将来マルチ非互換 |
+| 勝敗条件 | ✅ Phase 11 |
+| 4 資源経済 | ✅ M2〜M2.5 |
+| Object Pooling | ✅ Phase 12 |
+| Fixed Tick Simulation | ✅ Phase 15 |
+| パスファインディング / 衝突回避 | ❌ 大規模時に詰まる（M7 候補） |
 
 ### Important（AoE2 らしさ・拡張性）
 
 | 機能 | 説明 |
 |------|------|
-| 遠距離ユニット（弓兵） | 戦闘の幅 |
-| テクノロジー / 時代 | ユニット・建築のアンロック |
-| 追加建築（農場、採石場、市場等） | 経済多様化 |
-| CPU 難易度・戦略バリエーション | 現状は単一ルール |
-| 本格 HUD（uGUI） | OnGUI はスケール・見切れ問題 |
+| 壁通行遮断・Gate | **M5 Phase 49** — 現状はすり抜け可能 |
+| 時代別壁グレード | **M5 Phase 50** — Age Up に伴う柵/石壁 |
+| 日本語 UI | **M5 Phase 51** — LanguageMap |
+| CPU 難易度・戦略バリエーション | 現状は Relaxed / Aggressive のみ |
+| 本格 HUD（uGUI） | OnGUI はスケール・見切れ問題 — M5 Phase 52〜53 |
 | 4 チーム対応 | 憲法目標だが enum は 2 チームのみ |
-| 自動警戒 / 反撃 | 現状は全手動攻撃 |
-| House 破壊時 Pop cap 減少 | |
+| Castle / Wonder | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 
 ### Nice To Have
 
 | 機能 | 説明 |
 |------|------|
-| 騎兵・攻城兵器 | |
-| 壁・塔 | |
+| 騎兵・攻城兵器 | ✅ 騎兵 MVP（Phase 38）/ 攻城 ❌ |
+| 壁・塔・Gate | 配置 ✅ / 遮断・Gate ⬜ Phase 49 |
 | 船・水上 | |
 | マップ生成 | |
 | セーブ / ロード | |
@@ -697,16 +713,13 @@ Phase 11 以降の候補（優先度順）。
 | P1 | RTS UX（キュー・Idle・Rally・Control Group） | ✅ M2.6 |
 | P1 | CPU 4 資源経済 | ✅ Phase 30 |
 | P1 | Phase10 サンドボックス拡張 | ✅ Phase 35 |
-| P1 | 弓兵・騎兵・相性（Archery Range / Stable） | ⬜ M3 Phase 36〜41 |
-| P1 | 本格 HUD + ミニマップ | ⬜ M5 Phase 49〜51 |
-| P1 | Benchmark 数値記録 | △ シーンあり / FPS 表 TBD |
-| P2 | 時代昇格 / 鍛冶屋 / 市場 / 文明 | ⬜ M4 Phase 42〜48 |
-| P2 | 壁・防御 / 2 台目 TC | ⬜ M4 |
-| P3 | グリッド Pathfinding | M7 候補（[11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md)） |
-| P3 | ランダムマップ | M8 候補 |
-| P3 | 4 チーム PlayerId | M6 Phase 54 |
-| P4 | リプレイ / セーブ | M6 Phase 57 |
-| P4 | ホットシート / ネットスタブ | M6 Phase 58 |
+| P1 | 弓兵・騎兵・相性（Archery Range / Stable） | ✅ M3 Phase 36〜41 |
+| P1 | 壁・Gate + i18n + 本格 HUD | ⬜ M5 Phase 49〜54 |
+| P2 | 時代昇格 / 鍛冶屋 / 市場 / 文明 | ✅ M4 Phase 42〜48 |
+| P2 | 壁時代グレード | ⬜ M5 Phase 50 |
+| P3 | 4 チーム PlayerId | M6 Phase 57 |
+| P4 | リプレイ / セーブ | M6 Phase 60 |
+| P4 | ホットシート / ネットスタブ | M6 Phase 61 |
 | P4 | 本格オンラインマルチ | M6 以降 |
 
 ---
@@ -995,13 +1008,13 @@ Overall Completion（現状 Phase 34）: 15%
 | **最も遠い領域** | 海軍、全文明、ランダムマップ、本格オンライン MP |
 | **UI と MP** | **UI（M5）≠ マルチプレイ可能**。M6 同期基盤が別途必要 |
 
-### 現時点の位置づけ（Phase 34）
+### 現時点の位置づけ（M4 完了 / Phase 48）
 
 ```
-AoE2 フル機能 ███░░░░░░░░░░░░░░░░░  ~15%
-コアループ     █████████████████░░░  ~85%
-マルチ準備     ███████░░░░░░░░░░░░░  ~35%
-憲法性能目標   ███░░░░░░░░░░░░░░░░░  ~15%
+AoE2 フル機能 ████████░░░░░░░░░░░░  ~38%
+コアループ     ██████████████████░░  ~92%
+マルチ準備     ████████░░░░░░░░░░░░  ~40%
+憲法性能目標   ████░░░░░░░░░░░░░░░░  ~20%
 ```
 
 ---
@@ -1010,16 +1023,14 @@ AoE2 フル機能 ███░░░░░░░░░░░░░░░░░  
 
 ```
 Assets/Scripts/
-  AI/           CpuAiCoordination, CpuEconomyAiManager, CpuMilitaryAiManager
-  Buildings/    TC, House, Barracks, Placement, Production
-  Camera/       RTSCameraController
-  Combat/       AttackManager, UnitAggroManager, BoarAttackManager
-  Core/         GameLayers, GameAssetPaths
-  Economy/      Resource, Gather, SheepRegistry, AnimalDiscovery, PassiveAnimalLocomotion
-  Input/        RTSInputReader, InputActions 生成
-  Selection/    Selection, HUD Views, Formation
-  Units/        Unit, UnitManager, UnitData
-  Editor/       Phase1〜10 SceneBuilder, 各種 Setup
+  AI/           CpuEconomyAiManager, CpuMilitaryAiManager
+  Buildings/    Placement, Production, ProductionQueue*, BuildingHealth
+  Economy/      Resource, Gather, ProductionQueueRefundUtility, PopulationManager
+  Input/        RTSInputReader, RTSInputActionsBuilder
+  Selection/    HUD Views, ProductionQueuePanelUi, SelectionManager
+  Units/        Unit, UnitManager, UnitDisplayNameUtility, UnitDataResolver
+  Core/         DebugPlaytestInput, GameSessionManager
+  Editor/       Phase SceneBuilder, Sync Input Actions
 ```
 
 ## Appendix B: AI への推奨読み方
@@ -1033,16 +1044,16 @@ Assets/Scripts/
 
 | 質問 | 答え |
 |------|------|
-| AoE2 にどれくらい近い？ | 4 資源・7 建築・Militia・1 CPU — **Dark Age 垂直スライス**（全体 ~15%） |
+| AoE2 にどれくらい近い？ | 4 資源・Feudal 経済・多兵種・1 CPU — **Dark〜Feudal 垂直スライス**（全体 ~38%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 48 RTS UX Polish** — [08_M4](08_M4_GAMEPLAY_PHASES.md) |
+| 次に何を作るべき？ | **Phase 49 Wall & Gate** — [09_M5](09_M5_VISUAL_UI_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |
 | 自軍は自動反撃？ | **する**（Phase 29 — 待機 Militia が近接敵を自動攻撃。Move 中はしない） |
 | 性能ベンチマークは？ | **未計測（TBD）** — §Performance Benchmark 参照 |
 | 変更の影響範囲は？ | §Core Dependency Graph 参照 |
-| AoE2 全体の完成度は？ | **現状 ~15%** / **M5 後 ~50〜55%** — §AoE2 Completion Analysis |
+| AoE2 全体の完成度は？ | **現状 ~38%（M4 完了）** / **M5 後 ~50〜55%** — §AoE2 Completion Analysis |
 
 ---
 

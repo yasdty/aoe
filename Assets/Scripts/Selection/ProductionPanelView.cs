@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Commands;
 using AoE.RTS.Core;
@@ -15,8 +16,10 @@ namespace AoE.RTS.Selection
         [SerializeField] AgeData feudalAgeData;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 156f;
+        const float PanelHeight = 220f;
         const float Margin = 12f;
+
+        readonly List<ProductionQueueEntry> queueEntriesBuffer = new List<ProductionQueueEntry>();
 
         void OnGUI()
         {
@@ -48,7 +51,12 @@ namespace AoE.RTS.Selection
             DrawAgeUpButton(townCenter);
 
             if (queueCount > 0)
-                GUILayout.Label($"Queue: {queueCount}");
+            {
+                ProductionManager.GetQueueEntries(townCenter, queueEntriesBuffer);
+                ProductionQueuePanelUi.DrawCancelableQueue(
+                    queueEntriesBuffer,
+                    index => ProductionManager.TryCancelQueueItem(townCenter, index));
+            }
 
             if (queueFull)
                 GUILayout.Label("Queue full");
@@ -110,7 +118,11 @@ namespace AoE.RTS.Selection
                 return;
 
             if (input.WasTrainVillagerPressedThisFrame())
-                CommandQueue.Enqueue(new TrainVillagerCommand(townCenter));
+            {
+                int count = input.IsShiftHeld ? ProductionQueuePanelUi.ShiftBatchQueueCount : 1;
+                for (int i = 0; i < count; i++)
+                    CommandQueue.Enqueue(new TrainVillagerCommand(townCenter));
+            }
         }
     }
 }

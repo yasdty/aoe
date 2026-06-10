@@ -84,6 +84,11 @@ namespace AoE.RTS.Buildings
             House house = GetComponent<House>();
             if (house != null)
             {
+                PlacedBuildingData houseData = house.Data;
+                int housing = houseData != null ? houseData.housingProvided : 0;
+                if (housing > 0)
+                    PopulationManager.RemoveHousing(team, housing);
+
                 BuildingPool.ReturnHouse(house);
                 return;
             }

@@ -37,5 +37,6 @@ namespace AoE.RTS.Core
         public const string CavalryData = "Assets/Data/UnitData/CavalryData.asset";
         public const string ScoutData = "Assets/Data/UnitData/ScoutData.asset";
         public const string EnemyDummyData = "Assets/Data/UnitData/EnemyDummyData.asset";
+        public const string DefaultUnitData = "Assets/Data/UnitData/DefaultUnit.asset";
     }
 }

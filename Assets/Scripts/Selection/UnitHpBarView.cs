@@ -55,7 +55,7 @@ namespace AoE.RTS.Selection
                 if (unit == null || !unit.IsAlive)
                     continue;
 
-                string label = unit.Data != null ? unit.Data.displayName : "Unit";
+                string label = UnitDisplayNameUtility.GetDisplayName(unit);
                 float hpRatio = unit.MaxHp > 0f ? unit.CurrentHp / unit.MaxHp : 0f;
 
                 Rect labelRect = new Rect(panelX + Padding, y, PanelWidth - Padding * 2f, LabelHeight);

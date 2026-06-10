@@ -1,5 +1,6 @@
 using AoE.RTS.AI;
 using AoE.RTS.Buildings;
+using AoE.RTS.Core;
 using AoE.RTS.Selection;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace AoE.RTS.Core
 {
     public class DebugPlaytestInput : MonoBehaviour
     {
-        const float TownCenterDebugDamage = 150f;
+        const float BuildingDebugDamage = 150f;
 
         void Update()
         {
@@ -27,27 +28,77 @@ namespace AoE.RTS.Core
                 if (Keyboard.current.shiftKey.isPressed)
                     TriggerCpuAttackWave();
                 else
-                    DamageSelectedTownCenter();
+                    DamageSelectedPlayerBuilding();
             }
         }
 
-        static void DamageSelectedTownCenter()
+        static void DamageSelectedPlayerBuilding()
         {
             SelectionManager selectionManager = FindAnyObjectByType<SelectionManager>();
-            TownCenter townCenter = selectionManager != null ? selectionManager.SelectedTownCenter : null;
-            if (townCenter == null || townCenter.Team != UnitTeam.Player)
+            if (selectionManager == null)
             {
-                Debug.Log("[Debug] Select your Town Center, then press K to deal test damage.");
+                Debug.Log("[Debug] SelectionManager not found.");
                 return;
             }
 
-            BuildingHealth health = townCenter.GetComponent<BuildingHealth>();
+            TownCenter townCenter = selectionManager.SelectedTownCenter;
+            if (townCenter != null && townCenter.Team == UnitTeam.Player)
+            {
+                ApplyDebugDamage(townCenter.GetComponent<BuildingHealth>(), "Town Center");
+                return;
+            }
+
+            BuildingHealth placedBuilding = selectionManager.SelectedPlacedBuilding;
+            if (placedBuilding != null && placedBuilding.Team == UnitTeam.Player)
+            {
+                ApplyDebugDamage(placedBuilding, GetBuildingDebugLabel(placedBuilding));
+                return;
+            }
+
+            Debug.Log(
+                "[Debug] Select your Town Center or a placed building (House, Barracks, etc.), then press K.");
+        }
+
+        static string GetBuildingDebugLabel(BuildingHealth building)
+        {
+            if (building == null)
+                return "Building";
+
+            if (building.GetComponent<House>() != null)
+                return "House";
+
+            if (building.GetComponent<Barracks>() != null)
+                return "Barracks";
+
+            if (building.GetComponent<ArcheryRange>() != null)
+                return "Archery Range";
+
+            if (building.GetComponent<Stable>() != null)
+                return "Stable";
+
+            if (building.GetComponent<Farm>() != null)
+                return "Farm";
+
+            if (building.GetComponent<LumberCamp>() != null)
+                return "Lumber Camp";
+
+            if (building.GetComponent<MiningCamp>() != null)
+                return "Mining Camp";
+
+            if (building.GetComponent<Mill>() != null)
+                return "Mill";
+
+            return "Building";
+        }
+
+        static void ApplyDebugDamage(BuildingHealth health, string label)
+        {
             if (health == null || !health.IsAlive)
                 return;
 
-            health.TakeDamage(TownCenterDebugDamage);
+            health.TakeDamage(BuildingDebugDamage);
             Debug.Log(
-                $"[Debug] Town Center damaged ({Mathf.CeilToInt(health.CurrentHp)}/{Mathf.CeilToInt(health.MaxHp)} HP remaining)");
+                $"[Debug] {label} damaged ({Mathf.CeilToInt(health.CurrentHp)}/{Mathf.CeilToInt(health.MaxHp)} HP remaining)");
         }
 
         static void TriggerCpuAttackWave()

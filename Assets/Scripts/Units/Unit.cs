@@ -69,6 +69,7 @@ namespace AoE.RTS.Units
             standSlot = nextStandSlot % UnitPositionOffsets.SlotCount;
             nextStandSlot++;
             cachedRenderer = GetComponentInChildren<Renderer>();
+            UnitDataResolver.EnsureUnitHasData(this);
             ApplyTeamFromData();
             RefreshEffectiveMaxHp();
             currentHp = MaxHp;
@@ -103,6 +104,9 @@ namespace AoE.RTS.Units
         public void SetData(UnitData unitData)
         {
             data = unitData;
+            if (data != null)
+                gameObject.name = UnitDisplayNameUtility.GetDisplayName(data);
+
             ApplyTeamFromData();
             RefreshEffectiveMaxHp();
             currentHp = MaxHp;
@@ -146,7 +150,10 @@ namespace AoE.RTS.Units
             combatStance = UnitCombatStance.Aggressive;
 
             if (unitData != null)
+            {
                 data = unitData;
+                gameObject.name = UnitDisplayNameUtility.GetDisplayName(unitData);
+            }
 
             ApplyTeamFromData();
             team = unitTeam;

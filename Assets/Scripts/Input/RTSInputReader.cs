@@ -19,6 +19,8 @@ namespace AoE.RTS.Input
         InputAction pointerAction;
         InputAction trainVillagerAction;
         InputAction trainSecondaryAction;
+        InputAction buildHouseAction;
+        InputAction buildBarracksAction;
         InputAction selectNextIdleVillagerAction;
         InputAction selectNextIdleMilitaryAction;
         InputAction attackMoveAction;
@@ -51,6 +53,8 @@ namespace AoE.RTS.Input
             pointerAction = map.FindAction("PointerPosition", true);
             trainVillagerAction = map.FindAction("TrainVillager", false);
             trainSecondaryAction = map.FindAction("TrainSecondary", false);
+            buildHouseAction = map.FindAction("BuildHouse", false);
+            buildBarracksAction = map.FindAction("BuildBarracks", false);
             selectNextIdleVillagerAction = map.FindAction("SelectNextIdleVillager", false);
             selectNextIdleMilitaryAction = map.FindAction("SelectNextIdleMilitary", false);
             attackMoveAction = map.FindAction("AttackMove", false);
@@ -106,6 +110,16 @@ namespace AoE.RTS.Input
         public bool WasTrainSecondaryPressedThisFrame()
         {
             return trainSecondaryAction != null && trainSecondaryAction.WasPressedThisFrame();
+        }
+
+        public bool WasBuildHousePressedThisFrame()
+        {
+            return buildHouseAction != null && buildHouseAction.WasPressedThisFrame();
+        }
+
+        public bool WasBuildBarracksPressedThisFrame()
+        {
+            return buildBarracksAction != null && buildBarracksAction.WasPressedThisFrame();
         }
 
         public bool WasSelectNextIdleVillagerPressedThisFrame()

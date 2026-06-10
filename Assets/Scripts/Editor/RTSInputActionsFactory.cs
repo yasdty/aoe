@@ -44,6 +44,8 @@ namespace AoE.RTS.EditorTools
                 || map.FindAction("PointerPosition", false) == null
                 || map.FindAction("TrainVillager", false) == null
                 || map.FindAction("TrainSecondary", false) == null
+                || map.FindAction("BuildHouse", false) == null
+                || map.FindAction("BuildBarracks", false) == null
                 || map.FindAction("SelectNextIdleVillager", false) == null
                 || map.FindAction("SelectNextIdleMilitary", false) == null
                 || map.FindAction("AttackMove", false) == null)

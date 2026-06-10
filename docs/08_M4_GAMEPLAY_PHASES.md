@@ -3,7 +3,7 @@
 > **Milestone:** M4 — AoE2 Core Gameplay  
 > **前提:** [07_M3_MILITARY_PHASES.md](07_M3_MILITARY_PHASES.md)（Phase 36〜41）完了  
 > **実装状況:** [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)  
-> **前:** M3 Military / **次:** [09_M5_VISUAL_UI_PHASES.md](09_M5_VISUAL_UI_PHASES.md)（Phase 49〜53）
+> **前:** M3 Military / **次:** [09_M5_VISUAL_UI_PHASES.md](09_M5_VISUAL_UI_PHASES.md)（Phase 49〜56）
 
 > **2026-06 拡張:** 旧 5 Phase（41〜45）に **Second TC** と **RTS UX Polish** を追加し **42〜48** へ再編。Castle / Fog / ランダムマップは意図的後回し（拡張設計は [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED_EXTENSION_DESIGN.md)）。
 
@@ -19,13 +19,13 @@
 | 45 | Market | 資源交易 MVP | ✅ 完了 |
 | 46 | Civilization | 文明ボーナス 1 種 Data 駆動 | ✅ 完了 |
 | 47 | Second TC | 2 台目 Town Center（ブーム下地） | ✅ 完了 |
-| 48 | RTS UX Polish | キュー取消・House Pop 減・建築ホットキー・Shift+5 キュー・**壁 Shift+ドラッグ連続配置** | ⬜ 未着手 |
+| 48 | RTS UX Polish | キュー取消・House Pop 減・建築 H/B・Shift+5 キュー・壁 Shift+配置（**遮断/Gate 未達 → M5 Phase 49**） | ✅ 完了 |
 
 **M4 完了条件:**
 
 - Feudal 時代に昇格し、Archery Range / Stable / Blacksmith 等が **時代データでアンロック**
 - 最低 1 系統の軍事 UP が研究可能
-- 壁・塔で拠点防衛の MVP
+- 壁・塔で拠点防衛の **配置・HP MVP**（本格遮断・Gate は **M5 Phase 49**）
 - 市場で資源変換
 - 1 文明の経済 or 軍事ボーナスが Data で差し替え可能
 - 2 台目 TC 建設で村民ブームの下地
@@ -95,26 +95,30 @@
 
 ---
 
-## Phase 48 — RTS UX Polish ⬜
+## Phase 48 — RTS UX Polish ✅
 
-**実装（M2.6 後回し分の回収）:**
+**実装（Play 確認済）:**
 
-| 項目 | 内容 |
-|------|------|
-| 生産キュー取消 | クリックでキャンセル + 返金 |
-| Shift+5 一括キュー | TC / Barracks |
-| House 破壊 | Pop cap 減少 |
-| 建築ホットキー | House / Barracks 等（Input System 拡張） |
-| **壁 Shift+ドラッグ連続配置** | Palisade / Stone Wall — AoE2 同型（Shift 押下中にドラッグでセグメント列配置。Phase 44 は 1 マスずつ MVP） |
+| 項目 | 内容 | 備考 |
+|------|------|------|
+| 生産キュー取消 | クリックでキャンセル + 返金 | TC / Barracks / Archery / Stable |
+| Shift+5 一括キュー | TC / Barracks | `ProductionQueuePanelUi.ShiftBatchQueueCount` |
+| House 破壊 | Pop cap 減少 | `PopulationManager.RemoveHousing` — Debug **K** で自軍建築 |
+| 建築ホットキー | **H** House / **B** Barracks | 村民選択時 |
+| 壁 Shift+配置 | Shift+クリック連続 | △ **ドラッグ・通行遮断・Gate 未達** → Phase 49 |
+| 表示名 | `UnitDisplayNameUtility` 等 | キュー Cancel 行の「Unit」修正 |
 
 **プロンプト:** [prompts/phase48-prompt.md](prompts/phase48-prompt.md)
 
 ---
 
-## M4 で意図的に後回し
+## M4 で意図的に後回し（M5 へ移管）
 
 | 項目 | 拡張先 |
 |------|--------|
+| **壁通行遮断・Gate・AoE2 型ドラッグ** | **M5 Phase 49** |
+| **時代に応じた壁グレード** | **M5 Phase 50** |
+| **日本語 Localization（LanguageMap）** | **M5 Phase 51** |
 | Castle / Wonder / 複数勝利条件 | [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED_EXTENSION_DESIGN.md) |
 | Fog of War / 探索 | 同上（`VisionManager` フック定義のみ M4 で可） |
 | ランダムマップ | M6 以降 / P3 |

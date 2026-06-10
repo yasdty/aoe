@@ -263,5 +263,59 @@ namespace AoE.RTS.Buildings
 
             return 0f;
         }
+
+        public static void GetQueueEntries(TownCenter townCenter, List<ProductionQueueEntry> entries)
+        {
+            entries.Clear();
+            if (instance == null || townCenter == null)
+                return;
+
+            int queueIndex = 0;
+            for (int i = 0; i < instance.activeJobs.Count; i++)
+            {
+                ProductionJob job = instance.activeJobs[i];
+                if (job.townCenter != townCenter)
+                    continue;
+
+                string displayName = ProductionQueueDisplayUtility.GetTownCenterEntryName(townCenter, job.unitData);
+                entries.Add(new ProductionQueueEntry
+                {
+                    queueIndex = queueIndex++,
+                    displayName = displayName
+                });
+            }
+        }
+
+        public static bool TryCancelQueueItem(TownCenter townCenter, int queueIndex)
+        {
+            if (instance == null || townCenter == null || queueIndex < 0)
+                return false;
+
+            int globalIndex = FindQueueJobGlobalIndex(townCenter, queueIndex);
+            if (globalIndex < 0)
+                return false;
+
+            ProductionJob job = instance.activeJobs[globalIndex];
+            ProductionQueueRefundUtility.RefundTownCenterJob(townCenter.Team, townCenter, job.unitData);
+            instance.activeJobs.RemoveAt(globalIndex);
+            return true;
+        }
+
+        static int FindQueueJobGlobalIndex(TownCenter townCenter, int queueIndex)
+        {
+            int localIndex = 0;
+            for (int i = 0; i < instance.activeJobs.Count; i++)
+            {
+                if (instance.activeJobs[i].townCenter != townCenter)
+                    continue;
+
+                if (localIndex == queueIndex)
+                    return i;
+
+                localIndex++;
+            }
+
+            return -1;
+        }
     }
 }

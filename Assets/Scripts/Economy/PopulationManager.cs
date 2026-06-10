@@ -66,5 +66,16 @@ namespace AoE.RTS.Economy
             else
                 instance.playerHousingCap += amount;
         }
+
+        public static void RemoveHousing(UnitTeam team, int amount)
+        {
+            if (instance == null || amount <= 0)
+                return;
+
+            if (team == UnitTeam.Enemy)
+                instance.enemyHousingCap = Mathf.Max(0, instance.enemyHousingCap - amount);
+            else
+                instance.playerHousingCap = Mathf.Max(0, instance.playerHousingCap - amount);
+        }
     }
 }

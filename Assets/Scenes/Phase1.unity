@@ -249,6 +249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Units.Unit
   data: {fileID: 0}
+  team: 0
 --- !u!23 &420607725
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -447,6 +448,11 @@ MonoBehaviour:
   zoomSpeed: 25
   minHeight: 12
   maxHeight: 80
+  applyStartViewOnLoad: 1
+  startFocusPoint: {x: 0, y: 0, z: 0}
+  startHeight: 45
+  startPitch: 55
+  startYaw: -45
 --- !u!81 &585959445
 AudioListener:
   m_ObjectHideFlags: 0
@@ -826,6 +832,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: AoE.RTS::AoE.RTS.Selection.SelectionManager
   mainCamera: {fileID: 585959443}
   input: {fileID: 585959442}
+  selectionBoxView: {fileID: 0}
+  dragThresholdPixels: 8
+  groupMoveSpacing: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

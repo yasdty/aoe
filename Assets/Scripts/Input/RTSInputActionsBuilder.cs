@@ -41,6 +41,12 @@ namespace AoE.RTS.Input
             map.AddAction("TrainSecondary", InputActionType.Button)
                 .AddBinding("<Keyboard>/e", groups: "Keyboard&Mouse");
 
+            map.AddAction("BuildHouse", InputActionType.Button)
+                .AddBinding("<Keyboard>/h", groups: "Keyboard&Mouse");
+
+            map.AddAction("BuildBarracks", InputActionType.Button)
+                .AddBinding("<Keyboard>/b", groups: "Keyboard&Mouse");
+
             map.AddAction("SelectNextIdleVillager", InputActionType.Button)
                 .AddBinding("<Keyboard>/period", groups: "Keyboard&Mouse");
 

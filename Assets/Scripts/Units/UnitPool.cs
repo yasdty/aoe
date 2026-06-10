@@ -129,7 +129,7 @@ namespace AoE.RTS.Units
 
         static Unit CreateFreshUnit(PlaceholderVisualKind kind, UnitData data, Transform parent)
         {
-            string unitName = data != null ? data.displayName : kind.ToString();
+            string unitName = UnitDisplayNameUtility.GetDisplayName(data);
             GameObject unitObject = EntityVisualBuilder.CreateUnitShell(unitName, Vector3.zero, kind);
             if (parent != null)
                 unitObject.transform.SetParent(parent, false);

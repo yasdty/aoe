@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Commands;
 using AoE.RTS.Core;
@@ -13,8 +14,10 @@ namespace AoE.RTS.Selection
         [SerializeField] RTSInputReader input;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 148f;
+        const float PanelHeight = 220f;
         const float Margin = 12f;
+
+        readonly List<ProductionQueueEntry> queueEntriesBuffer = new List<ProductionQueueEntry>();
 
         void OnGUI()
         {
@@ -56,7 +59,12 @@ namespace AoE.RTS.Selection
             GUI.enabled = true;
 
             if (queueCount > 0)
-                GUILayout.Label($"Queue: {queueCount}");
+            {
+                StableProductionManager.GetQueueEntries(stable, queueEntriesBuffer);
+                ProductionQueuePanelUi.DrawCancelableQueue(
+                    queueEntriesBuffer,
+                    index => StableProductionManager.TryCancelQueueItem(stable, index));
+            }
 
             if (queueFull)
                 GUILayout.Label("Queue full");

@@ -18,6 +18,7 @@ namespace AoE.RTS.EditorTools
     public static class Phase1SceneBuilder
     {
         const string ScenePath = "Assets/Scenes/Phase1.unity";
+        const string Phase10ScenePath = "Assets/Scenes/Phase10.unity";
         const string UnitDataPath = "Assets/Data/UnitData/DefaultUnit.asset";
         const string TownCenterDataPath = "Assets/Data/BuildingData/TownCenterData.asset";
         const string DefaultTreeDataPath = GameAssetPaths.DefaultTreeData;
@@ -102,11 +103,14 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Synced AoE2 game data assets.");
         }
 
-        [MenuItem("AoE/Fix Phase1 Input References", true)]
-        static bool ValidateFixPhase1InputReferences() => !EditorApplication.isPlaying;
+        [MenuItem("AoE/Sync Input Actions", true)]
+        static bool ValidateSyncInputActions() => !EditorApplication.isPlaying;
 
-        [MenuItem("AoE/Fix Phase1 Input References")]
-        public static void FixPhase1InputReferences()
+        /// <summary>
+        /// InputActionAsset を再生成し、プレイ用シーン（Phase10 優先）の RTSInputReader に配線する。
+        /// </summary>
+        [MenuItem("AoE/Sync Input Actions")]
+        public static void SyncInputActions()
         {
             if (!EnsureEditModeForSceneSetup())
                 return;
@@ -124,22 +128,53 @@ namespace AoE.RTS.EditorTools
                 return;
             }
 
-            if (!System.IO.File.Exists(ScenePath))
+            string scenePath = System.IO.File.Exists(Phase10ScenePath) ? Phase10ScenePath : ScenePath;
+            if (!System.IO.File.Exists(scenePath))
             {
-                Debug.LogWarning("Phase1 scene not found. Run AoE → Setup Phase1 Scene first.");
+                Debug.LogWarning(
+                    "Play scene not found. Run AoE → Setup Phase10 Scene first.");
                 return;
             }
 
-            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             AssignInputActionsToReaders(inputActions);
+            if (scenePath == Phase10ScenePath)
+            {
+                Phase10SceneBuilder.WireTownCenterDataInOpenScene();
+                Phase10SceneBuilder.WireUnitsInOpenScene();
+            }
+
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene))
             {
-                Debug.LogError("Failed to save Phase1 scene. Check Console for Input System import errors.");
+                Debug.LogError("Failed to save scene after input sync. Check Console for Input System import errors.");
                 return;
             }
 
-            Debug.Log("Phase1 input references updated.");
+            if (scenePath == Phase10ScenePath)
+            {
+                Debug.Log(
+                    "Input actions synced. Phase10.unity is open — press Play here for the full RTS.\n"
+                    + "Phase1.unity is dev-only (1 unit, camera/select/move smoke test).");
+            }
+            else
+            {
+                Debug.Log(
+                    "Input actions synced on Phase1.unity only.\n"
+                    + "Run AoE → Setup Phase10 Scene and open Phase10.unity for full gameplay.");
+            }
+        }
+
+        [MenuItem("AoE/Fix Phase1 Input References", true)]
+        static bool ValidateFixPhase1InputReferences() => !EditorApplication.isPlaying;
+
+        /// <summary>
+        /// 後方互換エイリアス。Phase10 があればそちらを開いて配線する（Phase1 だけを開かない）。
+        /// </summary>
+        [MenuItem("AoE/Fix Phase1 Input References")]
+        public static void FixPhase1InputReferences()
+        {
+            SyncInputActions();
         }
 
         [MenuItem("AoE/Setup Phase1 Scene", true)]
@@ -250,6 +285,13 @@ namespace AoE.RTS.EditorTools
                 {
                     existing.villagerUnitData = villagerData;
                     EditorUtility.SetDirty(existing);
+                }
+
+                if (existing.villagerUnitData != null)
+                {
+                    bool villagerDirty = SyncVillagerStats(existing.villagerUnitData);
+                    if (villagerDirty)
+                        EditorUtility.SetDirty(existing.villagerUnitData);
                 }
 
                 if (existing.spawnClearance < 4f)
@@ -1983,7 +2025,7 @@ namespace AoE.RTS.EditorTools
 
         public static GameObject CreateUnit(UnitData unitData, Vector3 position, UnitTeam team = UnitTeam.Player)
         {
-            string unitName = unitData != null ? unitData.displayName : "Unit";
+            string unitName = UnitDisplayNameUtility.GetDisplayName(unitData);
             PlaceholderVisualKind visualKind = EntityVisualBuilder.GetUnitVisualKind(unitData);
             GameObject unitObject = EntityVisualBuilder.CreateUnitShell(unitName, position, visualKind);
 

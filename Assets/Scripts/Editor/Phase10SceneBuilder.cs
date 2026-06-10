@@ -711,6 +711,90 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added DebugPlaytestInput to Systems. Save the scene (Ctrl+S) if needed.");
         }
 
+        public static void WireTownCenterDataInOpenScene()
+        {
+            UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
+            BuildingData townCenterData = Phase1SceneBuilder.EnsureTownCenterData(villagerData);
+            if (townCenterData == null)
+                return;
+
+            TownCenter[] townCenters = Object.FindObjectsByType<TownCenter>();
+            int wired = 0;
+            for (int i = 0; i < townCenters.Length; i++)
+            {
+                TownCenter townCenter = townCenters[i];
+                if (townCenter == null || townCenter.Data == townCenterData)
+                    continue;
+
+                SerializedObject serialized = new SerializedObject(townCenter);
+                serialized.FindProperty("data").objectReferenceValue = townCenterData;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(townCenter);
+                wired++;
+            }
+
+            if (wired > 0)
+                Debug.Log($"Wired TownCenterData on {wired} Town Center(s).");
+        }
+
+        public static void WireUnitsInOpenScene()
+        {
+            UnitData villagerData = Phase1SceneBuilder.EnsureDefaultUnitData();
+            UnitData militiaData = Phase1SceneBuilder.EnsureMilitiaData();
+            if (villagerData == null)
+                return;
+
+            int wiredUnits = 0;
+            Unit[] units = Object.FindObjectsByType<Unit>();
+            for (int i = 0; i < units.Length; i++)
+            {
+                Unit unit = units[i];
+                if (unit == null || unit.Data != null)
+                    continue;
+
+                UnitData assign = villagerData;
+                if (militiaData != null && unit.CanAttack)
+                    assign = militiaData;
+
+                SerializedObject serialized = new SerializedObject(unit);
+                serialized.FindProperty("data").objectReferenceValue = assign;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                unit.SetData(assign);
+                EditorUtility.SetDirty(unit);
+                wiredUnits++;
+            }
+
+            UnitPool unitPool = Object.FindAnyObjectByType<UnitPool>();
+            if (unitPool != null)
+            {
+                SerializedObject serializedPool = new SerializedObject(unitPool);
+                SerializedProperty villagerProp = serializedPool.FindProperty("prewarmVillagerData");
+                SerializedProperty militiaProp = serializedPool.FindProperty("prewarmMilitiaData");
+                bool poolDirty = false;
+
+                if (villagerProp != null && villagerProp.objectReferenceValue != villagerData)
+                {
+                    villagerProp.objectReferenceValue = villagerData;
+                    poolDirty = true;
+                }
+
+                if (militiaProp != null && militiaData != null && militiaProp.objectReferenceValue != militiaData)
+                {
+                    militiaProp.objectReferenceValue = militiaData;
+                    poolDirty = true;
+                }
+
+                if (poolDirty)
+                {
+                    serializedPool.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(unitPool);
+                }
+            }
+
+            if (wiredUnits > 0)
+                Debug.Log($"Wired UnitData on {wiredUnits} unit(s). Villagers should show blue + 'Villager'.");
+        }
+
         static void EnsureAttackMoveManager()
         {
             if (Object.FindAnyObjectByType<AttackMoveManager>() != null)

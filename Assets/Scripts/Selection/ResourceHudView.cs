@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
+using AoE.RTS.Input;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ namespace AoE.RTS.Selection
     public class ResourceHudView : MonoBehaviour
     {
         [SerializeField] SelectionManager selectionManager;
+        [SerializeField] RTSInputReader input;
         [SerializeField] PlacedBuildingData houseData;
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData archeryRangeData;
@@ -71,6 +73,38 @@ namespace AoE.RTS.Selection
             townCenterPlacementData = PlacedBuildingDataResolver.ResolveTownCenterPlacement(ref townCenterPlacementData);
             if (selectionManager == null)
                 selectionManager = FindAnyObjectByType<SelectionManager>();
+            if (input == null)
+                input = FindAnyObjectByType<RTSInputReader>();
+        }
+
+        void Update()
+        {
+            if (GameSessionManager.IsGameOver || input == null || selectionManager == null)
+                return;
+
+            if (BuildingPlacementManager.IsPlacementModeActive)
+                return;
+
+            if (!selectionManager.HasSelectedPlayerVillagers())
+                return;
+
+            PlacedBuildingData house = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
+            PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
+
+            if (input.WasBuildHousePressedThisFrame()
+                && house != null
+                && ResourceManager.Wood >= house.ScaledWoodCost)
+            {
+                BuildingPlacementManager.EnterHousePlacementMode(selectionManager.SelectedUnits);
+                return;
+            }
+
+            if (input.WasBuildBarracksPressedThisFrame()
+                && barracks != null
+                && ResourceManager.Wood >= barracks.ScaledWoodCost)
+            {
+                BuildingPlacementManager.EnterBarracksPlacementMode(selectionManager.SelectedUnits);
+            }
         }
 
         void OnDestroy()
@@ -155,7 +189,7 @@ namespace AoE.RTS.Selection
             int houseWoodCost = Mathf.CeilToInt(house.ScaledWoodCost);
             bool canAffordHouse = ResourceManager.Wood >= house.ScaledWoodCost;
             GUI.enabled = canAffordHouse && !inPlacementMode && !gameOver;
-            if (GUI.Button(houseButtonRect, $"Build House ({houseWoodCost} Wood)"))
+            if (GUI.Button(houseButtonRect, $"Build House (H) ({houseWoodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -168,7 +202,7 @@ namespace AoE.RTS.Selection
             int barracksWoodCost = Mathf.CeilToInt(barracks.ScaledWoodCost);
             bool canAffordBarracks = ResourceManager.Wood >= barracks.ScaledWoodCost;
             GUI.enabled = canAffordBarracks && !inPlacementMode && !gameOver;
-            if (GUI.Button(barracksButtonRect, $"Build Barracks ({barracksWoodCost} Wood)"))
+            if (GUI.Button(barracksButtonRect, $"Build Barracks (B) ({barracksWoodCost} Wood)"))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -381,7 +415,7 @@ namespace AoE.RTS.Selection
             {
                 Rect hintRect = new Rect(Margin, panelRect.yMax + 4f, PanelWidth + 60f, 36f);
                 GameUiInput.SetHudHintScreenRect(GameUiInput.GuiRectToScreenRect(hintRect));
-                GUI.Label(hintRect, "Click ground to place. Esc / Right-click to cancel.");
+                GUI.Label(hintRect, "Click ground to place. Esc / Right-click to cancel.\nShift+drag for wall segments.");
                 return;
             }
 

@@ -223,5 +223,59 @@ namespace AoE.RTS.Buildings
 
             return 0f;
         }
+
+        public static void GetQueueEntries(ArcheryRange archeryRange, List<ProductionQueueEntry> entries)
+        {
+            entries.Clear();
+            if (instance == null || archeryRange == null)
+                return;
+
+            int queueIndex = 0;
+            for (int i = 0; i < instance.activeJobs.Count; i++)
+            {
+                ProductionJob job = instance.activeJobs[i];
+                if (job.archeryRange != archeryRange)
+                    continue;
+
+                string displayName = ProductionQueueDisplayUtility.GetArcheryRangeEntryName(archeryRange, job.unitData);
+                entries.Add(new ProductionQueueEntry
+                {
+                    queueIndex = queueIndex++,
+                    displayName = displayName
+                });
+            }
+        }
+
+        public static bool TryCancelQueueItem(ArcheryRange archeryRange, int queueIndex)
+        {
+            if (instance == null || archeryRange == null || queueIndex < 0)
+                return false;
+
+            int globalIndex = FindQueueJobGlobalIndex(archeryRange, queueIndex);
+            if (globalIndex < 0)
+                return false;
+
+            ProductionJob job = instance.activeJobs[globalIndex];
+            ProductionQueueRefundUtility.RefundArcheryRangeJob(archeryRange.Team, archeryRange, job.unitData);
+            instance.activeJobs.RemoveAt(globalIndex);
+            return true;
+        }
+
+        static int FindQueueJobGlobalIndex(ArcheryRange archeryRange, int queueIndex)
+        {
+            int localIndex = 0;
+            for (int i = 0; i < instance.activeJobs.Count; i++)
+            {
+                if (instance.activeJobs[i].archeryRange != archeryRange)
+                    continue;
+
+                if (localIndex == queueIndex)
+                    return i;
+
+                localIndex++;
+            }
+
+            return -1;
+        }
     }
 }

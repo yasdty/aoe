@@ -168,7 +168,7 @@ namespace AoE.RTS.Selection
 
         static void AppendUnitInfo(Unit unit, List<string> lines, out string title)
         {
-            title = unit.Data != null ? unit.Data.displayName : "Unit";
+            title = UnitDisplayNameUtility.GetDisplayName(unit);
             lines.Add($"HP: {Mathf.FloorToInt(unit.CurrentHp)} / {Mathf.FloorToInt(unit.MaxHp)}");
 
             if (unit.CanAttack)
