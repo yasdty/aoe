@@ -11,7 +11,7 @@
 
 # 依頼: AoE RTS Engine — Phase 54 実装（Minimap）
 
-あなたはシニア Unity RTS エンジイン。Unity 6 / C# / URP / New Input System。  
+あなたはシニア Unity RTS エンジニア。Unity 6 / C# / URP / New Input System。  
 **Phase 54 のみ実装。** 俯瞰ミニマップ + TC / 主要建築アイコン（rewrite 禁止）。
 
 **前提:** Phase 53 で `GameplayCanvas` + `HudRoot` に uGUI HUD が配置済み。`CpuHudView` は OnGUI 右上のまま — ミニマップは **その下 or 左** に uGUI で追加。
