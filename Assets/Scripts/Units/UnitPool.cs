@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AoE.RTS.Visuals;
+using AoE.RTS.View;
 using UnityEngine;
 
 namespace AoE.RTS.Units
@@ -89,13 +90,22 @@ namespace AoE.RTS.Units
                 IncrementSpawn(kind);
             }
 
-            unit.PrepareForSpawn(data, position, team);
             unit.gameObject.SetActive(true);
+            unit.PrepareForSpawn(data, position, team);
+
+            UnitAnimationView animationView = UnitAnimationView.Ensure(unit.gameObject);
+            if (animationView != null)
+                animationView.ResetForSpawn(data);
+
             return unit;
         }
 
         void ReturnInternal(Unit unit)
         {
+            UnitAnimationView animationView = unit.GetComponent<UnitAnimationView>();
+            if (animationView != null)
+                animationView.ResetForPool();
+
             unit.transform.SetParent(transform);
             unit.gameObject.SetActive(false);
 

@@ -1,6 +1,6 @@
 # Phase 55 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜54 完了（View Split / uGUI HUD / Minimap）  
 > **マイルストン:** M5 — **Unit Animation**  
 > **ロードマップ:** [09_M5_VISUAL_UI_PHASES.md](../09_M5_VISUAL_UI_PHASES.md)  
@@ -156,9 +156,9 @@ public static UnitAnimationProfile GetProfile(UnitData data);
 
 ## ⑦ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 55 ✅ / Unit Animation ✅
-- [ ] `09_M5_VISUAL_UI_PHASES.md` — Phase 55 ✅
-- [ ] 本プロンプト — ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 55 ✅ / Unit Animation ✅
+- [x] `09_M5_VISUAL_UI_PHASES.md` — Phase 55 ✅
+- [x] 本プロンプト — ✅
 
 ---
 

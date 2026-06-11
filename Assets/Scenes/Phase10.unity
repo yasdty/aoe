@@ -2531,6 +2531,8 @@ GameObject:
   - component: {fileID: 361787214}
   - component: {fileID: 361787213}
   - component: {fileID: 361787212}
+  - component: {fileID: 361787216}
+  - component: {fileID: 361787215}
   m_Layer: 9
   m_Name: Unit
   m_TagString: Untagged
@@ -2591,6 +2593,41 @@ Transform:
   - {fileID: 1038338459}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &361787215
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361787211}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: abdf22244103951458bce595a83c3403, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &361787216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361787211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce8da98aaa48ff14aba9e907bd9fea5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.View.UnitAnimationView
+  unit: {fileID: 361787212}
 --- !u!1 &362851209
 GameObject:
   m_ObjectHideFlags: 0
@@ -3982,6 +4019,8 @@ GameObject:
   - component: {fileID: 524387201}
   - component: {fileID: 524387200}
   - component: {fileID: 524387199}
+  - component: {fileID: 524387203}
+  - component: {fileID: 524387202}
   m_Layer: 9
   m_Name: Unit
   m_TagString: Untagged
@@ -4042,6 +4081,41 @@ Transform:
   - {fileID: 1020077590}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &524387202
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524387198}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: abdf22244103951458bce595a83c3403, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &524387203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524387198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce8da98aaa48ff14aba9e907bd9fea5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.View.UnitAnimationView
+  unit: {fileID: 524387199}
 --- !u!1 &538266704
 GameObject:
   m_ObjectHideFlags: 0
@@ -4908,6 +4982,8 @@ GameObject:
   - component: {fileID: 656725213}
   - component: {fileID: 656725212}
   - component: {fileID: 656725211}
+  - component: {fileID: 656725215}
+  - component: {fileID: 656725214}
   m_Layer: 9
   m_Name: Unit
   m_TagString: Untagged
@@ -4968,6 +5044,41 @@ Transform:
   - {fileID: 155016998}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &656725214
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 656725210}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: abdf22244103951458bce595a83c3403, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &656725215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 656725210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce8da98aaa48ff14aba9e907bd9fea5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.View.UnitAnimationView
+  unit: {fileID: 656725211}
 --- !u!1 &661004145
 GameObject:
   m_ObjectHideFlags: 0
@@ -7458,6 +7569,8 @@ GameObject:
   - component: {fileID: 975445822}
   - component: {fileID: 975445821}
   - component: {fileID: 975445820}
+  - component: {fileID: 975445824}
+  - component: {fileID: 975445823}
   m_Layer: 9
   m_Name: Unit
   m_TagString: Untagged
@@ -7518,6 +7631,41 @@ Transform:
   - {fileID: 993173668}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &975445823
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975445819}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: abdf22244103951458bce595a83c3403, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &975445824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975445819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce8da98aaa48ff14aba9e907bd9fea5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.View.UnitAnimationView
+  unit: {fileID: 975445820}
 --- !u!1 &976426180
 GameObject:
   m_ObjectHideFlags: 0
@@ -8402,6 +8550,8 @@ GameObject:
   - component: {fileID: 1028568917}
   - component: {fileID: 1028568916}
   - component: {fileID: 1028568915}
+  - component: {fileID: 1028568919}
+  - component: {fileID: 1028568918}
   m_Layer: 9
   m_Name: Unit
   m_TagString: Untagged
@@ -8462,6 +8612,41 @@ Transform:
   - {fileID: 1583944618}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1028568918
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1028568914}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: abdf22244103951458bce595a83c3403, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1028568919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1028568914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce8da98aaa48ff14aba9e907bd9fea5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.View.UnitAnimationView
+  unit: {fileID: 1028568915}
 --- !u!1 &1032908995
 GameObject:
   m_ObjectHideFlags: 0
@@ -10553,6 +10738,8 @@ GameObject:
   - component: {fileID: 1302344044}
   - component: {fileID: 1302344043}
   - component: {fileID: 1302344042}
+  - component: {fileID: 1302344046}
+  - component: {fileID: 1302344045}
   m_Layer: 9
   m_Name: Unit
   m_TagString: Untagged
@@ -10613,6 +10800,41 @@ Transform:
   - {fileID: 411589447}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1302344045
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302344041}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: abdf22244103951458bce595a83c3403, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1302344046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302344041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce8da98aaa48ff14aba9e907bd9fea5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AoE.RTS::AoE.RTS.View.UnitAnimationView
+  unit: {fileID: 1302344042}
 --- !u!1 &1303308836
 GameObject:
   m_ObjectHideFlags: 0

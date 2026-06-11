@@ -6,6 +6,7 @@ using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Selection;
 using AoE.RTS.Units;
+using AoE.RTS.View;
 using AoE.RTS.Visuals;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -2062,6 +2063,8 @@ namespace AoE.RTS.EditorTools
             serializedUnit.FindProperty("team").enumValueIndex = (int)team;
             serializedUnit.ApplyModifiedPropertiesWithoutUndo();
 
+            UnitAnimationView animationView = UnitAnimationView.Ensure(unitObject);
+            animationView.BindUnit(unit, unitData);
             return unitObject;
         }
 

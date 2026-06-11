@@ -28,7 +28,7 @@
 | 52 | View Layer Split | Simulation / View 分離 + uGUI Canvas シェル | ✅ 完了 |
 | 53 | HUD Migration | 資源・生産・選択パネルを uGUI へ（**i18n キー経由**） | ✅ 完了 |
 | 54 | Minimap | 俯瞰ミニマップ + TC / 主要建築アイコン | ✅ 完了 |
-| 55 | Unit Animation | Animator MVP（歩行・採集・攻撃） | ⬜ 未着手 |
+| 55 | Unit Animation | Animator MVP（歩行・採集・攻撃） | ✅ 完了 |
 | 56 | Combat VFX & Audio | 弾丸・ヒット・SE フック | ⬜ 未着手 |
 
 **M5 完了条件:**
@@ -142,15 +142,18 @@
 
 ---
 
-## Phase 55 — Unit Animation ⬜
+## Phase 55 — Unit Animation ✅
 
 **目的:** Villager / Militia / Archer の Idle・Walk・Gather・Attack を Animator MVP で表現。
 
-| 項目 | MVP |
-|------|-----|
-| View | `UnitAnimationView` + `UnitVisualStateResolver` |
-| 方式 | コード生成 AnimationClip + AnimatorController |
-| 分離 | Simulation（`Unit`）から Animator 参照を分離 |
+| 項目 | 実装 |
+|------|------|
+| View | `UnitAnimationView` + `UnitVisualStateResolver` + `UnitAnimationProfileResolver` |
+| 方式 | Editor 生成 AnimationClip + AnimatorController（`Resources/UnitAnimation/`） |
+| 分離 | Simulation（`Unit`）から Animator 参照を分離 — facing API のみ追加 |
+| 向き | 移動先 / 攻撃対象へ root Y 回転 |
+| プール | `UnitPool` — `ResetForSpawn` / `ResetForPool` + `Animator.Rebind()` |
+| Editor | `AoE → Setup Unit Animations (Phase55)` |
 
 **プロンプト:** [prompts/phase55-prompt.md](prompts/phase55-prompt.md)
 
@@ -158,7 +161,17 @@
 
 ## Phase 56 — Combat VFX & Audio ⬜
 
-**プロンプト:** [prompts/phase56-prompt.md](prompts/phase56-prompt.md)（未作成）
+**目的:** 戦闘の視覚・聴覚フィードバック MVP — 弾丸（Archer / 塔）、命中ヒット、SE フック。View 層のみ、Sim のダメージタイミングは不変。
+
+| 項目 | 実装（予定） |
+|------|-------------|
+| DTO | `CombatFeedbackEvent` — Simulation → View |
+| View | `CombatFeedbackView` — 弾丸 lerp / ヒット Particle / 死亡 puff |
+| SE | `CombatAudioView` or hooks — Melee / Ranged / Death（Editor 生成 Clip） |
+| Sim フック | `AttackManager`, `BoarAttackManager`, `WatchTowerDefenseManager` |
+| Editor | `AoE → Setup Combat VFX (Phase56)` |
+
+**プロンプト:** [prompts/phase56-prompt.md](prompts/phase56-prompt.md)
 
 ---
 
@@ -177,5 +190,5 @@
 
 1. M4 Phase 48 Play 確認完了
 2. **Phase 49 Wall & Gate** — gameplay 優先（UI 移行前）
-3. Phase 53 HUD Migration ✅ → Phase 54 Minimap ✅ → Phase 55 以降 Visual
+3. Phase 53 HUD Migration ✅ → Phase 54 Minimap ✅ → Phase 55 Unit Animation ✅ → Phase 56 Visual
 4. **1 Phase ごと small diff**

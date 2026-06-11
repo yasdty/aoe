@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 54 ✅（Minimap — `MapBounds` / `MinimapView` uGUI 右上 / TC アイコン / 視野矩形 / クリック移動）。**次: Phase 55 Unit Animation（M5）。**
+> **最終更新:** Phase 55 ✅（Unit Animation — `UnitAnimationView` / Animator MVP / Villager・Militia・Archer 状態アニメ）。**次: Phase 56 Combat VFX & Audio（M5）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -89,8 +89,8 @@
 | 52 | View Layer Split | `Phase10.unity` | ✅ 完了（M5） |
 | 53 | HUD Migration | `Phase10.unity` | ✅ 完了（M5）— uGUI 主要 HUD |
 | 54 | Minimap | `Phase10.unity` | ✅ 完了（M5）— TC アイコン / 視野 / クリック移動 |
-| 55 | Unit Animation | `Phase10.unity` | ⬜ 未着手（M5）— **次** |
-| 56 | Combat VFX & Audio | `Phase10.unity` | ⬜ 未着手（M5） |
+| 55 | Unit Animation | `Phase10.unity` | ✅ 完了（M5）— Animator MVP / Idle・Walk・Gather・Attack |
+| 56 | Combat VFX & Audio | `Phase10.unity` | ⬜ 未着手（M5）— **次** |
 | 57 | Entity ID & PlayerId | `Phase10.unity` | ⬜ 未着手（M6） |
 | 58 | CPU Command Queue | `Phase10.unity` | ⬜ 未着手（M6） |
 | 59 | Deterministic Sim | `Phase10.unity` | ⬜ 未着手（M6） |
@@ -113,7 +113,7 @@
 
 **Milestone 4 AoE Gameplay:** ✅ 完了（Phase 42〜48）
 
-**Milestone 5 Gameplay Polish & Visual / UI:** ⬜ 進行中（Phase 49〜54 ✅ / **次: Phase 55 Unit Animation**）
+**Milestone 5 Gameplay Polish & Visual / UI:** ⬜ 進行中（Phase 49〜55 ✅ / **次: Phase 56 Combat VFX & Audio**）
 
 **Milestone 6 Multiplayer Foundation:** ⬜ 未着手（Phase 57〜61）
 
@@ -581,6 +581,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | CPU 難易度・戦略バリエーション | 現状は Relaxed / Aggressive のみ |
 | 本格 HUD（uGUI） | ✅ Phase 53 — 資源・生産・選択・勝敗・Idle / Canvas ✅ Phase 52 |
 | ミニマップ | ✅ Phase 54 — `MinimapView` / `MapBounds` / TC アイコン / 視野矩形 / クリック移動 |
+| ユニットアニメ | ✅ Phase 55 — `UnitAnimationView` / Animator MVP（Villager・Militia・Archer） |
 | 4 チーム対応 | 憲法目標だが enum は 2 チームのみ |
 | Castle / Wonder | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 
@@ -594,7 +595,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | マップ生成 | |
 | セーブ / ロード | |
 | リプレイ | |
-| Animator 本格実装 | 現状は色変化のみ |
+| Animator 本格実装 | ✅ Phase 55 MVP — Villager / Militia / Archer（Idle・Walk・Gather・Attack） |
 | ミニマップ | ✅ Phase 54 |
 | 音声・BGM | |
 
@@ -1048,7 +1049,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・Feudal 経済・多兵種・1 CPU — **Dark〜Feudal 垂直スライス**（全体 ~38%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 55 Unit Animation** — [09_M5](09_M5_VISUAL_UI_PHASES.md) |
+| 次に何を作るべき？ | **Phase 56 Combat VFX & Audio** — [09_M5](09_M5_VISUAL_UI_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

@@ -178,6 +178,25 @@ namespace AoE.RTS.Combat
             return false;
         }
 
+        public static bool TryGetAttackTargetPosition(Unit attacker, out Vector3 worldPosition)
+        {
+            worldPosition = default;
+            if (instance == null || attacker == null)
+                return false;
+
+            for (int i = 0; i < instance.activeJobs.Count; i++)
+            {
+                BoarAttackJob job = instance.activeJobs[i];
+                if (job.attacker != attacker || job.boar == null || job.boar.IsDead)
+                    continue;
+
+                worldPosition = job.boar.transform.position;
+                return true;
+            }
+
+            return false;
+        }
+
         public static void IssueAttack(IReadOnlyList<Unit> attackers, BoarResource boar)
         {
             if (instance == null || boar == null || attackers == null || boar.IsDead)

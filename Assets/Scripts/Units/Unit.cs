@@ -215,6 +215,18 @@ namespace AoE.RTS.Units
             moveTarget = null;
         }
 
+        public bool TryGetMoveTargetPosition(out Vector3 worldPosition)
+        {
+            if (!moveTarget.HasValue)
+            {
+                worldPosition = default;
+                return false;
+            }
+
+            worldPosition = moveTarget.Value;
+            return true;
+        }
+
         public bool IsNear(Vector3 worldPosition, float radius)
         {
             Vector3 delta = transform.position - worldPosition;
