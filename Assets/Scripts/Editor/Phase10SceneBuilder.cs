@@ -721,6 +721,36 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added View Layer (Phase52). Save the scene (Ctrl+S) if needed.");
         }
 
+        [MenuItem("AoE/Migrate HUD to uGUI (Phase53)", true)]
+        static bool ValidateMigrateHudPhase53() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Migrate HUD to uGUI (Phase53)")]
+        public static void MigrateHudToUgUiPhase53()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            EnsureHudUi();
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Migrated HUD shell to uGUI (Phase53). Play mode builds panel widgets at runtime. Save the scene (Ctrl+S) if needed.");
+        }
+
+        public static void EnsureHudUi()
+        {
+            EnsureGameplayCanvas();
+            EnsureInputSystemEventSystem();
+            Transform hudRoot = HudUiFactory.GetHudRoot();
+            if (hudRoot == null)
+                return;
+
+            HudUiFactory.GetOrCreateHudChild(hudRoot, "ResourceHudPanel");
+            HudUiFactory.GetOrCreateHudChild(hudRoot, "IdleHudPanel");
+            HudUiFactory.GetOrCreateHudChild(hudRoot, "GameTimeHudPanel");
+            HudUiFactory.GetOrCreateHudChild(hudRoot, "VictoryOverlay");
+            HudUiFactory.GetOrCreateHudChild(hudRoot, "PlacementHintPanel");
+            HudBottomLeftStack.GetOrCreate();
+        }
+
         static void EnsureInputSystemEventSystem()
         {
             EventSystem eventSystem = Object.FindAnyObjectByType<EventSystem>();
@@ -1352,6 +1382,7 @@ namespace AoE.RTS.EditorTools
             BuildingPlacementManager placementManager = placementManagerObject.AddComponent<BuildingPlacementManager>();
 
             EnsureGameplayCanvas();
+            EnsureHudUi();
             PlacementPreviewView placementPreviewView = EnsurePlacementPreviewView();
             placementPreviewView.transform.SetParent(systems.transform);
 

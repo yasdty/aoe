@@ -1,6 +1,6 @@
 # Phase 53 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜52 完了（View Split — `IPlacementPreviewView` / `GameplayCanvas` + `HudRoot` / Input System UI）  
 > **マイルストン:** M5 — **HUD Migration（OnGUI → uGUI）**  
 > **ロードマップ:** [09_M5_VISUAL_UI_PHASES.md](../09_M5_VISUAL_UI_PHASES.md)  
@@ -150,12 +150,12 @@
 
 ## ⑦ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 53 ✅ / uGUI HUD ✅ / OnGUI 主要パネル除去 ✅
-- [ ] `09_M5_VISUAL_UI_PHASES.md` — Phase 53 ✅
-- [ ] 本プロンプト — ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 53 ✅ / uGUI HUD ✅ / OnGUI 主要パネル除去 ✅
+- [x] `09_M5_VISUAL_UI_PHASES.md` — Phase 53 ✅
+- [x] 本プロンプト — ✅
 
 ---
 
 Phase 53 のみ。**Phase 54（Minimap）・Phase 55（Animation）には触れない。**
 
-> **次:** Phase 54 Minimap
+> **次:** [phase54-prompt.md](phase54-prompt.md) — Minimap

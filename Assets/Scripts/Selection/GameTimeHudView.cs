@@ -5,15 +5,68 @@ using AoE.RTS.Economy;
 using AoE.RTS.Units;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace AoE.RTS.Selection
 {
     public class GameTimeHudView : MonoBehaviour
     {
-        const float Margin = 12f;
         const float PanelWidth = 240f;
         const float LineHeight = 20f;
         const float Padding = 8f;
+
+        RectTransform panelRoot;
+        Text timeText;
+        Button languageButton;
+        Text waveText;
+        Button paceButton;
+        Text debugText;
+        Text barracksText;
+        bool uiBuilt;
+
+        void Awake()
+        {
+            TryBuildUi();
+        }
+
+        void OnDestroy()
+        {
+            if (panelRoot != null)
+                GameUiInput.UnregisterHudPanel(panelRoot);
+        }
+
+        void TryBuildUi()
+        {
+            if (uiBuilt)
+                return;
+
+            Transform hudRoot = HudUiFactory.GetHudRoot();
+            if (hudRoot == null)
+                return;
+
+            panelRoot = HudUiFactory.SetupScreenPanel(
+                hudRoot,
+                "GameTimeHudPanel",
+                HudUiFactory.PanelBackgroundColor,
+                0f,
+                HudUiFactory.Margin,
+                PanelWidth,
+                220f,
+                topLeftAnchor: false);
+            GameUiInput.RegisterHudPanel(panelRoot);
+            HudUiFactory.AddVerticalLayout(panelRoot, 2f, reverseArrangement: false);
+
+            timeText = HudUiFactory.CreateLabel(panelRoot, "Time", LineHeight);
+            languageButton = HudUiFactory.CreateButton(panelRoot, "LanguageButton", LineHeight);
+            languageButton.onClick.AddListener(Localization.ToggleLanguage);
+            waveText = HudUiFactory.CreateLabel(panelRoot, "Wave", LineHeight);
+            paceButton = HudUiFactory.CreateButton(panelRoot, "PaceButton", LineHeight);
+            paceButton.onClick.AddListener(GameSessionManager.ToggleCpuAttackPace);
+            debugText = HudUiFactory.CreateLabel(panelRoot, "Debug", LineHeight);
+            barracksText = HudUiFactory.CreateLabel(panelRoot, "Barracks", LineHeight);
+
+            uiBuilt = true;
+        }
 
         void Update()
         {
@@ -27,83 +80,63 @@ namespace AoE.RTS.Selection
                 Localization.ToggleLanguage();
         }
 
-        void OnGUI()
+        void LateUpdate()
         {
-            float lineCount = 3f;
-            if (CpuMilitaryAiManager.Instance != null)
-                lineCount += 3f;
-            if (GameplayBalance.Mode == GameplayBalanceMode.Debug && CpuMilitaryAiManager.Instance != null)
-                lineCount += 1f;
-
-            float panelHeight = Padding * 2f + LineHeight * lineCount;
-            float x = Screen.width * 0.5f - PanelWidth * 0.5f;
-            Rect panelRect = new Rect(x, Margin, PanelWidth, panelHeight);
-            GameUiInput.ExpandHudPanelScreenRect(panelRect);
-
-            GUI.Box(panelRect, GUIContent.none);
-
-            float y = Margin + Padding;
-            DrawLine(x, ref y, $"Time: {FormatTime(Time.timeSinceLevelLoad)}");
-
-            Rect languageRect = new Rect(x + Padding, y, PanelWidth - Padding * 2f, LineHeight);
-            if (GUI.Button(languageRect, Localization.Format("ui.language_toggle", Localization.CurrentLanguageLabel())))
-                Localization.ToggleLanguage();
-            y += LineHeight;
-
-            CpuMilitaryAiManager military = CpuMilitaryAiManager.Instance;
-            if (military == null)
+            TryBuildUi();
+            if (!uiBuilt)
                 return;
 
-            if (military.IsAttackGraceActive)
-            {
-                DrawLine(x, ref y, $"CPU peace: {FormatTime(military.WaveTimerRemaining)}");
-            }
-            else
-            {
-                DrawLine(x, ref y, $"Next wave: {FormatTime(military.WaveTimerRemaining)}");
-            }
+            HudUiFactory.SetText(timeText, $"Time: {FormatTime(Time.timeSinceLevelLoad)}");
+            HudUiFactory.SetButtonLabel(
+                languageButton,
+                Localization.Format("ui.language_toggle", Localization.CurrentLanguageLabel()));
 
-            string paceLabel = GameSessionManager.CpuAttackPace == CpuAttackPace.Relaxed
-                ? "Relaxed"
-                : "Aggressive";
-            Rect paceRect = new Rect(x + Padding, y, PanelWidth - Padding * 2f, LineHeight);
-            GUI.enabled = !GameSessionManager.IsGameOver;
-            if (GUI.Button(paceRect, $"CPU pace: {paceLabel} (click / P)"))
-                GameSessionManager.ToggleCpuAttackPace();
-            GUI.enabled = true;
-            y += LineHeight;
+            CpuMilitaryAiManager military = CpuMilitaryAiManager.Instance;
+            bool showMilitary = military != null;
+            waveText.gameObject.SetActive(showMilitary);
+            paceButton.gameObject.SetActive(showMilitary);
 
-            if (GameplayBalance.Mode == GameplayBalanceMode.Debug)
-                DrawLine(x, ref y, "Debug: K=TC dmg, Shift+K=CPU wave");
-
-            if (military.HasCpuBarracks)
+            if (showMilitary)
             {
-                DrawLine(x, ref y, "Barracks: built");
-            }
-            else if (military.IsBuildingCpuBarracks)
-            {
-                DrawLine(x, ref y, "Barracks: building");
-            }
-            else if (military.BarracksBuildDelayRemaining > 0f)
-            {
-                DrawLine(x, ref y, $"Barracks after: {FormatTime(military.BarracksBuildDelayRemaining)}");
-            }
-            else
-            {
-                int wood = Mathf.FloorToInt(ResourceManager.GetWood(UnitTeam.Enemy));
-                int cost = Mathf.FloorToInt(military.BarracksWoodCost);
-                if (wood < cost)
-                    DrawLine(x, ref y, $"Barracks: need {cost} Wood ({wood}/{cost})");
+                if (military.IsAttackGraceActive)
+                    HudUiFactory.SetText(waveText, $"CPU peace: {FormatTime(military.WaveTimerRemaining)}");
                 else
-                    DrawLine(x, ref y, "Barracks: starting soon");
+                    HudUiFactory.SetText(waveText, $"Next wave: {FormatTime(military.WaveTimerRemaining)}");
+
+                string paceLabel = GameSessionManager.CpuAttackPace == CpuAttackPace.Relaxed
+                    ? "Relaxed"
+                    : "Aggressive";
+                HudUiFactory.SetButtonLabel(paceButton, $"CPU pace: {paceLabel} (click / P)");
+                paceButton.interactable = !GameSessionManager.IsGameOver;
             }
+
+            bool showDebug = showMilitary && GameplayBalance.Mode == GameplayBalanceMode.Debug;
+            debugText.gameObject.SetActive(showDebug);
+            if (showDebug)
+                HudUiFactory.SetText(debugText, "Debug: K=TC dmg, Shift+K=CPU wave");
+
+            barracksText.gameObject.SetActive(showMilitary);
+            if (showMilitary)
+                HudUiFactory.SetText(barracksText, BuildBarracksStatus(military));
+
+            int visibleRows = 2 + (showMilitary ? 2 : 0) + (showDebug ? 1 : 0) + (showMilitary ? 1 : 0);
+            panelRoot.sizeDelta = new Vector2(PanelWidth, Padding * 2f + LineHeight * visibleRows + 2f * (visibleRows - 1));
         }
 
-        void DrawLine(float panelX, ref float y, string text)
+        static string BuildBarracksStatus(CpuMilitaryAiManager military)
         {
-            Rect rect = new Rect(panelX + Padding, y, PanelWidth - Padding * 2f, LineHeight);
-            GUI.Label(rect, text);
-            y += LineHeight;
+            if (military.HasCpuBarracks)
+                return "Barracks: built";
+            if (military.IsBuildingCpuBarracks)
+                return "Barracks: building";
+            if (military.BarracksBuildDelayRemaining > 0f)
+                return $"Barracks after: {FormatTime(military.BarracksBuildDelayRemaining)}";
+
+            int wood = Mathf.FloorToInt(ResourceManager.GetWood(UnitTeam.Enemy));
+            int cost = Mathf.FloorToInt(military.BarracksWoodCost);
+            if (wood < cost)
+                return $"Barracks: need {cost} Wood ({wood}/{cost})";
+            return "Barracks: starting soon";
         }
 
         static string FormatTime(float seconds)

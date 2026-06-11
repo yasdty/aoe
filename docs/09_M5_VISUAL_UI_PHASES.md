@@ -26,7 +26,7 @@
 | 50 | **Wall Age Grades** | 時代に応じた柵/壁グレード（AoE2: 初期柵 → 昇格後の石壁等） | ✅ 完了 |
 | 51 | **Localization (i18n)** | LanguageMap + **日本語表示**（AoE2 Wiki 用語）/ EN↔JA 切替 | ✅ 完了 |
 | 52 | View Layer Split | Simulation / View 分離 + uGUI Canvas シェル | ✅ 完了 |
-| 53 | HUD Migration | 資源・生産・選択パネルを uGUI へ（**i18n キー経由**） | ⬜ 未着手 |
+| 53 | HUD Migration | 資源・生産・選択パネルを uGUI へ（**i18n キー経由**） | ✅ 完了 |
 | 54 | Minimap | 俯瞰ミニマップ + TC / 主要建築アイコン | ⬜ 未着手 |
 | 55 | Unit Animation | Animator MVP（歩行・採集・攻撃） | ⬜ 未着手 |
 | 56 | Combat VFX & Audio | 弾丸・ヒット・SE フック | ⬜ 未着手 |
@@ -110,9 +110,16 @@
 
 ---
 
-## Phase 53 — HUD Migration ⬜
+## Phase 53 — HUD Migration ✅
 
-**移行対象:** `ResourceHudView`, `ProductionPanelView`, `SelectionInfoPanelView`, `IdleUnitHudView`, `VictoryDefeatHudView` — **Phase 51 LanguageMap 必須**
+**移行対象:** `ResourceHudView`, `ProductionPanelView`, `SelectionInfoPanelView`, `IdleUnitHudView`, `VictoryDefeatHudView` + 生産パネル群 — **LanguageMap 経由**
+
+| 項目 | 実装 |
+|------|------|
+| 基盤 | `HudUiFactory`, `HudBottomLeftStack`, `ProductionQueueListView` |
+| ヒット判定 | `GameUiInput` — RectTransform 登録 |
+| OnGUI 残存 | `SelectionBoxView`, `UnitHpBarView`, `CpuHudView` |
+| Editor | `AoE → Migrate HUD to uGUI (Phase53)` |
 
 **プロンプト:** [prompts/phase53-prompt.md](prompts/phase53-prompt.md)
 
@@ -151,5 +158,5 @@
 
 1. M4 Phase 48 Play 確認完了
 2. **Phase 49 Wall & Gate** — gameplay 優先（UI 移行前）
-3. Phase 53 HUD Migration → Phase 54 以降 Visual
+3. Phase 53 HUD Migration ✅ → Phase 54 以降 Visual
 4. **1 Phase ごと small diff**

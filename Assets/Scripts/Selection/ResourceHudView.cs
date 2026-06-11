@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Core;
@@ -5,6 +6,7 @@ using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Units;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AoE.RTS.Selection
 {
@@ -28,36 +30,59 @@ namespace AoE.RTS.Selection
         [SerializeField] PlacedBuildingData marketData;
         [SerializeField] PlacedBuildingData townCenterPlacementData;
 
-        const float Margin = 12f;
         const float PanelWidth = 210f;
-        const float WoodLineHeight = 24f;
-        const float FoodLineHeight = 24f;
-        const float GoldLineHeight = 24f;
-        const float StoneLineHeight = 24f;
-        const float PopLineHeight = 24f;
+        const float LineHeight = 24f;
         const float CivLineHeight = 20f;
         const float ButtonHeight = 28f;
-        const float ButtonGap = 4f;
         const float Padding = 8f;
-        const int BuildButtonCount = 15;
+        const float ButtonGap = 4f;
 
         static ResourceHudView instance;
 
-        static float ResourceStripHeight =>
-            Padding * 2f
-            + WoodLineHeight + ButtonGap
-            + FoodLineHeight + ButtonGap
-            + GoldLineHeight + ButtonGap
-            + StoneLineHeight + ButtonGap
-            + PopLineHeight + ButtonGap
-            + CivLineHeight + ButtonGap;
+        RectTransform panelRoot;
+        RectTransform hintRoot;
+        Text woodText;
+        Text foodText;
+        Text goldText;
+        Text stoneText;
+        Text popText;
+        Text civText;
+        Text hintText;
+        RectTransform buildMenuRoot;
+        readonly List<BuildButtonEntry> buildButtons = new List<BuildButtonEntry>();
+        bool uiBuilt;
 
-        static float BuildMenuHeight =>
-            BuildButtonCount * ButtonHeight + (BuildButtonCount - 1) * ButtonGap;
+        struct BuildButtonEntry
+        {
+            public Button button;
+            public Func<string> getLabel;
+            public Func<bool> getInteractable;
+            public Action onClick;
+        }
 
         void Awake()
         {
             instance = this;
+            ResolveBuildingData();
+            if (selectionManager == null)
+                selectionManager = FindAnyObjectByType<SelectionManager>();
+            if (input == null)
+                input = FindAnyObjectByType<RTSInputReader>();
+            TryBuildUi();
+        }
+
+        void OnDestroy()
+        {
+            if (instance == this)
+                instance = null;
+            if (panelRoot != null)
+                GameUiInput.UnregisterHudPanel(panelRoot);
+            if (hintRoot != null)
+                GameUiInput.UnregisterHudPanel(hintRoot);
+        }
+
+        void ResolveBuildingData()
+        {
             houseData = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
             barracksData = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
             archeryRangeData = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
@@ -73,10 +98,285 @@ namespace AoE.RTS.Selection
             watchTowerData = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
             marketData = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
             townCenterPlacementData = PlacedBuildingDataResolver.ResolveTownCenterPlacement(ref townCenterPlacementData);
-            if (selectionManager == null)
-                selectionManager = FindAnyObjectByType<SelectionManager>();
-            if (input == null)
-                input = FindAnyObjectByType<RTSInputReader>();
+        }
+
+        void TryBuildUi()
+        {
+            if (uiBuilt)
+                return;
+
+            Transform hudRoot = HudUiFactory.GetHudRoot();
+            if (hudRoot == null)
+                return;
+
+            panelRoot = HudUiFactory.SetupScreenPanel(
+                hudRoot,
+                "ResourceHudPanel",
+                HudUiFactory.PanelBackgroundColor,
+                HudUiFactory.Margin,
+                HudUiFactory.Margin,
+                PanelWidth,
+                800f,
+                topLeftAnchor: true);
+            GameUiInput.RegisterHudPanel(panelRoot);
+            HudUiFactory.AddVerticalLayout(panelRoot, ButtonGap, reverseArrangement: false);
+
+            woodText = HudUiFactory.CreateLabel(panelRoot, "Wood", LineHeight);
+            foodText = HudUiFactory.CreateLabel(panelRoot, "Food", LineHeight);
+            goldText = HudUiFactory.CreateLabel(panelRoot, "Gold", LineHeight);
+            stoneText = HudUiFactory.CreateLabel(panelRoot, "Stone", LineHeight);
+            popText = HudUiFactory.CreateLabel(panelRoot, "Pop", LineHeight);
+            civText = HudUiFactory.CreateLabel(panelRoot, "Civ", CivLineHeight);
+
+            GameObject buildMenuObject = new GameObject("BuildMenu", typeof(RectTransform));
+            buildMenuObject.transform.SetParent(panelRoot, false);
+            buildMenuRoot = buildMenuObject.GetComponent<RectTransform>();
+            HudUiFactory.AddVerticalLayout(buildMenuRoot, ButtonGap, reverseArrangement: false);
+
+            RegisterBuildButtons();
+
+            hintRoot = HudUiFactory.SetupScreenPanel(
+                hudRoot,
+                "PlacementHintPanel",
+                Color.clear,
+                HudUiFactory.Margin,
+                HudUiFactory.Margin + 200f,
+                PanelWidth + 60f,
+                36f,
+                topLeftAnchor: true);
+            hintRoot.GetComponent<Image>().raycastTarget = false;
+            GameUiInput.RegisterHudPanel(hintRoot);
+            hintText = HudUiFactory.CreateLabel(hintRoot, "HintText", 36f);
+            HudUiFactory.SetStretchFull(hintText.rectTransform);
+            hintText.alignment = TextAnchor.UpperLeft;
+            hintRoot.gameObject.SetActive(false);
+
+            uiBuilt = true;
+        }
+
+        void RegisterBuildButtons()
+        {
+            buildButtons.Clear();
+            AddBuildButton(
+                () => Localization.Format(
+                    "ui.build_hotkey_wood",
+                    Localization.BuildingName(PlacedBuildingKind.House),
+                    "H",
+                    Mathf.CeilToInt(houseData.ScaledWoodCost),
+                    Localization.Get("resource.wood")),
+                () => CanUseBuildButton(ResourceManager.Wood >= houseData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterHousePlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => Localization.Format(
+                    "ui.build_hotkey_wood",
+                    Localization.BuildingName(PlacedBuildingKind.Barracks),
+                    "B",
+                    Mathf.CeilToInt(barracksData.ScaledWoodCost),
+                    Localization.Get("resource.wood")),
+                () => CanUseBuildButton(ResourceManager.Wood >= barracksData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterBarracksPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildAgeLockedLabel(archeryRangeData, PlacedBuildingKind.ArcheryRange, "age.feudal"),
+                () => CanUseBuildButton(
+                    GameSessionManager.CanBuild(archeryRangeData, UnitTeam.Player)
+                    && ResourceManager.Wood >= archeryRangeData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterArcheryRangePlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildAgeLockedLabel(stableData, PlacedBuildingKind.Stable, "age.feudal"),
+                () => CanUseBuildButton(
+                    GameSessionManager.CanBuild(stableData, UnitTeam.Player)
+                    && ResourceManager.Wood >= stableData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterStablePlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildAgeLockedLabel(blacksmithData, PlacedBuildingKind.Blacksmith, "age.feudal"),
+                () => CanUseBuildButton(
+                    GameSessionManager.CanBuild(blacksmithData, UnitTeam.Player)
+                    && ResourceManager.Wood >= blacksmithData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterBlacksmithPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => Localization.Format(
+                    "ui.build_wood",
+                    Localization.BuildingName(PlacedBuildingKind.Farm),
+                    Mathf.CeilToInt(farmData.ScaledWoodCost),
+                    Localization.Get("resource.wood")),
+                () => CanUseBuildButton(ResourceManager.Wood >= farmData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterFarmPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => Localization.Format(
+                    "ui.build_wood",
+                    Localization.BuildingName(PlacedBuildingKind.LumberCamp),
+                    Mathf.CeilToInt(lumberCampData.ScaledWoodCost),
+                    Localization.Get("resource.wood")),
+                () => CanUseBuildButton(ResourceManager.Wood >= lumberCampData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterLumberCampPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => Localization.Format(
+                    "ui.build_wood",
+                    Localization.BuildingName(PlacedBuildingKind.MiningCamp),
+                    Mathf.CeilToInt(miningCampData.ScaledWoodCost),
+                    Localization.Get("resource.wood")),
+                () => CanUseBuildButton(ResourceManager.Wood >= miningCampData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterMiningCampPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => Localization.Format(
+                    "ui.build_wood",
+                    Localization.BuildingName(PlacedBuildingKind.Mill),
+                    Mathf.CeilToInt(millData.ScaledWoodCost),
+                    Localization.Get("resource.wood")),
+                () => CanUseBuildButton(ResourceManager.Wood >= millData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterMillPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildWallLabel(palisadeWallData, PlacedBuildingKind.PalisadeWall, "age.dark"),
+                () => CanUseBuildButton(
+                    GameSessionManager.CanBuild(palisadeWallData, UnitTeam.Player)
+                    && PlacementCostUtility.CanAfford(UnitTeam.Player, palisadeWallData)),
+                () => BuildingPlacementManager.EnterPalisadeWallPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildWallLabel(stoneWallData, PlacedBuildingKind.StoneWall, "age.feudal"),
+                () => CanUseBuildButton(
+                    GameSessionManager.CanBuild(stoneWallData, UnitTeam.Player)
+                    && PlacementCostUtility.CanAfford(UnitTeam.Player, stoneWallData)),
+                () => BuildingPlacementManager.EnterStoneWallPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildGateLabel(),
+                () => CanUseBuildButton(
+                    GameSessionManager.CanBuild(gateData, UnitTeam.Player)
+                    && PlacementCostUtility.CanAfford(UnitTeam.Player, gateData)),
+                () => BuildingPlacementManager.EnterGatePlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildWallLabel(watchTowerData, PlacedBuildingKind.WatchTower, "age.feudal"),
+                () => CanUseBuildButton(
+                    GameSessionManager.CanBuild(watchTowerData, UnitTeam.Player)
+                    && PlacementCostUtility.CanAfford(UnitTeam.Player, watchTowerData)),
+                () => BuildingPlacementManager.EnterWatchTowerPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildAgeLockedLabel(marketData, PlacedBuildingKind.Market, "age.feudal"),
+                () => CanUseBuildButton(
+                    GameSessionManager.CanBuild(marketData, UnitTeam.Player)
+                    && ResourceManager.Wood >= marketData.ScaledWoodCost),
+                () => BuildingPlacementManager.EnterMarketPlacementMode(GetBuilders()));
+
+            AddBuildButton(
+                () => BuildTownCenterLabel(),
+                () => CanUseBuildButton(CanPlaceTownCenter() && PlacementCostUtility.CanAfford(UnitTeam.Player, townCenterPlacementData)),
+                () => BuildingPlacementManager.EnterTownCenterPlacementMode(GetBuilders()));
+        }
+
+        void AddBuildButton(Func<string> getLabel, Func<bool> getInteractable, Action onClick)
+        {
+            Button button = HudUiFactory.CreateButton(buildMenuRoot, $"Build{buildButtons.Count}", ButtonHeight);
+            button.onClick.AddListener(() => onClick());
+            buildButtons.Add(new BuildButtonEntry
+            {
+                button = button,
+                getLabel = getLabel,
+                getInteractable = getInteractable,
+                onClick = onClick
+            });
+        }
+
+        IReadOnlyList<Unit> GetBuilders()
+        {
+            return selectionManager != null ? selectionManager.SelectedUnits : null;
+        }
+
+        bool CanUseBuildButton(bool canAfford)
+        {
+            return canAfford
+                && !BuildingPlacementManager.IsPlacementModeActive
+                && !GameSessionManager.IsGameOver;
+        }
+
+        bool CanPlaceTownCenter()
+        {
+            bool feudalUnlocked = GameSessionManager.CanBuild(townCenterPlacementData, UnitTeam.Player);
+            return feudalUnlocked && BuildingPlacementManager.CanPlaceAdditionalTownCenter(UnitTeam.Player);
+        }
+
+        string BuildAgeLockedLabel(PlacedBuildingData data, PlacedBuildingKind kind, string ageKey)
+        {
+            if (GameSessionManager.CanBuild(data, UnitTeam.Player))
+            {
+                return Localization.Format(
+                    "ui.build_wood",
+                    Localization.BuildingName(kind),
+                    Mathf.CeilToInt(data.ScaledWoodCost),
+                    Localization.Get("resource.wood"));
+            }
+
+            return Localization.Format(
+                "ui.locked_age",
+                Localization.BuildingName(kind),
+                Localization.Get(ageKey));
+        }
+
+        string BuildWallLabel(PlacedBuildingData data, PlacedBuildingKind kind, string ageKey)
+        {
+            if (GameSessionManager.CanBuild(data, UnitTeam.Player))
+            {
+                return Localization.Format(
+                    "ui.build_cost",
+                    Localization.BuildingName(kind),
+                    Localization.FormatPlacementCost(data));
+            }
+
+            return Localization.Format(
+                "ui.locked_age",
+                Localization.BuildingName(kind),
+                Localization.Get(ageKey));
+        }
+
+        string BuildGateLabel()
+        {
+            if (GameSessionManager.CanBuild(gateData, UnitTeam.Player))
+            {
+                return Localization.Format(
+                    "ui.build_cost",
+                    Localization.BuildingName(PlacedBuildingKind.Gate),
+                    Localization.FormatPlacementCost(gateData));
+            }
+
+            return Localization.Format(
+                "ui.locked_gate",
+                Localization.BuildingName(PlacedBuildingKind.Gate),
+                Localization.Get("age.feudal"));
+        }
+
+        string BuildTownCenterLabel()
+        {
+            if (CanPlaceTownCenter())
+            {
+                return Localization.Format(
+                    "ui.build_cost",
+                    Localization.BuildingName(PlacedBuildingKind.TownCenter),
+                    Localization.FormatPlacementCost(townCenterPlacementData));
+            }
+
+            bool feudalUnlocked = GameSessionManager.CanBuild(townCenterPlacementData, UnitTeam.Player);
+            if (feudalUnlocked)
+            {
+                return Localization.Format(
+                    "ui.town_center_max",
+                    Localization.BuildingName(PlacedBuildingKind.TownCenter));
+            }
+
+            return Localization.Format(
+                "ui.locked_age",
+                Localization.BuildingName(PlacedBuildingKind.TownCenter),
+                Localization.Get("age.feudal"));
         }
 
         void Update()
@@ -90,469 +390,118 @@ namespace AoE.RTS.Selection
             if (!selectionManager.HasSelectedPlayerVillagers())
                 return;
 
-            PlacedBuildingData house = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
-            PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
-
             if (input.WasBuildHousePressedThisFrame()
-                && house != null
-                && ResourceManager.Wood >= house.ScaledWoodCost)
+                && houseData != null
+                && ResourceManager.Wood >= houseData.ScaledWoodCost)
             {
                 BuildingPlacementManager.EnterHousePlacementMode(selectionManager.SelectedUnits);
                 return;
             }
 
             if (input.WasBuildBarracksPressedThisFrame()
-                && barracks != null
-                && ResourceManager.Wood >= barracks.ScaledWoodCost)
-            {
+                && barracksData != null
+                && ResourceManager.Wood >= barracksData.ScaledWoodCost)
                 BuildingPlacementManager.EnterBarracksPlacementMode(selectionManager.SelectedUnits);
-            }
         }
 
-        void OnDestroy()
+        void LateUpdate()
         {
-            if (instance == this)
-                instance = null;
+            TryBuildUi();
+            if (!uiBuilt)
+                return;
+
+            HudUiFactory.SetText(
+                woodText,
+                Localization.Format("ui.resource_amount", Localization.Get("resource.wood"), Mathf.FloorToInt(ResourceManager.Wood)));
+            HudUiFactory.SetText(
+                foodText,
+                Localization.Format("ui.resource_amount", Localization.Get("resource.food"), Mathf.FloorToInt(ResourceManager.Food)));
+            HudUiFactory.SetText(
+                goldText,
+                Localization.Format("ui.resource_amount", Localization.Get("resource.gold"), Mathf.FloorToInt(ResourceManager.Gold)));
+            HudUiFactory.SetText(
+                stoneText,
+                Localization.Format("ui.resource_amount", Localization.Get("resource.stone"), Mathf.FloorToInt(ResourceManager.Stone)));
+            HudUiFactory.SetText(
+                popText,
+                Localization.Format(
+                    "ui.resource_amount",
+                    Localization.Get("ui.pop"),
+                    $"{PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}"));
+
+            string civLabel = CivilizationBonusUtility.GetHudLabel(UnitTeam.Player);
+            civText.gameObject.SetActive(!string.IsNullOrEmpty(civLabel));
+            HudUiFactory.SetText(civText, civLabel);
+
+            bool inPlacementMode = BuildingPlacementManager.IsPlacementModeActive;
+            bool showBuildMenu = !inPlacementMode
+                && selectionManager != null
+                && selectionManager.HasSelectedPlayerVillagers();
+            buildMenuRoot.gameObject.SetActive(showBuildMenu);
+
+            bool canAffordAnyBuild = false;
+            if (showBuildMenu)
+            {
+                for (int i = 0; i < buildButtons.Count; i++)
+                {
+                    BuildButtonEntry entry = buildButtons[i];
+                    HudUiFactory.SetButtonLabel(entry.button, entry.getLabel());
+                    bool interactable = entry.getInteractable();
+                    entry.button.interactable = interactable;
+                    if (interactable)
+                        canAffordAnyBuild = true;
+                }
+            }
+
+            RefreshHint(inPlacementMode, showBuildMenu && canAffordAnyBuild);
+            ResizePanel(showBuildMenu);
+        }
+
+        void RefreshHint(bool inPlacementMode, bool canAffordAnyBuild)
+        {
+            if (hintRoot == null)
+                return;
+
+            if (inPlacementMode)
+            {
+                hintRoot.gameObject.SetActive(true);
+                HudUiFactory.SetText(hintText, Localization.Get("ui.placement_hint"));
+                float panelBottom = HudUiFactory.Margin + GetPanelHeight(showBuildMenu: false);
+                HudUiFactory.SetAnchoredTopLeft(hintRoot, HudUiFactory.Margin, panelBottom + 4f, PanelWidth + 60f, 36f);
+                GameUiInput.RegisterHintFromRectTransform(hintRoot);
+                return;
+            }
+
+            if (!canAffordAnyBuild && selectionManager != null && selectionManager.HasSelectedPlayerVillagers())
+            {
+                hintRoot.gameObject.SetActive(true);
+                HudUiFactory.SetText(hintText, Localization.Get("ui.need_wood"));
+                float panelBottom = HudUiFactory.Margin + GetPanelHeight(showBuildMenu: true);
+                HudUiFactory.SetAnchoredTopLeft(hintRoot, HudUiFactory.Margin + Padding, panelBottom + 4f, PanelWidth, 20f);
+                GameUiInput.RegisterHintFromRectTransform(hintRoot);
+                return;
+            }
+
+            hintRoot.gameObject.SetActive(false);
+            GameUiInput.ClearHudHintScreenRect();
+        }
+
+        float GetPanelHeight(bool showBuildMenu)
+        {
+            float height = Padding * 2f + LineHeight * 5f + CivLineHeight + ButtonGap * 5f;
+            if (showBuildMenu)
+                height += buildButtons.Count * ButtonHeight + (buildButtons.Count - 1) * ButtonGap;
+            return height;
+        }
+
+        void ResizePanel(bool showBuildMenu)
+        {
+            panelRoot.sizeDelta = new Vector2(PanelWidth, GetPanelHeight(showBuildMenu));
         }
 
         public static bool IsPointerOverHud(Vector2 screenPosition)
         {
             return GameUiInput.IsPointerOverHud(screenPosition);
-        }
-
-        void OnGUI()
-        {
-            GameUiInput.BeginHudLayoutFrame();
-
-            PlacedBuildingData house = PlacedBuildingDataResolver.ResolveHouse(ref houseData);
-            PlacedBuildingData barracks = PlacedBuildingDataResolver.ResolveBarracks(ref barracksData);
-            PlacedBuildingData archeryRange = PlacedBuildingDataResolver.ResolveArcheryRange(ref archeryRangeData);
-            PlacedBuildingData stable = PlacedBuildingDataResolver.ResolveStable(ref stableData);
-            PlacedBuildingData blacksmith = PlacedBuildingDataResolver.ResolveBlacksmith(ref blacksmithData);
-            PlacedBuildingData farm = PlacedBuildingDataResolver.ResolveFarm(ref farmData);
-            PlacedBuildingData lumberCamp = PlacedBuildingDataResolver.ResolveLumberCamp(ref lumberCampData);
-            PlacedBuildingData miningCamp = PlacedBuildingDataResolver.ResolveMiningCamp(ref miningCampData);
-            PlacedBuildingData mill = PlacedBuildingDataResolver.ResolveMill(ref millData);
-            PlacedBuildingData palisadeWall = PlacedBuildingDataResolver.ResolvePalisadeWall(ref palisadeWallData);
-            PlacedBuildingData stoneWall = PlacedBuildingDataResolver.ResolveStoneWall(ref stoneWallData);
-            PlacedBuildingData gate = PlacedBuildingDataResolver.ResolveGate(ref gateData);
-            PlacedBuildingData watchTower = PlacedBuildingDataResolver.ResolveWatchTower(ref watchTowerData);
-            PlacedBuildingData market = PlacedBuildingDataResolver.ResolveMarket(ref marketData);
-            PlacedBuildingData townCenterPlacement = PlacedBuildingDataResolver.ResolveTownCenterPlacement(
-                ref townCenterPlacementData);
-            bool inPlacementMode = BuildingPlacementManager.IsPlacementModeActive;
-            bool showBuildMenu = !inPlacementMode
-                && selectionManager != null
-                && selectionManager.HasSelectedPlayerVillagers();
-            float panelHeight = ResourceStripHeight + (showBuildMenu ? BuildMenuHeight : 0f);
-            Rect panelRect = new Rect(Margin, Margin, PanelWidth, panelHeight);
-            GameUiInput.SetHudPanelScreenRect(GameUiInput.GuiRectToScreenRect(panelRect));
-
-            GUI.Box(panelRect, GUIContent.none);
-
-            float y = Margin + Padding;
-
-            Rect woodRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, WoodLineHeight);
-            GUI.Label(woodRect, Localization.Format("ui.resource_amount", Localization.Get("resource.wood"), Mathf.FloorToInt(ResourceManager.Wood)));
-            y += WoodLineHeight + ButtonGap;
-
-            Rect foodRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, FoodLineHeight);
-            GUI.Label(foodRect, Localization.Format("ui.resource_amount", Localization.Get("resource.food"), Mathf.FloorToInt(ResourceManager.Food)));
-            y += FoodLineHeight + ButtonGap;
-
-            Rect goldRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, GoldLineHeight);
-            GUI.Label(goldRect, Localization.Format("ui.resource_amount", Localization.Get("resource.gold"), Mathf.FloorToInt(ResourceManager.Gold)));
-            y += GoldLineHeight + ButtonGap;
-
-            Rect stoneRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, StoneLineHeight);
-            GUI.Label(stoneRect, Localization.Format("ui.resource_amount", Localization.Get("resource.stone"), Mathf.FloorToInt(ResourceManager.Stone)));
-            y += StoneLineHeight + ButtonGap;
-
-            Rect popRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, PopLineHeight);
-            GUI.Label(
-                popRect,
-                Localization.Format(
-                    "ui.resource_amount",
-                    Localization.Get("ui.pop"),
-                    $"{PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}"));
-            y += PopLineHeight + ButtonGap;
-
-            string civLabel = CivilizationBonusUtility.GetHudLabel(UnitTeam.Player);
-            if (!string.IsNullOrEmpty(civLabel))
-            {
-                Rect civRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, CivLineHeight);
-                GUI.Label(civRect, civLabel);
-                y += CivLineHeight + ButtonGap;
-            }
-
-            if (!showBuildMenu)
-            {
-                DrawPlacementHints(panelRect, inPlacementMode, canAffordAnyBuild: false);
-                return;
-            }
-
-            bool gameOver = GameSessionManager.IsGameOver;
-
-            Rect houseButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int houseWoodCost = Mathf.CeilToInt(house.ScaledWoodCost);
-            bool canAffordHouse = ResourceManager.Wood >= house.ScaledWoodCost;
-            GUI.enabled = canAffordHouse && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    houseButtonRect,
-                    Localization.Format(
-                        "ui.build_hotkey_wood",
-                        Localization.BuildingName(PlacedBuildingKind.House),
-                        "H",
-                        houseWoodCost,
-                        Localization.Get("resource.wood"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterHousePlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect barracksButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int barracksWoodCost = Mathf.CeilToInt(barracks.ScaledWoodCost);
-            bool canAffordBarracks = ResourceManager.Wood >= barracks.ScaledWoodCost;
-            GUI.enabled = canAffordBarracks && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    barracksButtonRect,
-                    Localization.Format(
-                        "ui.build_hotkey_wood",
-                        Localization.BuildingName(PlacedBuildingKind.Barracks),
-                        "B",
-                        barracksWoodCost,
-                        Localization.Get("resource.wood"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterBarracksPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect archeryRangeButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int archeryWoodCost = Mathf.CeilToInt(archeryRange.ScaledWoodCost);
-            bool canBuildArcheryRange = GameSessionManager.CanBuild(archeryRange, UnitTeam.Player);
-            bool canAffordArcheryRange = ResourceManager.Wood >= archeryRange.ScaledWoodCost;
-            GUI.enabled = canBuildArcheryRange && canAffordArcheryRange && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    archeryRangeButtonRect,
-                    canBuildArcheryRange
-                        ? Localization.Format(
-                            "ui.build_wood",
-                            Localization.BuildingName(PlacedBuildingKind.ArcheryRange),
-                            archeryWoodCost,
-                            Localization.Get("resource.wood"))
-                        : Localization.Format(
-                            "ui.locked_age",
-                            Localization.BuildingName(PlacedBuildingKind.ArcheryRange),
-                            Localization.Get("age.feudal"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterArcheryRangePlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect stableButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int stableWoodCost = Mathf.CeilToInt(stable.ScaledWoodCost);
-            bool canBuildStable = GameSessionManager.CanBuild(stable, UnitTeam.Player);
-            bool canAffordStable = ResourceManager.Wood >= stable.ScaledWoodCost;
-            GUI.enabled = canBuildStable && canAffordStable && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    stableButtonRect,
-                    canBuildStable
-                        ? Localization.Format(
-                            "ui.build_wood",
-                            Localization.BuildingName(PlacedBuildingKind.Stable),
-                            stableWoodCost,
-                            Localization.Get("resource.wood"))
-                        : Localization.Format(
-                            "ui.locked_age",
-                            Localization.BuildingName(PlacedBuildingKind.Stable),
-                            Localization.Get("age.feudal"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterStablePlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect blacksmithButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int blacksmithWoodCost = Mathf.CeilToInt(blacksmith.ScaledWoodCost);
-            bool canBuildBlacksmith = GameSessionManager.CanBuild(blacksmith, UnitTeam.Player);
-            bool canAffordBlacksmith = ResourceManager.Wood >= blacksmith.ScaledWoodCost;
-            GUI.enabled = canBuildBlacksmith && canAffordBlacksmith && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    blacksmithButtonRect,
-                    canBuildBlacksmith
-                        ? Localization.Format(
-                            "ui.build_wood",
-                            Localization.BuildingName(PlacedBuildingKind.Blacksmith),
-                            blacksmithWoodCost,
-                            Localization.Get("resource.wood"))
-                        : Localization.Format(
-                            "ui.locked_age",
-                            Localization.BuildingName(PlacedBuildingKind.Blacksmith),
-                            Localization.Get("age.feudal"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterBlacksmithPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect farmButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int farmWoodCost = Mathf.CeilToInt(farm.ScaledWoodCost);
-            bool canAffordFarm = ResourceManager.Wood >= farm.ScaledWoodCost;
-            GUI.enabled = canAffordFarm && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    farmButtonRect,
-                    Localization.Format(
-                        "ui.build_wood",
-                        Localization.BuildingName(PlacedBuildingKind.Farm),
-                        farmWoodCost,
-                        Localization.Get("resource.wood"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterFarmPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect lumberCampButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int lumberCampWoodCost = Mathf.CeilToInt(lumberCamp.ScaledWoodCost);
-            bool canAffordLumberCamp = ResourceManager.Wood >= lumberCamp.ScaledWoodCost;
-            GUI.enabled = canAffordLumberCamp && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    lumberCampButtonRect,
-                    Localization.Format(
-                        "ui.build_wood",
-                        Localization.BuildingName(PlacedBuildingKind.LumberCamp),
-                        lumberCampWoodCost,
-                        Localization.Get("resource.wood"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterLumberCampPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect miningCampButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int miningCampWoodCost = Mathf.CeilToInt(miningCamp.ScaledWoodCost);
-            bool canAffordMiningCamp = ResourceManager.Wood >= miningCamp.ScaledWoodCost;
-            GUI.enabled = canAffordMiningCamp && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    miningCampButtonRect,
-                    Localization.Format(
-                        "ui.build_wood",
-                        Localization.BuildingName(PlacedBuildingKind.MiningCamp),
-                        miningCampWoodCost,
-                        Localization.Get("resource.wood"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterMiningCampPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect millButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int millWoodCost = Mathf.CeilToInt(mill.ScaledWoodCost);
-            bool canAffordMill = ResourceManager.Wood >= mill.ScaledWoodCost;
-            GUI.enabled = canAffordMill && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    millButtonRect,
-                    Localization.Format(
-                        "ui.build_wood",
-                        Localization.BuildingName(PlacedBuildingKind.Mill),
-                        millWoodCost,
-                        Localization.Get("resource.wood"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterMillPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect palisadeButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canBuildPalisade = GameSessionManager.CanBuild(palisadeWall, UnitTeam.Player);
-            bool canAffordPalisade = PlacementCostUtility.CanAfford(UnitTeam.Player, palisadeWall);
-            GUI.enabled = canBuildPalisade && canAffordPalisade && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    palisadeButtonRect,
-                    canBuildPalisade
-                        ? Localization.Format(
-                            "ui.build_cost",
-                            Localization.BuildingName(PlacedBuildingKind.PalisadeWall),
-                            Localization.FormatPlacementCost(palisadeWall))
-                        : Localization.Format(
-                            "ui.locked_age",
-                            Localization.BuildingName(PlacedBuildingKind.PalisadeWall),
-                            Localization.Get("age.dark"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterPalisadeWallPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect stoneWallButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canBuildStoneWall = GameSessionManager.CanBuild(stoneWall, UnitTeam.Player);
-            bool canAffordStoneWall = PlacementCostUtility.CanAfford(UnitTeam.Player, stoneWall);
-            GUI.enabled = canBuildStoneWall && canAffordStoneWall && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    stoneWallButtonRect,
-                    canBuildStoneWall
-                        ? Localization.Format(
-                            "ui.build_cost",
-                            Localization.BuildingName(PlacedBuildingKind.StoneWall),
-                            Localization.FormatPlacementCost(stoneWall))
-                        : Localization.Format(
-                            "ui.locked_age",
-                            Localization.BuildingName(PlacedBuildingKind.StoneWall),
-                            Localization.Get("age.feudal"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterStoneWallPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect gateButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canBuildGate = GameSessionManager.CanBuild(gate, UnitTeam.Player);
-            bool canAffordGate = PlacementCostUtility.CanAfford(UnitTeam.Player, gate);
-            GUI.enabled = canBuildGate && canAffordGate && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    gateButtonRect,
-                    canBuildGate
-                        ? Localization.Format(
-                            "ui.build_cost",
-                            Localization.BuildingName(PlacedBuildingKind.Gate),
-                            Localization.FormatPlacementCost(gate))
-                        : Localization.Format(
-                            "ui.locked_gate",
-                            Localization.BuildingName(PlacedBuildingKind.Gate),
-                            Localization.Get("age.feudal"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterGatePlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect watchTowerButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            bool canBuildWatchTower = GameSessionManager.CanBuild(watchTower, UnitTeam.Player);
-            bool canAffordWatchTower = PlacementCostUtility.CanAfford(UnitTeam.Player, watchTower);
-            GUI.enabled = canBuildWatchTower && canAffordWatchTower && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    watchTowerButtonRect,
-                    canBuildWatchTower
-                        ? Localization.Format(
-                            "ui.build_cost",
-                            Localization.BuildingName(PlacedBuildingKind.WatchTower),
-                            Localization.FormatPlacementCost(watchTower))
-                        : Localization.Format(
-                            "ui.locked_age",
-                            Localization.BuildingName(PlacedBuildingKind.WatchTower),
-                            Localization.Get("age.feudal"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterWatchTowerPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            Rect marketButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            int marketWoodCost = Mathf.CeilToInt(market.ScaledWoodCost);
-            bool canBuildMarket = GameSessionManager.CanBuild(market, UnitTeam.Player);
-            bool canAffordMarket = ResourceManager.Wood >= market.ScaledWoodCost;
-            GUI.enabled = canBuildMarket && canAffordMarket && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    marketButtonRect,
-                    canBuildMarket
-                        ? Localization.Format(
-                            "ui.build_wood",
-                            Localization.BuildingName(PlacedBuildingKind.Market),
-                            marketWoodCost,
-                            Localization.Get("resource.wood"))
-                        : Localization.Format(
-                            "ui.locked_age",
-                            Localization.BuildingName(PlacedBuildingKind.Market),
-                            Localization.Get("age.feudal"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterMarketPlacementMode(builders);
-            }
-            y += ButtonHeight + ButtonGap;
-
-            bool feudalUnlocked = GameSessionManager.CanBuild(townCenterPlacement, UnitTeam.Player);
-            bool canPlaceTownCenter = feudalUnlocked
-                && BuildingPlacementManager.CanPlaceAdditionalTownCenter(UnitTeam.Player);
-            bool canAffordTownCenter = PlacementCostUtility.CanAfford(UnitTeam.Player, townCenterPlacement);
-            Rect townCenterButtonRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, ButtonHeight);
-            GUI.enabled = canPlaceTownCenter && canAffordTownCenter && !inPlacementMode && !gameOver;
-            if (GUI.Button(
-                    townCenterButtonRect,
-                    canPlaceTownCenter
-                        ? Localization.Format(
-                            "ui.build_cost",
-                            Localization.BuildingName(PlacedBuildingKind.TownCenter),
-                            Localization.FormatPlacementCost(townCenterPlacement))
-                        : feudalUnlocked
-                            ? Localization.Format(
-                                "ui.town_center_max",
-                                Localization.BuildingName(PlacedBuildingKind.TownCenter))
-                            : Localization.Format(
-                                "ui.locked_age",
-                                Localization.BuildingName(PlacedBuildingKind.TownCenter),
-                                Localization.Get("age.feudal"))))
-            {
-                IReadOnlyList<Unit> builders = selectionManager != null
-                    ? selectionManager.SelectedUnits
-                    : null;
-                BuildingPlacementManager.EnterTownCenterPlacementMode(builders);
-            }
-            GUI.enabled = true;
-
-            bool canAffordAnyBuild = canAffordHouse || canAffordBarracks || canAffordArcheryRange || canAffordStable
-                || canAffordBlacksmith || canAffordFarm || canAffordLumberCamp || canAffordMiningCamp || canAffordMill
-                || canAffordPalisade || canAffordStoneWall || canAffordGate || canAffordWatchTower || canAffordMarket
-                || canAffordTownCenter;
-            DrawPlacementHints(panelRect, inPlacementMode, canAffordAnyBuild);
-        }
-
-        void DrawPlacementHints(Rect panelRect, bool inPlacementMode, bool canAffordAnyBuild)
-        {
-            if (inPlacementMode)
-            {
-                Rect hintRect = new Rect(Margin, panelRect.yMax + 4f, PanelWidth + 60f, 36f);
-                GameUiInput.SetHudHintScreenRect(GameUiInput.GuiRectToScreenRect(hintRect));
-                GUI.Label(hintRect, Localization.Get("ui.placement_hint"));
-                return;
-            }
-
-            GameUiInput.ClearHudHintScreenRect();
-            if (!canAffordAnyBuild)
-            {
-                Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
-                GUI.Label(hintRect, Localization.Get("ui.need_wood"));
-            }
         }
     }
 }

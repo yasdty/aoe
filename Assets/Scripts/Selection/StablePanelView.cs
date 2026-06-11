@@ -5,6 +5,7 @@ using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AoE.RTS.Selection
 {
@@ -14,79 +15,79 @@ namespace AoE.RTS.Selection
         [SerializeField] RTSInputReader input;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 220f;
-        const float Margin = 12f;
+        const float LineHeight = 20f;
+        const float ButtonHeight = 28f;
 
+        RectTransform panelRoot;
+        Text headerText;
+        Button cavalryButton;
+        Button scoutButton;
+        Text statusText;
+        Text trainingText;
+        Slider progressSlider;
+        ProductionQueueListView queueListView;
         readonly List<ProductionQueueEntry> queueEntriesBuffer = new List<ProductionQueueEntry>();
+        bool uiBuilt;
 
-        void OnGUI()
+        void Awake()
         {
             if (selectionManager == null)
+                selectionManager = FindAnyObjectByType<SelectionManager>();
+            if (input == null)
+                input = FindAnyObjectByType<RTSInputReader>();
+            TryBuildUi();
+        }
+
+        void OnDestroy()
+        {
+            if (panelRoot != null)
+                GameUiInput.UnregisterHudPanel(panelRoot);
+        }
+
+        void TryBuildUi()
+        {
+            if (uiBuilt)
                 return;
 
-            Stable stable = selectionManager.SelectedStable;
-            if (stable == null || stable.Data == null)
+            Transform stack = HudBottomLeftStack.GetOrCreate();
+            if (stack == null)
                 return;
 
-            PlacedBuildingData data = stable.Data;
-            Rect panelRect = new Rect(Margin, Screen.height - PanelHeight - Margin, PanelWidth, PanelHeight);
-            GUI.Box(panelRect, GUIContent.none);
+            panelRoot = HudUiFactory.CreatePanel(stack, "StablePanel", HudUiFactory.PanelBackgroundColor);
+            HudUiFactory.AddVerticalLayout(panelRoot, 4f, reverseArrangement: false);
+            panelRoot.gameObject.AddComponent<LayoutElement>().preferredWidth = PanelWidth;
+            GameUiInput.RegisterHudPanel(panelRoot);
 
-            GUILayout.BeginArea(panelRect);
-            GUILayout.Label(Localization.BuildingName(PlacedBuildingKind.Stable));
+            headerText = HudUiFactory.CreateLabel(panelRoot, "Header", LineHeight, bold: true);
+            cavalryButton = HudUiFactory.CreateButton(panelRoot, "TrainCavalry", ButtonHeight);
+            cavalryButton.onClick.AddListener(OnCavalryClicked);
+            scoutButton = HudUiFactory.CreateButton(panelRoot, "TrainScout", ButtonHeight);
+            scoutButton.onClick.AddListener(OnScoutClicked);
 
-            int queueCount = StableProductionManager.GetQueueCount(stable);
-            bool isProducing = queueCount > 0;
-            bool queueFull = queueCount >= StableProductionManager.MaxQueueSize;
-            bool populationFull = !PopulationManager.CanTrainUnit();
-            bool canAffordCavalryWood = ResourceManager.Wood >= data.ScaledTrainWoodCost;
-            bool canAffordCavalryFood = ResourceManager.Food >= data.ScaledTrainFoodCost;
-            bool canAffordCavalry = canAffordCavalryWood && canAffordCavalryFood;
-            bool canAffordScoutWood = data.ScaledSecondaryTrainWoodCost <= 0f
-                || ResourceManager.Wood >= data.ScaledSecondaryTrainWoodCost;
-            bool canAffordScoutFood = ResourceManager.Food >= data.ScaledSecondaryTrainFoodCost;
-            bool canAffordScout = canAffordScoutWood && canAffordScoutFood;
+            GameObject queueHost = new GameObject("QueueList");
+            queueHost.transform.SetParent(panelRoot, false);
+            queueListView = queueHost.AddComponent<ProductionQueueListView>();
+            queueListView.Initialize(queueHost.transform, 24f);
 
-            GUI.enabled = !queueFull && !populationFull && canAffordCavalry && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button(
-                    Localization.Format(
-                        "ui.create_unit_dual",
-                        Localization.Get("unit.cavalry"),
-                        Mathf.CeilToInt(data.ScaledTrainWoodCost),
-                        Mathf.CeilToInt(data.ScaledTrainFoodCost))))
+            statusText = HudUiFactory.CreateLabel(panelRoot, "Status", LineHeight);
+            trainingText = HudUiFactory.CreateLabel(panelRoot, "Training", LineHeight);
+            progressSlider = HudUiFactory.CreateSlider(panelRoot, "Progress", 18f);
+            panelRoot.gameObject.SetActive(false);
+            uiBuilt = true;
+        }
+
+        void OnCavalryClicked()
+        {
+            Stable stable = selectionManager != null ? selectionManager.SelectedStable : null;
+            if (stable != null)
                 CommandQueue.Enqueue(new TrainCavalryCommand(stable));
+        }
 
-            GUI.enabled = !queueFull && !populationFull && canAffordScout && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button(BuildScoutLabel(data)))
+        void OnScoutClicked()
+        {
+            Stable stable = selectionManager != null ? selectionManager.SelectedStable : null;
+            if (stable != null)
                 CommandQueue.Enqueue(new TrainScoutCommand(stable));
-            GUI.enabled = true;
-
-            if (queueCount > 0)
-            {
-                StableProductionManager.GetQueueEntries(stable, queueEntriesBuffer);
-                ProductionQueuePanelUi.DrawCancelableQueue(
-                    queueEntriesBuffer,
-                    index => StableProductionManager.TryCancelQueueItem(stable, index));
-            }
-
-            if (queueFull)
-                GUILayout.Label(Localization.Get("ui.queue_full"));
-            else if (populationFull)
-                GUILayout.Label(Localization.Get("ui.population_full"));
-            else if (!canAffordCavalry && !canAffordScout)
-                GUILayout.Label(Localization.Get("ui.need_resources"));
-
-            if (isProducing)
-            {
-                float total = StableProductionManager.GetTotalSeconds(stable);
-                float remaining = StableProductionManager.GetRemainingSeconds(stable);
-                float progress = total > 0f ? 1f - remaining / total : 0f;
-                GUILayout.Label(Localization.Format("ui.training", remaining));
-                Rect progressRect = GUILayoutUtility.GetRect(PanelWidth - 24f, 18f);
-                GUI.HorizontalSlider(progressRect, progress, 0f, 1f);
-            }
-
-            GUILayout.EndArea();
         }
 
         void Update()
@@ -103,6 +104,72 @@ namespace AoE.RTS.Selection
 
             if (input.WasTrainSecondaryPressedThisFrame())
                 CommandQueue.Enqueue(new TrainScoutCommand(stable));
+        }
+
+        void LateUpdate()
+        {
+            TryBuildUi();
+            if (!uiBuilt || selectionManager == null)
+                return;
+
+            Stable stable = selectionManager.SelectedStable;
+            bool visible = stable != null && stable.Data != null;
+            panelRoot.gameObject.SetActive(visible);
+            if (!visible)
+                return;
+
+            PlacedBuildingData data = stable.Data;
+            HudUiFactory.SetText(headerText, Localization.BuildingName(PlacedBuildingKind.Stable));
+
+            int queueCount = StableProductionManager.GetQueueCount(stable);
+            bool queueFull = queueCount >= StableProductionManager.MaxQueueSize;
+            bool populationFull = !PopulationManager.CanTrainUnit();
+            bool canAffordCavalry = ResourceManager.Wood >= data.ScaledTrainWoodCost
+                && ResourceManager.Food >= data.ScaledTrainFoodCost;
+            bool canAffordScoutWood = data.ScaledSecondaryTrainWoodCost <= 0f
+                || ResourceManager.Wood >= data.ScaledSecondaryTrainWoodCost;
+            bool canAffordScoutFood = ResourceManager.Food >= data.ScaledSecondaryTrainFoodCost;
+            bool canAffordScout = canAffordScoutWood && canAffordScoutFood;
+
+            cavalryButton.interactable = !queueFull && !populationFull && canAffordCavalry && !GameSessionManager.IsGameOver;
+            HudUiFactory.SetButtonLabel(
+                cavalryButton,
+                Localization.Format(
+                    "ui.create_unit_dual",
+                    Localization.Get("unit.cavalry"),
+                    Mathf.CeilToInt(data.ScaledTrainWoodCost),
+                    Mathf.CeilToInt(data.ScaledTrainFoodCost)));
+            scoutButton.interactable = !queueFull && !populationFull && canAffordScout && !GameSessionManager.IsGameOver;
+            HudUiFactory.SetButtonLabel(scoutButton, BuildScoutLabel(data));
+
+            if (queueCount > 0)
+            {
+                StableProductionManager.GetQueueEntries(stable, queueEntriesBuffer);
+                queueListView.Refresh(queueEntriesBuffer, index => StableProductionManager.TryCancelQueueItem(stable, index));
+            }
+            else
+                queueListView.HideAll();
+
+            string status = string.Empty;
+            if (queueFull)
+                status = Localization.Get("ui.queue_full");
+            else if (populationFull)
+                status = Localization.Get("ui.population_full");
+            else if (!canAffordCavalry && !canAffordScout)
+                status = Localization.Get("ui.need_resources");
+            statusText.gameObject.SetActive(!string.IsNullOrEmpty(status));
+            HudUiFactory.SetText(statusText, status);
+
+            bool isProducing = queueCount > 0;
+            trainingText.gameObject.SetActive(isProducing);
+            progressSlider.gameObject.SetActive(isProducing);
+            if (isProducing)
+            {
+                float total = StableProductionManager.GetTotalSeconds(stable);
+                float remaining = StableProductionManager.GetRemainingSeconds(stable);
+                progressSlider.value = total > 0f ? 1f - remaining / total : 0f;
+                HudUiFactory.SetText(trainingText, Localization.Format("ui.training", remaining));
+            }
         }
 
         static string BuildScoutLabel(PlacedBuildingData data)

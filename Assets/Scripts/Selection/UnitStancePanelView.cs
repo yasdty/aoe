@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using AoE.RTS.Combat;
 using AoE.RTS.Units;
+using AoE.RTS.Core;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AoE.RTS.Selection
 {
@@ -10,14 +12,18 @@ namespace AoE.RTS.Selection
         [SerializeField] SelectionManager selectionManager;
 
         const float PanelWidth = 220f;
-        const float PanelHeight = 88f;
-        const float Margin = 12f;
-        const float ProductionPanelReserveHeight = 96f;
-        const float InfoPanelReserveHeight = 120f;
+        const float LineHeight = 20f;
+        const float ButtonHeight = 24f;
 
         readonly List<Unit> militaryBuffer = new List<Unit>(16);
+        RectTransform panelRoot;
+        Text headerText;
+        Button aggressiveButton;
+        Button defensiveButton;
+        Button standGroundButton;
+        bool uiBuilt;
 
-        public static float ReserveHeight => PanelHeight + Margin;
+        public static float ReserveHeight => 88f + HudUiFactory.Margin;
 
         void Awake()
         {
@@ -25,38 +31,57 @@ namespace AoE.RTS.Selection
                 selectionManager = GetComponent<SelectionManager>();
             if (selectionManager == null)
                 selectionManager = FindAnyObjectByType<SelectionManager>();
+            TryBuildUi();
         }
 
-        void OnGUI()
+        void OnDestroy()
         {
-            if (selectionManager == null || !TryCollectMilitaryUnits(militaryBuffer))
+            if (panelRoot != null)
+                GameUiInput.UnregisterHudPanel(panelRoot);
+        }
+
+        void TryBuildUi()
+        {
+            if (uiBuilt)
                 return;
 
-            float bottomOffset = Margin;
-            if (selectionManager.SelectedTownCenter != null || selectionManager.SelectedBarracks != null
-                || selectionManager.SelectedArcheryRange != null || selectionManager.SelectedStable != null)
-                bottomOffset += ProductionPanelReserveHeight;
+            Transform stack = HudBottomLeftStack.GetOrCreate();
+            if (stack == null)
+                return;
 
-            if (selectionManager.ShouldShowSelectionInfoPanel)
-                bottomOffset += InfoPanelReserveHeight;
+            panelRoot = HudUiFactory.CreatePanel(stack, "UnitStancePanel", HudUiFactory.PanelBackgroundColor);
+            panelRoot.SetAsLastSibling();
+            HudUiFactory.AddVerticalLayout(panelRoot, 4f, reverseArrangement: false);
+            panelRoot.gameObject.AddComponent<LayoutElement>().preferredWidth = PanelWidth;
+            GameUiInput.RegisterHudPanel(panelRoot);
 
-            Rect panelRect = new Rect(Margin, Screen.height - PanelHeight - bottomOffset, PanelWidth, PanelHeight);
-            GameUiInput.ExpandHudPanelScreenRect(panelRect);
-            GUI.Box(panelRect, GUIContent.none);
+            headerText = HudUiFactory.CreateLabel(panelRoot, "Header", LineHeight, bold: true);
+            aggressiveButton = HudUiFactory.CreateButton(panelRoot, "Aggressive", ButtonHeight);
+            aggressiveButton.onClick.AddListener(() => ApplyStance(UnitCombatStance.Aggressive));
+            defensiveButton = HudUiFactory.CreateButton(panelRoot, "Defensive", ButtonHeight);
+            defensiveButton.onClick.AddListener(() => ApplyStance(UnitCombatStance.Defensive));
+            standGroundButton = HudUiFactory.CreateButton(panelRoot, "StandGround", ButtonHeight);
+            standGroundButton.onClick.AddListener(() => ApplyStance(UnitCombatStance.StandGround));
 
-            GUILayout.BeginArea(panelRect);
-            GUILayout.Label("Stance");
+            panelRoot.gameObject.SetActive(false);
+            uiBuilt = true;
+        }
 
-            if (GUILayout.Button("Aggressive"))
-                ApplyStance(UnitCombatStance.Aggressive);
+        void LateUpdate()
+        {
+            TryBuildUi();
+            if (!uiBuilt || selectionManager == null)
+                return;
 
-            if (GUILayout.Button("Defensive"))
-                ApplyStance(UnitCombatStance.Defensive);
+            bool visible = TryCollectMilitaryUnits(militaryBuffer);
+            panelRoot.gameObject.SetActive(visible);
+            if (!visible)
+                return;
 
-            if (GUILayout.Button("Stand Ground"))
-                ApplyStance(UnitCombatStance.StandGround);
-
-            GUILayout.EndArea();
+            HudUiFactory.SetText(headerText, Localization.Get("ui.stance_panel"));
+            HudUiFactory.SetButtonLabel(aggressiveButton, Localization.Get("stance.aggressive"));
+            HudUiFactory.SetButtonLabel(defensiveButton, Localization.Get("stance.defensive"));
+            HudUiFactory.SetButtonLabel(standGroundButton, Localization.Get("stance.stand_ground"));
         }
 
         bool TryCollectMilitaryUnits(List<Unit> buffer)

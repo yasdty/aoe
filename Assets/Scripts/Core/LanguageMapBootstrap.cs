@@ -116,6 +116,7 @@ namespace AoE.RTS.Core
             Add(english, japanese, "ui.melee_armor", "Melee Armor: {0}", "近接装甲: {0}");
             Add(english, japanese, "ui.pierce_armor", "Pierce Armor: {0}", "貫通装甲: {0}");
             Add(english, japanese, "ui.stance", "Stance: {0}", "スタンス: {0}");
+            Add(english, japanese, "ui.stance_panel", "Stance", "スタンス");
             Add(english, japanese, "ui.rally_set", "Rally: Set", "集合地点: 設定済");
             Add(english, japanese, "ui.rally_none", "Rally: None", "集合地点: なし");
             Add(english, japanese, "ui.owner_neutral", "Owner: Neutral", "所有者: 中立");

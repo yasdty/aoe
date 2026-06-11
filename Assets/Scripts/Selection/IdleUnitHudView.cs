@@ -1,6 +1,7 @@
 using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AoE.RTS.Selection
 {
@@ -8,43 +9,80 @@ namespace AoE.RTS.Selection
     {
         [SerializeField] IdleUnitSelectionController idleSelectionController;
 
-        const float Margin = 12f;
-        const float ResourceHudWidth = 210f;
-        const float HudGap = 8f;
         const float PanelWidth = 200f;
         const float LineHeight = 22f;
         const float ButtonHeight = 24f;
-        const float Padding = 8f;
-        const float ButtonGap = 4f;
+
+        RectTransform panelRoot;
+        Text villagerText;
+        Text militaryText;
+        Button nextIdleButton;
+
+        bool uiBuilt;
 
         void Awake()
         {
             if (idleSelectionController == null)
                 idleSelectionController = GetComponent<IdleUnitSelectionController>();
+            TryBuildUi();
         }
 
-        void OnGUI()
+        void OnDestroy()
         {
-            float panelHeight = Padding * 2f + LineHeight + ButtonGap + LineHeight + ButtonGap + ButtonHeight;
-            float panelX = Margin + ResourceHudWidth + HudGap;
-            Rect panelRect = new Rect(panelX, Margin, PanelWidth, panelHeight);
-            GameUiInput.ExpandHudPanelScreenRect(panelRect);
+            if (panelRoot != null)
+                GameUiInput.UnregisterHudPanel(panelRoot);
+        }
 
-            GUI.Box(panelRect, GUIContent.none);
+        void TryBuildUi()
+        {
+            if (uiBuilt)
+                return;
+
+            Transform hudRoot = HudUiFactory.GetHudRoot();
+            if (hudRoot == null)
+                return;
+
+            float x = HudUiFactory.Margin + HudUiFactory.ResourcePanelWidth + HudUiFactory.IdleHudGap;
+            panelRoot = HudUiFactory.SetupScreenPanel(
+                hudRoot,
+                "IdleHudPanel",
+                HudUiFactory.PanelBackgroundColor,
+                x,
+                HudUiFactory.Margin,
+                PanelWidth,
+                120f,
+                topLeftAnchor: true);
+            GameUiInput.RegisterHudPanel(panelRoot);
+            HudUiFactory.AddVerticalLayout(panelRoot, 4f, reverseArrangement: false);
+
+            villagerText = HudUiFactory.CreateLabel(panelRoot, "IdleVillagers", LineHeight);
+            militaryText = HudUiFactory.CreateLabel(panelRoot, "IdleMilitary", LineHeight);
+            nextIdleButton = HudUiFactory.CreateButton(panelRoot, "NextIdle", ButtonHeight);
+            nextIdleButton.onClick.AddListener(() =>
+            {
+                if (idleSelectionController != null)
+                    idleSelectionController.SelectNextIdleVillager();
+            });
+
+            uiBuilt = true;
+        }
+
+        void LateUpdate()
+        {
+            TryBuildUi();
+            if (!uiBuilt)
+                return;
+
+            HudUiFactory.SetText(
+                villagerText,
+                Localization.Format("ui.idle_villagers", UnitIdleTracker.CountIdleVillagers()));
+            HudUiFactory.SetText(
+                militaryText,
+                Localization.Format("ui.idle_military", UnitIdleTracker.CountIdleMilitary()));
+            HudUiFactory.SetButtonLabel(nextIdleButton, Localization.Get("ui.next_idle_villager"));
 
             int idleVillagers = UnitIdleTracker.CountIdleVillagers();
-            int idleMilitary = UnitIdleTracker.CountIdleMilitary();
-
-            GUILayout.BeginArea(panelRect);
-            GUILayout.Label(Localization.Format("ui.idle_villagers", idleVillagers));
-            GUILayout.Label(Localization.Format("ui.idle_military", idleMilitary));
-
-            GUI.enabled = idleVillagers > 0 && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button(Localization.Get("ui.next_idle_villager")) && idleSelectionController != null)
-                idleSelectionController.SelectNextIdleVillager();
-            GUI.enabled = true;
-
-            GUILayout.EndArea();
+            nextIdleButton.interactable = idleVillagers > 0 && !GameSessionManager.IsGameOver;
         }
     }
 }

@@ -5,6 +5,7 @@ using AoE.RTS.Combat;
 using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AoE.RTS.Selection
 {
@@ -14,12 +15,14 @@ namespace AoE.RTS.Selection
 
         const float PanelWidth = 220f;
         const float LineHeight = 18f;
-        const float Margin = 12f;
         const float Padding = 8f;
-        const float ProductionPanelReserveHeight = 96f;
-        const float StancePanelReserveHeight = 100f;
 
         readonly List<string> lineBuffer = new List<string>();
+        readonly List<Text> lineTexts = new List<Text>();
+
+        RectTransform panelRoot;
+        Text titleText;
+        bool uiBuilt;
 
         void Awake()
         {
@@ -27,40 +30,61 @@ namespace AoE.RTS.Selection
                 selectionManager = GetComponent<SelectionManager>();
             if (selectionManager == null)
                 selectionManager = FindAnyObjectByType<SelectionManager>();
+            TryBuildUi();
         }
 
-        void OnGUI()
+        void OnDestroy()
         {
-            if (selectionManager == null || !selectionManager.ShouldShowSelectionInfoPanel)
+            if (panelRoot != null)
+                GameUiInput.UnregisterHudPanel(panelRoot);
+        }
+
+        void TryBuildUi()
+        {
+            if (uiBuilt)
                 return;
 
-            if (!TryBuildLines(out string title, lineBuffer))
+            Transform stack = HudBottomLeftStack.GetOrCreate();
+            if (stack == null)
                 return;
 
-            float panelHeight = Padding * 2f + LineHeight + lineBuffer.Count * LineHeight;
-            float panelX = Margin;
-            float bottomOffset = Margin;
-            if (selectionManager.SelectedTownCenter != null || selectionManager.SelectedBarracks != null
-                || selectionManager.SelectedArcheryRange != null || selectionManager.SelectedStable != null)
-                bottomOffset += ProductionPanelReserveHeight;
+            panelRoot = HudUiFactory.CreatePanel(stack, "SelectionInfoPanel", HudUiFactory.PanelBackgroundColor);
+            panelRoot.transform.SetSiblingIndex(stack.childCount - 1);
+            HudUiFactory.AddVerticalLayout(panelRoot, 2f, reverseArrangement: false);
+            panelRoot.gameObject.AddComponent<LayoutElement>().preferredWidth = PanelWidth;
+            GameUiInput.RegisterHudPanel(panelRoot);
 
-            if (HasSelectedMilitaryUnits())
-                bottomOffset += StancePanelReserveHeight;
+            titleText = HudUiFactory.CreateLabel(panelRoot, "Title", LineHeight, bold: true);
+            for (int i = 0; i < 8; i++)
+                lineTexts.Add(HudUiFactory.CreateLabel(panelRoot, $"Line{i}", LineHeight));
 
-            float panelY = Screen.height - panelHeight - bottomOffset;
-            Rect panelRect = new Rect(panelX, panelY, PanelWidth, panelHeight);
+            panelRoot.gameObject.SetActive(false);
+            uiBuilt = true;
+        }
 
-            GUI.Box(panelRect, GUIContent.none);
+        void LateUpdate()
+        {
+            TryBuildUi();
+            if (!uiBuilt || selectionManager == null)
+                return;
 
-            float y = panelY + Padding;
-            var titleStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
-            GUI.Label(new Rect(panelX + Padding, y, PanelWidth - Padding * 2f, LineHeight), title, titleStyle);
-            y += LineHeight;
-
-            for (int i = 0; i < lineBuffer.Count; i++)
+            if (!selectionManager.ShouldShowSelectionInfoPanel || !TryBuildLines(out string title, lineBuffer))
             {
-                GUI.Label(new Rect(panelX + Padding, y, PanelWidth - Padding * 2f, LineHeight), lineBuffer[i]);
-                y += LineHeight;
+                panelRoot.gameObject.SetActive(false);
+                return;
+            }
+
+            panelRoot.gameObject.SetActive(true);
+            HudUiFactory.SetText(titleText, title);
+            for (int i = 0; i < lineTexts.Count; i++)
+            {
+                if (i < lineBuffer.Count)
+                {
+                    lineTexts[i].gameObject.SetActive(true);
+                    HudUiFactory.SetText(lineTexts[i], lineBuffer[i]);
+                }
+                else
+                    lineTexts[i].gameObject.SetActive(false);
             }
         }
 
@@ -201,19 +225,6 @@ namespace AoE.RTS.Selection
             }
         }
 
-        bool HasSelectedMilitaryUnits()
-        {
-            IReadOnlyList<Unit> units = selectionManager.SelectedUnits;
-            for (int i = 0; i < units.Count; i++)
-            {
-                Unit unit = units[i];
-                if (unit != null && unit.IsAlive && unit.CanAttack)
-                    return true;
-            }
-
-            return false;
-        }
-
         static void AppendBuildingHealthInfo(string displayName, BuildingHealth health, List<string> lines, out string title)
         {
             title = displayName;
@@ -290,9 +301,7 @@ namespace AoE.RTS.Selection
                 case BoarResource boar:
                     title = Localization.Get("resource.node.boar");
                     if (boar.IsDead)
-                    {
                         lines.Add(Localization.Format("ui.resource_amount", Localization.Get("resource.food"), Mathf.FloorToInt(boar.RemainingFood)));
-                    }
                     else
                     {
                         lines.Add(Localization.Format("ui.hp", Mathf.FloorToInt(boar.CurrentHp), Mathf.FloorToInt(boar.MaxHp)));

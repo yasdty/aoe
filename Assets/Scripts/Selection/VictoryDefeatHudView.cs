@@ -2,54 +2,69 @@ using AoE.RTS.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace AoE.RTS.Selection
 {
     public class VictoryDefeatHudView : MonoBehaviour
     {
-        void OnGUI()
+        RectTransform panelRoot;
+        Text titleText;
+        Text subtitleText;
+
+        bool uiBuilt;
+
+        void Awake()
         {
-            if (!GameSessionManager.IsGameOver)
+            TryBuildUi();
+        }
+
+        void OnDestroy()
+        {
+            if (panelRoot != null)
+                GameUiInput.UnregisterHudPanel(panelRoot);
+        }
+
+        void TryBuildUi()
+        {
+            if (uiBuilt)
                 return;
 
-            MatchState state = GameSessionManager.State;
-            string title = state == MatchState.Victory
-                ? Localization.Get("ui.victory")
-                : Localization.Get("ui.defeat");
-            Color titleColor = state == MatchState.Victory
-                ? new Color(0.35f, 0.95f, 0.45f)
-                : new Color(0.95f, 0.35f, 0.35f);
+            Transform hudRoot = HudUiFactory.GetHudRoot();
+            if (hudRoot == null)
+                return;
 
-            const float boxWidth = 420f;
-            const float boxHeight = 160f;
-            Rect boxRect = new Rect(
-                (Screen.width - boxWidth) * 0.5f,
-                (Screen.height - boxHeight) * 0.5f,
-                boxWidth,
-                boxHeight);
+            panelRoot = HudUiFactory.GetOrCreateHudChild(hudRoot, "VictoryOverlay");
+            HudUiFactory.ClearLegacyPanelWrapper(panelRoot);
+            HudUiFactory.SetStretchFull(panelRoot);
+            HudUiFactory.EnsurePanelBackground(panelRoot, HudUiFactory.OverlayBackgroundColor);
+            GameUiInput.RegisterHudPanel(panelRoot);
 
-            GUI.Box(boxRect, GUIContent.none);
+            GameObject contentObject = new GameObject("Content", typeof(RectTransform));
+            contentObject.transform.SetParent(panelRoot, false);
+            RectTransform contentRect = contentObject.GetComponent<RectTransform>();
+            HudUiFactory.SetStretchFull(contentRect);
 
-            GUIStyle titleStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 48,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = titleColor }
-            };
+            titleText = HudUiFactory.CreateLabel(contentObject.transform, "Title", 64f, bold: true);
+            RectTransform titleRect = titleText.rectTransform;
+            titleRect.anchorMin = new Vector2(0f, 0.55f);
+            titleRect.anchorMax = new Vector2(1f, 0.85f);
+            titleRect.offsetMin = Vector2.zero;
+            titleRect.offsetMax = Vector2.zero;
+            titleText.alignment = TextAnchor.MiddleCenter;
+            titleText.fontSize = 48;
 
-            GUIStyle subtitleStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 18,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = Color.white }
-            };
+            subtitleText = HudUiFactory.CreateLabel(contentObject.transform, "Subtitle", 32f);
+            RectTransform subtitleRect = subtitleText.rectTransform;
+            subtitleRect.anchorMin = new Vector2(0f, 0.25f);
+            subtitleRect.anchorMax = new Vector2(1f, 0.45f);
+            subtitleRect.offsetMin = Vector2.zero;
+            subtitleRect.offsetMax = Vector2.zero;
+            subtitleText.alignment = TextAnchor.MiddleCenter;
+            subtitleText.fontSize = 18;
 
-            Rect titleRect = new Rect(boxRect.x, boxRect.y + 24f, boxRect.width, 64f);
-            GUI.Label(titleRect, title, titleStyle);
-
-            Rect subtitleRect = new Rect(boxRect.x, boxRect.y + 96f, boxRect.width, 32f);
-            GUI.Label(subtitleRect, Localization.Get("ui.restart_hint"), subtitleStyle);
+            panelRoot.gameObject.SetActive(false);
+            uiBuilt = true;
         }
 
         void Update()
@@ -59,6 +74,26 @@ namespace AoE.RTS.Selection
 
             if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        void LateUpdate()
+        {
+            TryBuildUi();
+            if (!uiBuilt)
+                return;
+
+            bool show = GameSessionManager.IsGameOver;
+            panelRoot.gameObject.SetActive(show);
+            if (!show)
+                return;
+
+            MatchState state = GameSessionManager.State;
+            bool victory = state == MatchState.Victory;
+            HudUiFactory.SetText(titleText, victory ? Localization.Get("ui.victory") : Localization.Get("ui.defeat"));
+            titleText.color = victory
+                ? new Color(0.35f, 0.95f, 0.45f)
+                : new Color(0.95f, 0.35f, 0.35f);
+            HudUiFactory.SetText(subtitleText, Localization.Get("ui.restart_hint"));
         }
     }
 }
