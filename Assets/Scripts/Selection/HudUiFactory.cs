@@ -131,6 +131,31 @@ namespace AoE.RTS.Selection
             rectTransform.sizeDelta = new Vector2(width, height);
         }
 
+        public static void SetAnchoredTopRight(RectTransform rectTransform, float xFromRight, float yFromTop, float width, float height)
+        {
+            rectTransform.anchorMin = new Vector2(1f, 1f);
+            rectTransform.anchorMax = new Vector2(1f, 1f);
+            rectTransform.pivot = new Vector2(1f, 1f);
+            rectTransform.anchoredPosition = new Vector2(-xFromRight, -yFromTop);
+            rectTransform.sizeDelta = new Vector2(width, height);
+        }
+
+        public static RectTransform SetupScreenPanelTopRight(
+            Transform hudRoot,
+            string name,
+            Color backgroundColor,
+            float xFromRight,
+            float yFromTop,
+            float width,
+            float height)
+        {
+            RectTransform panel = GetOrCreateHudChild(hudRoot, name);
+            ClearLegacyPanelWrapper(panel);
+            SetAnchoredTopRight(panel, xFromRight, yFromTop, width, height);
+            EnsurePanelBackground(panel, backgroundColor);
+            return panel;
+        }
+
         public static VerticalLayoutGroup AddVerticalLayout(
             RectTransform rectTransform,
             float spacing,

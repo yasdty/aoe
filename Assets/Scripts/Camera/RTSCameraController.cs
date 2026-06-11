@@ -37,6 +37,36 @@ namespace AoE.RTS.Camera
             transform.position = focusPoint - forward * distance;
         }
 
+        public void FocusOnGroundPoint(Vector3 worldXZ)
+        {
+            Vector3 target = new Vector3(worldXZ.x, 0f, worldXZ.z);
+            if (!TryGetGroundHitPoint(transform.position, transform.forward, out Vector3 currentFocus))
+                currentFocus = new Vector3(transform.position.x, 0f, transform.position.z);
+
+            Vector3 delta = target - currentFocus;
+            transform.position += new Vector3(delta.x, 0f, delta.z);
+        }
+
+        static bool TryGetGroundHitPoint(Vector3 origin, Vector3 direction, out Vector3 hit)
+        {
+            Ray ray = new Ray(origin, direction);
+            if (Mathf.Abs(ray.direction.y) < 0.001f)
+            {
+                hit = default;
+                return false;
+            }
+
+            float t = -ray.origin.y / ray.direction.y;
+            if (t < 0f)
+            {
+                hit = default;
+                return false;
+            }
+
+            hit = ray.GetPoint(t);
+            return true;
+        }
+
         void ApplyCameraMove(Vector2 moveInput, float speed)
         {
             if (moveInput.sqrMagnitude <= 0.0001f)

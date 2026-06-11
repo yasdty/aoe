@@ -1,6 +1,6 @@
 # Phase 54 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜53 完了（uGUI HUD — `GameplayCanvas` / `HudUiFactory` / `GameUiInput`）  
 > **マイルストン:** M5 — **Minimap**  
 > **ロードマップ:** [09_M5_VISUAL_UI_PHASES.md](../09_M5_VISUAL_UI_PHASES.md)  
@@ -149,9 +149,9 @@ public static class MapBounds
 
 ## ⑦ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 54 ✅ / Minimap ✅
-- [ ] `09_M5_VISUAL_UI_PHASES.md` — Phase 54 ✅
-- [ ] 本プロンプト — ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 54 ✅ / Minimap ✅
+- [x] `09_M5_VISUAL_UI_PHASES.md` — Phase 54 ✅
+- [x] 本プロンプト — ✅
 
 ---
 

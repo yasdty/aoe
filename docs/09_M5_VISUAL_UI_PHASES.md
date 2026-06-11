@@ -27,7 +27,7 @@
 | 51 | **Localization (i18n)** | LanguageMap + **日本語表示**（AoE2 Wiki 用語）/ EN↔JA 切替 | ✅ 完了 |
 | 52 | View Layer Split | Simulation / View 分離 + uGUI Canvas シェル | ✅ 完了 |
 | 53 | HUD Migration | 資源・生産・選択パネルを uGUI へ（**i18n キー経由**） | ✅ 完了 |
-| 54 | Minimap | 俯瞰ミニマップ + TC / 主要建築アイコン | ⬜ 未着手 |
+| 54 | Minimap | 俯瞰ミニマップ + TC / 主要建築アイコン | ✅ 完了 |
 | 55 | Unit Animation | Animator MVP（歩行・採集・攻撃） | ⬜ 未着手 |
 | 56 | Combat VFX & Audio | 弾丸・ヒット・SE フック | ⬜ 未着手 |
 
@@ -125,16 +125,18 @@
 
 ---
 
-## Phase 54 — Minimap ⬜
+## Phase 54 — Minimap ✅
 
 **目的:** 俯瞰ミニマップで両 TC 位置を把握。カメラ視野表示 + クリック移動 MVP。
 
-| 項目 | MVP |
-|------|-----|
-| 表示 | RawImage + TC アイコン（Player / Enemy） |
-| 位置 | 右上 uGUI（CpuHudView と重ならない） |
-| 座標 | `MapBounds` — Phase10 地面 AABB |
-| 操作 | クリックでカメラ focus 移動 |
+| 項目 | 実装 |
+|------|------|
+| 表示 | `RawImage` 単色背景 + TC アイコン（Player 青 / Enemy 赤） |
+| 位置 | 右上 uGUI（`CpuHudView` OnGUI の下 — `SetAnchoredTopRight`） |
+| 座標 | `MapBounds` — Phase10 地面 AABB（Ground Transform から自動算出可） |
+| 視野 | Main Camera 地面交差 4 点 → UV bounding rect |
+| 操作 | クリック → `RTSCameraController.FocusOnGroundPoint` |
+| Editor | `AoE → Add Minimap (Phase54)` / `EnsureMinimap()` |
 
 **プロンプト:** [prompts/phase54-prompt.md](prompts/phase54-prompt.md)
 
@@ -167,5 +169,5 @@
 
 1. M4 Phase 48 Play 確認完了
 2. **Phase 49 Wall & Gate** — gameplay 優先（UI 移行前）
-3. Phase 53 HUD Migration ✅ → Phase 54 以降 Visual
+3. Phase 53 HUD Migration ✅ → Phase 54 Minimap ✅ → Phase 55 以降 Visual
 4. **1 Phase ごと small diff**

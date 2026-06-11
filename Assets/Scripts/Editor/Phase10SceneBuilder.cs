@@ -748,7 +748,36 @@ namespace AoE.RTS.EditorTools
             HudUiFactory.GetOrCreateHudChild(hudRoot, "GameTimeHudPanel");
             HudUiFactory.GetOrCreateHudChild(hudRoot, "VictoryOverlay");
             HudUiFactory.GetOrCreateHudChild(hudRoot, "PlacementHintPanel");
+            HudUiFactory.GetOrCreateHudChild(hudRoot, "MinimapPanel");
             HudBottomLeftStack.GetOrCreate();
+        }
+
+        [MenuItem("AoE/Add Minimap (Phase54)", true)]
+        static bool ValidateAddMinimapPhase54() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Minimap (Phase54)")]
+        public static void AddMinimapPhase54()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            EnsureMinimap();
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added Minimap shell (Phase54). Play mode builds widgets at runtime. Save the scene (Ctrl+S) if needed.");
+        }
+
+        public static void EnsureMinimap()
+        {
+            EnsureHudUi();
+            Transform hudRoot = HudUiFactory.GetHudRoot();
+            if (hudRoot == null)
+                return;
+
+            HudUiFactory.GetOrCreateHudChild(hudRoot, "MinimapPanel");
+
+            SelectionManager selectionManager = Object.FindAnyObjectByType<SelectionManager>();
+            if (selectionManager != null && selectionManager.GetComponent<MinimapView>() == null)
+                selectionManager.gameObject.AddComponent<MinimapView>();
         }
 
         static void EnsureInputSystemEventSystem()
@@ -1415,6 +1444,7 @@ namespace AoE.RTS.EditorTools
             selectionManagerObject.AddComponent<CpuHudView>();
             selectionManagerObject.AddComponent<GameTimeHudView>();
             selectionManagerObject.AddComponent<VictoryDefeatHudView>();
+            selectionManagerObject.AddComponent<MinimapView>();
 
             RTSInputReader inputReader = mainCamera.GetComponent<RTSInputReader>();
             SerializedObject serializedSelection = new SerializedObject(selectionManager);
