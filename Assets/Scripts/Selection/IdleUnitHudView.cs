@@ -36,11 +36,11 @@ namespace AoE.RTS.Selection
             int idleMilitary = UnitIdleTracker.CountIdleMilitary();
 
             GUILayout.BeginArea(panelRect);
-            GUILayout.Label($"Idle Villagers: {idleVillagers}");
-            GUILayout.Label($"Idle Military: {idleMilitary}");
+            GUILayout.Label(Localization.Format("ui.idle_villagers", idleVillagers));
+            GUILayout.Label(Localization.Format("ui.idle_military", idleMilitary));
 
             GUI.enabled = idleVillagers > 0 && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button("Next Idle Villager (.)") && idleSelectionController != null)
+            if (GUILayout.Button(Localization.Get("ui.next_idle_villager")) && idleSelectionController != null)
                 idleSelectionController.SelectNextIdleVillager();
             GUI.enabled = true;
 

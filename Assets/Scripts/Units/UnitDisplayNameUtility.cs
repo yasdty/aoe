@@ -1,3 +1,5 @@
+using AoE.RTS.Core;
+
 namespace AoE.RTS.Units
 {
     public static class UnitDisplayNameUtility
@@ -9,14 +11,7 @@ namespace AoE.RTS.Units
 
         public static string GetDisplayName(UnitData data)
         {
-            if (data == null)
-                return "Unit";
-
-            string name = data.displayName;
-            if (!string.IsNullOrWhiteSpace(name) && name != "Unit")
-                return name;
-
-            return data.CanAttack ? "Militia" : "Villager";
+            return Localization.UnitName(data);
         }
     }
 }

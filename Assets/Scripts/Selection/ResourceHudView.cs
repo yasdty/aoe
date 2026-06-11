@@ -153,23 +153,28 @@ namespace AoE.RTS.Selection
             float y = Margin + Padding;
 
             Rect woodRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, WoodLineHeight);
-            GUI.Label(woodRect, $"Wood: {Mathf.FloorToInt(ResourceManager.Wood)}");
+            GUI.Label(woodRect, Localization.Format("ui.resource_amount", Localization.Get("resource.wood"), Mathf.FloorToInt(ResourceManager.Wood)));
             y += WoodLineHeight + ButtonGap;
 
             Rect foodRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, FoodLineHeight);
-            GUI.Label(foodRect, $"Food: {Mathf.FloorToInt(ResourceManager.Food)}");
+            GUI.Label(foodRect, Localization.Format("ui.resource_amount", Localization.Get("resource.food"), Mathf.FloorToInt(ResourceManager.Food)));
             y += FoodLineHeight + ButtonGap;
 
             Rect goldRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, GoldLineHeight);
-            GUI.Label(goldRect, $"Gold: {Mathf.FloorToInt(ResourceManager.Gold)}");
+            GUI.Label(goldRect, Localization.Format("ui.resource_amount", Localization.Get("resource.gold"), Mathf.FloorToInt(ResourceManager.Gold)));
             y += GoldLineHeight + ButtonGap;
 
             Rect stoneRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, StoneLineHeight);
-            GUI.Label(stoneRect, $"Stone: {Mathf.FloorToInt(ResourceManager.Stone)}");
+            GUI.Label(stoneRect, Localization.Format("ui.resource_amount", Localization.Get("resource.stone"), Mathf.FloorToInt(ResourceManager.Stone)));
             y += StoneLineHeight + ButtonGap;
 
             Rect popRect = new Rect(Margin + Padding, y, PanelWidth - Padding * 2f, PopLineHeight);
-            GUI.Label(popRect, $"Pop: {PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}");
+            GUI.Label(
+                popRect,
+                Localization.Format(
+                    "ui.resource_amount",
+                    Localization.Get("ui.pop"),
+                    $"{PopulationManager.CurrentPopulation}/{PopulationManager.MaxPopulation}"));
             y += PopLineHeight + ButtonGap;
 
             string civLabel = CivilizationBonusUtility.GetHudLabel(UnitTeam.Player);
@@ -192,7 +197,14 @@ namespace AoE.RTS.Selection
             int houseWoodCost = Mathf.CeilToInt(house.ScaledWoodCost);
             bool canAffordHouse = ResourceManager.Wood >= house.ScaledWoodCost;
             GUI.enabled = canAffordHouse && !inPlacementMode && !gameOver;
-            if (GUI.Button(houseButtonRect, $"Build House (H) ({houseWoodCost} Wood)"))
+            if (GUI.Button(
+                    houseButtonRect,
+                    Localization.Format(
+                        "ui.build_hotkey_wood",
+                        Localization.BuildingName(PlacedBuildingKind.House),
+                        "H",
+                        houseWoodCost,
+                        Localization.Get("resource.wood"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -205,7 +217,14 @@ namespace AoE.RTS.Selection
             int barracksWoodCost = Mathf.CeilToInt(barracks.ScaledWoodCost);
             bool canAffordBarracks = ResourceManager.Wood >= barracks.ScaledWoodCost;
             GUI.enabled = canAffordBarracks && !inPlacementMode && !gameOver;
-            if (GUI.Button(barracksButtonRect, $"Build Barracks (B) ({barracksWoodCost} Wood)"))
+            if (GUI.Button(
+                    barracksButtonRect,
+                    Localization.Format(
+                        "ui.build_hotkey_wood",
+                        Localization.BuildingName(PlacedBuildingKind.Barracks),
+                        "B",
+                        barracksWoodCost,
+                        Localization.Get("resource.wood"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -222,8 +241,15 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     archeryRangeButtonRect,
                     canBuildArcheryRange
-                        ? $"Build Archery Range ({archeryWoodCost} Wood)"
-                        : "Archery Range (Feudal Age)"))
+                        ? Localization.Format(
+                            "ui.build_wood",
+                            Localization.BuildingName(PlacedBuildingKind.ArcheryRange),
+                            archeryWoodCost,
+                            Localization.Get("resource.wood"))
+                        : Localization.Format(
+                            "ui.locked_age",
+                            Localization.BuildingName(PlacedBuildingKind.ArcheryRange),
+                            Localization.Get("age.feudal"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -240,8 +266,15 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     stableButtonRect,
                     canBuildStable
-                        ? $"Build Stable ({stableWoodCost} Wood)"
-                        : "Stable (Feudal Age)"))
+                        ? Localization.Format(
+                            "ui.build_wood",
+                            Localization.BuildingName(PlacedBuildingKind.Stable),
+                            stableWoodCost,
+                            Localization.Get("resource.wood"))
+                        : Localization.Format(
+                            "ui.locked_age",
+                            Localization.BuildingName(PlacedBuildingKind.Stable),
+                            Localization.Get("age.feudal"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -258,8 +291,15 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     blacksmithButtonRect,
                     canBuildBlacksmith
-                        ? $"Build Blacksmith ({blacksmithWoodCost} Wood)"
-                        : "Blacksmith (Feudal Age)"))
+                        ? Localization.Format(
+                            "ui.build_wood",
+                            Localization.BuildingName(PlacedBuildingKind.Blacksmith),
+                            blacksmithWoodCost,
+                            Localization.Get("resource.wood"))
+                        : Localization.Format(
+                            "ui.locked_age",
+                            Localization.BuildingName(PlacedBuildingKind.Blacksmith),
+                            Localization.Get("age.feudal"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -272,7 +312,13 @@ namespace AoE.RTS.Selection
             int farmWoodCost = Mathf.CeilToInt(farm.ScaledWoodCost);
             bool canAffordFarm = ResourceManager.Wood >= farm.ScaledWoodCost;
             GUI.enabled = canAffordFarm && !inPlacementMode && !gameOver;
-            if (GUI.Button(farmButtonRect, $"Build Farm ({farmWoodCost} Wood)"))
+            if (GUI.Button(
+                    farmButtonRect,
+                    Localization.Format(
+                        "ui.build_wood",
+                        Localization.BuildingName(PlacedBuildingKind.Farm),
+                        farmWoodCost,
+                        Localization.Get("resource.wood"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -285,7 +331,13 @@ namespace AoE.RTS.Selection
             int lumberCampWoodCost = Mathf.CeilToInt(lumberCamp.ScaledWoodCost);
             bool canAffordLumberCamp = ResourceManager.Wood >= lumberCamp.ScaledWoodCost;
             GUI.enabled = canAffordLumberCamp && !inPlacementMode && !gameOver;
-            if (GUI.Button(lumberCampButtonRect, $"Build Lumber Camp ({lumberCampWoodCost} Wood)"))
+            if (GUI.Button(
+                    lumberCampButtonRect,
+                    Localization.Format(
+                        "ui.build_wood",
+                        Localization.BuildingName(PlacedBuildingKind.LumberCamp),
+                        lumberCampWoodCost,
+                        Localization.Get("resource.wood"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -298,7 +350,13 @@ namespace AoE.RTS.Selection
             int miningCampWoodCost = Mathf.CeilToInt(miningCamp.ScaledWoodCost);
             bool canAffordMiningCamp = ResourceManager.Wood >= miningCamp.ScaledWoodCost;
             GUI.enabled = canAffordMiningCamp && !inPlacementMode && !gameOver;
-            if (GUI.Button(miningCampButtonRect, $"Build Mining Camp ({miningCampWoodCost} Wood)"))
+            if (GUI.Button(
+                    miningCampButtonRect,
+                    Localization.Format(
+                        "ui.build_wood",
+                        Localization.BuildingName(PlacedBuildingKind.MiningCamp),
+                        miningCampWoodCost,
+                        Localization.Get("resource.wood"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -311,7 +369,13 @@ namespace AoE.RTS.Selection
             int millWoodCost = Mathf.CeilToInt(mill.ScaledWoodCost);
             bool canAffordMill = ResourceManager.Wood >= mill.ScaledWoodCost;
             GUI.enabled = canAffordMill && !inPlacementMode && !gameOver;
-            if (GUI.Button(millButtonRect, $"Build Mill ({millWoodCost} Wood)"))
+            if (GUI.Button(
+                    millButtonRect,
+                    Localization.Format(
+                        "ui.build_wood",
+                        Localization.BuildingName(PlacedBuildingKind.Mill),
+                        millWoodCost,
+                        Localization.Get("resource.wood"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -327,8 +391,14 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     palisadeButtonRect,
                     canBuildPalisade
-                        ? $"Build Palisade ({FormatPlacementCost(palisadeWall)})"
-                        : "Palisade (Dark Age)"))
+                        ? Localization.Format(
+                            "ui.build_cost",
+                            Localization.BuildingName(PlacedBuildingKind.PalisadeWall),
+                            Localization.FormatPlacementCost(palisadeWall))
+                        : Localization.Format(
+                            "ui.locked_age",
+                            Localization.BuildingName(PlacedBuildingKind.PalisadeWall),
+                            Localization.Get("age.dark"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -344,8 +414,14 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     stoneWallButtonRect,
                     canBuildStoneWall
-                        ? $"Build Stone Wall ({FormatPlacementCost(stoneWall)})"
-                        : "Stone Wall (Feudal Age)"))
+                        ? Localization.Format(
+                            "ui.build_cost",
+                            Localization.BuildingName(PlacedBuildingKind.StoneWall),
+                            Localization.FormatPlacementCost(stoneWall))
+                        : Localization.Format(
+                            "ui.locked_age",
+                            Localization.BuildingName(PlacedBuildingKind.StoneWall),
+                            Localization.Get("age.feudal"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -361,8 +437,14 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     gateButtonRect,
                     canBuildGate
-                        ? $"Build Gate ({FormatPlacementCost(gate)})"
-                        : "Gate (Feudal Age + wall)"))
+                        ? Localization.Format(
+                            "ui.build_cost",
+                            Localization.BuildingName(PlacedBuildingKind.Gate),
+                            Localization.FormatPlacementCost(gate))
+                        : Localization.Format(
+                            "ui.locked_gate",
+                            Localization.BuildingName(PlacedBuildingKind.Gate),
+                            Localization.Get("age.feudal"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -378,8 +460,14 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     watchTowerButtonRect,
                     canBuildWatchTower
-                        ? $"Build Watch Tower ({FormatPlacementCost(watchTower)})"
-                        : "Watch Tower (Feudal Age)"))
+                        ? Localization.Format(
+                            "ui.build_cost",
+                            Localization.BuildingName(PlacedBuildingKind.WatchTower),
+                            Localization.FormatPlacementCost(watchTower))
+                        : Localization.Format(
+                            "ui.locked_age",
+                            Localization.BuildingName(PlacedBuildingKind.WatchTower),
+                            Localization.Get("age.feudal"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -396,8 +484,15 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     marketButtonRect,
                     canBuildMarket
-                        ? $"Build Market ({marketWoodCost} Wood)"
-                        : "Market (Feudal Age)"))
+                        ? Localization.Format(
+                            "ui.build_wood",
+                            Localization.BuildingName(PlacedBuildingKind.Market),
+                            marketWoodCost,
+                            Localization.Get("resource.wood"))
+                        : Localization.Format(
+                            "ui.locked_age",
+                            Localization.BuildingName(PlacedBuildingKind.Market),
+                            Localization.Get("age.feudal"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -415,10 +510,18 @@ namespace AoE.RTS.Selection
             if (GUI.Button(
                     townCenterButtonRect,
                     canPlaceTownCenter
-                        ? $"Build Town Center ({FormatPlacementCost(townCenterPlacement)})"
+                        ? Localization.Format(
+                            "ui.build_cost",
+                            Localization.BuildingName(PlacedBuildingKind.TownCenter),
+                            Localization.FormatPlacementCost(townCenterPlacement))
                         : feudalUnlocked
-                            ? "Town Center (Max 2)"
-                            : "Town Center (Feudal Age)"))
+                            ? Localization.Format(
+                                "ui.town_center_max",
+                                Localization.BuildingName(PlacedBuildingKind.TownCenter))
+                            : Localization.Format(
+                                "ui.locked_age",
+                                Localization.BuildingName(PlacedBuildingKind.TownCenter),
+                                Localization.Get("age.feudal"))))
             {
                 IReadOnlyList<Unit> builders = selectionManager != null
                     ? selectionManager.SelectedUnits
@@ -440,7 +543,7 @@ namespace AoE.RTS.Selection
             {
                 Rect hintRect = new Rect(Margin, panelRect.yMax + 4f, PanelWidth + 60f, 36f);
                 GameUiInput.SetHudHintScreenRect(GameUiInput.GuiRectToScreenRect(hintRect));
-                GUI.Label(hintRect, "Click to place. Walls: drag a line. Esc / Right-click to cancel.");
+                GUI.Label(hintRect, Localization.Get("ui.placement_hint"));
                 return;
             }
 
@@ -448,24 +551,8 @@ namespace AoE.RTS.Selection
             if (!canAffordAnyBuild)
             {
                 Rect hintRect = new Rect(Margin + Padding, panelRect.yMax + 4f, PanelWidth, 20f);
-                GUI.Label(hintRect, "Need more Wood.");
+                GUI.Label(hintRect, Localization.Get("ui.need_wood"));
             }
-        }
-
-        static string FormatPlacementCost(PlacedBuildingData data)
-        {
-            if (data == null)
-                return "0";
-
-            int wood = Mathf.CeilToInt(data.ScaledWoodCost);
-            int stone = Mathf.CeilToInt(data.ScaledStoneCost);
-            if (wood > 0 && stone > 0)
-                return $"{wood} Wood, {stone} Stone";
-
-            if (stone > 0)
-                return $"{stone} Stone";
-
-            return $"{wood} Wood";
         }
     }
 }

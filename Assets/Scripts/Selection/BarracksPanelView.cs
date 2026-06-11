@@ -33,7 +33,7 @@ namespace AoE.RTS.Selection
             GUI.Box(panelRect, GUIContent.none);
 
             GUILayout.BeginArea(panelRect);
-            GUILayout.Label("Barracks");
+            GUILayout.Label(Localization.BuildingName(PlacedBuildingKind.Barracks));
 
             int queueCount = BarracksProductionManager.GetQueueCount(barracks);
             bool isProducing = queueCount > 0;
@@ -47,7 +47,7 @@ namespace AoE.RTS.Selection
             bool canAffordSpearmanFood = ResourceManager.Food >= data.ScaledSecondaryTrainFoodCost;
             bool canAffordSpearman = canAffordSpearmanWood && canAffordSpearmanFood;
 
-            string primaryTrainName = BarracksTraining.GetPrimaryTrainDisplayName(barracks);
+            string primaryTrainName = Localization.UnitName(BarracksTraining.ResolvePrimaryTrainUnit(barracks));
             GUI.enabled = !queueFull && !populationFull && canAffordMilitia && !GameSessionManager.IsGameOver;
             if (GUILayout.Button(BuildPrimaryTrainLabel(primaryTrainName, data)))
                 CommandQueue.Enqueue(new TrainMilitiaCommand(barracks));
@@ -66,17 +66,17 @@ namespace AoE.RTS.Selection
             }
 
             if (queueFull)
-                GUILayout.Label("Queue full");
+                GUILayout.Label(Localization.Get("ui.queue_full"));
             else if (populationFull)
-                GUILayout.Label("Population full");
+                GUILayout.Label(Localization.Get("ui.population_full"));
             else if (!canAffordMilitia && !canAffordSpearman)
-                GUILayout.Label("Need more resources");
+                GUILayout.Label(Localization.Get("ui.need_resources"));
             else if (!canAffordSpearmanWood || !canAffordSpearmanFood)
             {
                 if (!canAffordSpearmanWood)
-                    GUILayout.Label("Need more Wood (Spearman)");
+                    GUILayout.Label(Localization.Get("ui.need_wood_spearman"));
                 else
-                    GUILayout.Label("Need more Food (Spearman)");
+                    GUILayout.Label(Localization.Get("ui.need_food_spearman"));
             }
 
             if (isProducing)
@@ -84,7 +84,7 @@ namespace AoE.RTS.Selection
                 float total = BarracksProductionManager.GetTotalSeconds(barracks);
                 float remaining = BarracksProductionManager.GetRemainingSeconds(barracks);
                 float progress = total > 0f ? 1f - remaining / total : 0f;
-                GUILayout.Label($"Training... {remaining:0.0}s");
+                GUILayout.Label(Localization.Format("ui.training", remaining));
                 Rect progressRect = GUILayoutUtility.GetRect(PanelWidth - 24f, 18f);
                 GUI.HorizontalSlider(progressRect, progress, 0f, 1f);
             }
@@ -96,17 +96,26 @@ namespace AoE.RTS.Selection
         {
             if (data.ScaledTrainWoodCost > 0f)
             {
-                return $"Create {unitName} (Q) ({Mathf.CeilToInt(data.ScaledTrainWoodCost)} Wood, "
-                    + $"{Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)";
+                return Localization.Format(
+                    "ui.create_unit_dual",
+                    unitName,
+                    Mathf.CeilToInt(data.ScaledTrainWoodCost),
+                    Mathf.CeilToInt(data.ScaledTrainFoodCost));
             }
 
-            return $"Create {unitName} (Q) ({Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)";
+            return Localization.Format(
+                "ui.create_unit_food",
+                unitName,
+                Mathf.CeilToInt(data.ScaledTrainFoodCost));
         }
 
         static string BuildSpearmanLabel(PlacedBuildingData data)
         {
-            return $"Create Spearman (E) ({Mathf.CeilToInt(data.ScaledSecondaryTrainWoodCost)} Wood, "
-                + $"{Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost)} Food)";
+            return Localization.Format(
+                "ui.create_unit_dual_e",
+                Localization.Get("unit.spearman"),
+                Mathf.CeilToInt(data.ScaledSecondaryTrainWoodCost),
+                Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost));
         }
 
         void Update()

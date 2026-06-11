@@ -34,7 +34,7 @@ namespace AoE.RTS.Selection
             GUI.Box(panelRect, GUIContent.none);
 
             GUILayout.BeginArea(panelRect);
-            GUILayout.Label("Archery Range");
+            GUILayout.Label(Localization.BuildingName(PlacedBuildingKind.ArcheryRange));
 
             int queueCount = ArcheryRangeProductionManager.GetQueueCount(archeryRange);
             bool isProducing = queueCount > 0;
@@ -45,8 +45,11 @@ namespace AoE.RTS.Selection
             bool canAfford = canAffordWood && canAffordFood;
             GUI.enabled = !queueFull && !populationFull && canAfford && !GameSessionManager.IsGameOver;
             if (GUILayout.Button(
-                    $"Create Archer (Q) ({Mathf.CeilToInt(data.ScaledTrainWoodCost)} Wood, "
-                    + $"{Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)"))
+                    Localization.Format(
+                        "ui.create_unit_dual",
+                        Localization.Get("unit.archer"),
+                        Mathf.CeilToInt(data.ScaledTrainWoodCost),
+                        Mathf.CeilToInt(data.ScaledTrainFoodCost))))
                 CommandQueue.Enqueue(new TrainArcherCommand(archeryRange));
             GUI.enabled = true;
 
@@ -59,20 +62,20 @@ namespace AoE.RTS.Selection
             }
 
             if (queueFull)
-                GUILayout.Label("Queue full");
+                GUILayout.Label(Localization.Get("ui.queue_full"));
             else if (populationFull)
-                GUILayout.Label("Population full");
+                GUILayout.Label(Localization.Get("ui.population_full"));
             else if (!canAffordWood)
-                GUILayout.Label("Need more Wood");
+                GUILayout.Label(Localization.Get("ui.need_wood"));
             else if (!canAffordFood)
-                GUILayout.Label("Need more Food");
+                GUILayout.Label(Localization.Get("ui.need_food"));
 
             if (isProducing)
             {
                 float total = ArcheryRangeProductionManager.GetTotalSeconds(archeryRange);
                 float remaining = ArcheryRangeProductionManager.GetRemainingSeconds(archeryRange);
                 float progress = total > 0f ? 1f - remaining / total : 0f;
-                GUILayout.Label($"Training... {remaining:0.0}s");
+                GUILayout.Label(Localization.Format("ui.training", remaining));
                 Rect progressRect = GUILayoutUtility.GetRect(PanelWidth - 24f, 18f);
                 GUI.HorizontalSlider(progressRect, progress, 0f, 1f);
             }

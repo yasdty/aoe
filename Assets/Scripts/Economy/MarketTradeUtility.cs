@@ -91,17 +91,35 @@ namespace AoE.RTS.Economy
             switch (action)
             {
                 case MarketTradeAction.SellFood:
-                    return $"Sell Food ({unit} → {Mathf.RoundToInt(rates.sellFoodGoldReceived)} Gold)";
+                    return Localization.Format(
+                        "trade.sell_food",
+                        unit,
+                        Mathf.RoundToInt(rates.sellFoodGoldReceived));
                 case MarketTradeAction.BuyFood:
-                    return $"Buy Food ({Mathf.RoundToInt(rates.buyFoodGoldCost)} Gold → {unit})";
+                    return Localization.Format(
+                        "trade.buy_food",
+                        Mathf.RoundToInt(rates.buyFoodGoldCost),
+                        unit);
                 case MarketTradeAction.SellWood:
-                    return $"Sell Wood ({unit} → {Mathf.RoundToInt(rates.sellWoodGoldReceived)} Gold)";
+                    return Localization.Format(
+                        "trade.sell_wood",
+                        unit,
+                        Mathf.RoundToInt(rates.sellWoodGoldReceived));
                 case MarketTradeAction.BuyWood:
-                    return $"Buy Wood ({Mathf.RoundToInt(rates.buyWoodGoldCost)} Gold → {unit})";
+                    return Localization.Format(
+                        "trade.buy_wood",
+                        Mathf.RoundToInt(rates.buyWoodGoldCost),
+                        unit);
                 case MarketTradeAction.SellStone:
-                    return $"Sell Stone ({unit} → {Mathf.RoundToInt(rates.sellStoneGoldReceived)} Gold)";
+                    return Localization.Format(
+                        "trade.sell_stone",
+                        unit,
+                        Mathf.RoundToInt(rates.sellStoneGoldReceived));
                 case MarketTradeAction.BuyStone:
-                    return $"Buy Stone ({Mathf.RoundToInt(rates.buyStoneGoldCost)} Gold → {unit})";
+                    return Localization.Format(
+                        "trade.buy_stone",
+                        Mathf.RoundToInt(rates.buyStoneGoldCost),
+                        unit);
                 default:
                     return action.ToString();
             }

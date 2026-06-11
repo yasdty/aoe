@@ -1,6 +1,6 @@
 # Phase 51 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜50 完了（M5 Wall Age Grades — Dark Palisade / Feudal Stone+Gate）  
 > **マイルストン:** M5 — **Localization (i18n)**  
 > **ロードマップ:** [09_M5_VISUAL_UI_PHASES.md](../09_M5_VISUAL_UI_PHASES.md)  
@@ -136,10 +136,12 @@
 
 ## ⑥ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 51 ✅ / LanguageMap ✅
-- [ ] `09_M5_VISUAL_UI_PHASES.md` — Phase 51 ✅
-- [ ] 本プロンプト — ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 51 ✅ / LanguageMap ✅
+- [x] `09_M5_VISUAL_UI_PHASES.md` — Phase 51 ✅
+- [x] 本プロンプト — ✅
 
 ---
 
 Phase 51 のみ。**Phase 52（View Split）・Phase 53（HUD Migration）には触れない** — ただし LanguageMap API は Phase 52〜53 がそのまま使える設計にすること。
+
+> **次:** [phase52-prompt.md](phase52-prompt.md) — View Layer Split

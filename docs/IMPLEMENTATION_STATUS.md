@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 50 ✅（Wall Age Grades — Dark Palisade / Feudal Stone+Gate）。**次: Phase 51 i18n（M5）。**
+> **最終更新:** Phase 51 ✅（Localization — EN/JA LanguageMap + 主要 HUD）。**次: Phase 52 View Layer Split（M5）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -85,8 +85,8 @@
 | 48 | RTS UX Polish | `Phase10.unity` | ✅ 完了（M4） |
 | 49 | Wall & Gate System | `Phase10.unity` | ✅ 完了（M5）— 列ゴーストプレビューは Phase 52〜53 |
 | 50 | Wall Age Grades | `Phase10.unity` | ✅ 完了（M5） |
-| 51 | Localization (i18n) | `Phase10.unity` | ⬜ 未着手（M5）— **次** |
-| 52 | View Layer Split | `Phase10.unity` | ⬜ 未着手（M5） |
+| 51 | Localization (i18n) | `Phase10.unity` | ✅ 完了（M5） |
+| 52 | View Layer Split | `Phase10.unity` | ⬜ 未着手（M5）— **次** |
 | 53 | HUD Migration | `Phase10.unity` | ⬜ 未着手（M5） |
 | 54 | Minimap | `Phase10.unity` | ⬜ 未着手（M5） |
 | 55 | Unit Animation | `Phase10.unity` | ⬜ 未着手（M5） |
@@ -113,7 +113,7 @@
 
 **Milestone 4 AoE Gameplay:** ✅ 完了（Phase 42〜48）
 
-**Milestone 5 Gameplay Polish & Visual / UI:** ⬜ 進行中（Phase 49〜50 ✅ / **次: Phase 51**）
+**Milestone 5 Gameplay Polish & Visual / UI:** ⬜ 進行中（Phase 49〜51 ✅ / **次: Phase 52**）
 
 **Milestone 6 Multiplayer Foundation:** ⬜ 未着手（Phase 57〜61）
 
@@ -291,7 +291,7 @@
 | 文明ラベル | ✅ | Phase 46 — HUD 文明名 |
 | Idle カウント HUD | ✅ | Phase 32 — `IdleUnitHudView` |
 | 選択詳細パネル | ✅ | Phase 25 |
-| 日本語 Localization | ❌ | **M5 Phase 51** — LanguageMap + AoE2 Wiki 用語 |
+| 日本語 Localization | ✅ | Phase 51 — LanguageMap + `L` キー切替 |
 | 本格 UI（uGUI / UI Toolkit） | ❌ | すべて OnGUI MVP — **M5 Phase 52〜53** |
 
 ### Engine Foundation（Phase 11〜16）
@@ -545,7 +545,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **戦闘** | 遠近・装甲・相性 | 近接/遠距離 + Melee/Pierce 装甲 + Spearman 対騎兵 ✅（Phase 39） | M4+ |
 | **フォーメーション** | 隊列・スタンス | スタンス + 攻撃移動 ✅（Phase 40）/ 隊列 ✅（Phase 41） | M4 Phase 42+ |
 | **壁** | 石壁・塔・Gate | 遮断・Gate・ドラッグ列 ✅（Phase 49）/ 時代別 ✅ Phase 50 / 列ゴースト → Phase 52〜53 |
-| **Localization** | 多言語 UI | ❌ — **M5 Phase 51** LanguageMap + 日本語 |
+| **Localization** | 多言語 UI | ✅ Phase 51 — EN/JA LanguageMap |
 | **船** | 海上戦・貿易 | ❌ | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 | **市場** | 資源交易 | Market + 固定レート売買 ✅（Phase 45） | M4 Phase 46+ |
 | **テクノロジー** | Dark→Imperial | Feudal 昇格 ✅（Phase 42）/ Blacksmith 研究 1 系統 ✅（Phase 43） | M4 Phase 44+ |
@@ -577,7 +577,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 |------|------|
 | 壁通行遮断・Gate | ✅ Phase 49 / **列ゴースト** → Phase 52〜53 |
 | 時代別壁グレード | ✅ Phase 50 — Dark 柵 / Feudal 石壁+Gate |
-| 日本語 UI | **M5 Phase 51** — LanguageMap |
+| 日本語 UI | ✅ Phase 51 — LanguageMap + HUD 主要パネル |
 | CPU 難易度・戦略バリエーション | 現状は Relaxed / Aggressive のみ |
 | 本格 HUD（uGUI） | OnGUI はスケール・見切れ問題 — M5 Phase 52〜53 |
 | 4 チーム対応 | 憲法目標だが enum は 2 チームのみ |
@@ -1047,7 +1047,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・Feudal 経済・多兵種・1 CPU — **Dark〜Feudal 垂直スライス**（全体 ~38%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 51 Localization (i18n)** — [09_M5](09_M5_VISUAL_UI_PHASES.md) |
+| 次に何を作るべき？ | **Phase 52 View Layer Split** — [09_M5](09_M5_VISUAL_UI_PHASES.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

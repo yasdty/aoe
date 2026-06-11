@@ -22,11 +22,14 @@ namespace AoE.RTS.Selection
 
             if (Keyboard.current.pKey.wasPressedThisFrame)
                 GameSessionManager.ToggleCpuAttackPace();
+
+            if (Keyboard.current.lKey.wasPressedThisFrame)
+                Localization.ToggleLanguage();
         }
 
         void OnGUI()
         {
-            float lineCount = 2f;
+            float lineCount = 3f;
             if (CpuMilitaryAiManager.Instance != null)
                 lineCount += 3f;
             if (GameplayBalance.Mode == GameplayBalanceMode.Debug && CpuMilitaryAiManager.Instance != null)
@@ -41,6 +44,11 @@ namespace AoE.RTS.Selection
 
             float y = Margin + Padding;
             DrawLine(x, ref y, $"Time: {FormatTime(Time.timeSinceLevelLoad)}");
+
+            Rect languageRect = new Rect(x + Padding, y, PanelWidth - Padding * 2f, LineHeight);
+            if (GUI.Button(languageRect, Localization.Format("ui.language_toggle", Localization.CurrentLanguageLabel())))
+                Localization.ToggleLanguage();
+            y += LineHeight;
 
             CpuMilitaryAiManager military = CpuMilitaryAiManager.Instance;
             if (military == null)

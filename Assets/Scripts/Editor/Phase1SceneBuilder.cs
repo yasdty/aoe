@@ -102,7 +102,8 @@ namespace AoE.RTS.EditorTools
             EnsureDefaultCpuCivilizationData();
             EnsureTownCenterPlacementData();
             EnsureFeudalAgeData();
-            Debug.Log("Synced AoE2 game data assets.");
+            Localization.EnsureRegistered();
+            Debug.Log($"Synced AoE2 game data assets. LanguageMap: {Localization.EntryCount} keys.");
         }
 
         [MenuItem("AoE/Sync Input Actions", true)]

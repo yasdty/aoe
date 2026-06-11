@@ -55,7 +55,7 @@ namespace AoE.RTS.Selection
             GUI.Box(panelRect, GUIContent.none);
 
             GUILayout.BeginArea(panelRect);
-            GUILayout.Label("Market");
+            GUILayout.Label(Localization.BuildingName(PlacedBuildingKind.Market));
 
             bool gameOver = GameSessionManager.IsGameOver;
             for (int i = 0; i < TradeActions.Length; i++)

@@ -34,8 +34,8 @@ namespace AoE.RTS.Selection
             GUI.Box(panelRect, GUIContent.none);
 
             GUILayout.BeginArea(panelRect);
-            GUILayout.Label("Town Center");
-            GUILayout.Label($"Age: {FormatAge(GameSessionManager.GetAge(townCenter.Team))}");
+            GUILayout.Label(Localization.Get("ui.town_center"));
+            GUILayout.Label(Localization.Format("ui.age_label", Localization.AgeName(GameSessionManager.GetAge(townCenter.Team))));
 
             int queueCount = ProductionManager.GetQueueCount(townCenter);
             bool isProducing = queueCount > 0;
@@ -44,7 +44,7 @@ namespace AoE.RTS.Selection
             float foodCost = townCenter.Data != null ? townCenter.Data.ScaledVillagerFoodCost : 0f;
             bool canAffordFood = ResourceManager.GetFood(UnitTeam.Player) >= foodCost;
             GUI.enabled = !queueFull && !populationFull && canAffordFood && !GameSessionManager.IsGameOver;
-            if (GUILayout.Button($"Create Villager (Q) ({Mathf.CeilToInt(foodCost)} Food)"))
+            if (GUILayout.Button(Localization.Format("ui.create_villager", Mathf.CeilToInt(foodCost))))
                 CommandQueue.Enqueue(new TrainVillagerCommand(townCenter));
             GUI.enabled = true;
 
@@ -59,18 +59,18 @@ namespace AoE.RTS.Selection
             }
 
             if (queueFull)
-                GUILayout.Label("Queue full");
+                GUILayout.Label(Localization.Get("ui.queue_full"));
             else if (populationFull)
-                GUILayout.Label("Population full");
+                GUILayout.Label(Localization.Get("ui.population_full"));
             else if (!canAffordFood)
-                GUILayout.Label("Need more Food");
+                GUILayout.Label(Localization.Get("ui.need_food"));
 
             if (isProducing)
             {
                 float total = ProductionManager.GetTotalSeconds(townCenter);
                 float remaining = ProductionManager.GetRemainingSeconds(townCenter);
                 float progress = total > 0f ? 1f - remaining / total : 0f;
-                GUILayout.Label($"Training... {remaining:0.0}s");
+                GUILayout.Label(Localization.Format("ui.training", remaining));
                 Rect progressRect = GUILayoutUtility.GetRect(PanelWidth - 24f, 18f);
                 GUI.HorizontalSlider(progressRect, progress, 0f, 1f);
             }
@@ -95,17 +95,15 @@ namespace AoE.RTS.Selection
             bool canAfford = ResourceManager.Food >= foodCost && ResourceManager.Gold >= goldCost;
             GUI.enabled = canAfford && !GameSessionManager.IsGameOver;
             if (GUILayout.Button(
-                    $"Age Up to Feudal ({Mathf.CeilToInt(foodCost)} Food, {Mathf.CeilToInt(goldCost)} Gold)"))
+                    Localization.Format(
+                        "ui.age_up_feudal",
+                        Mathf.CeilToInt(foodCost),
+                        Mathf.CeilToInt(goldCost))))
                 CommandQueue.Enqueue(new AgeUpCommand(townCenter));
             GUI.enabled = true;
 
             if (!canAfford)
-                GUILayout.Label("Need Food + Gold for Feudal Age");
-        }
-
-        static string FormatAge(GameAge age)
-        {
-            return age == GameAge.Feudal ? "Feudal Age" : "Dark Age";
+                GUILayout.Label(Localization.Get("ui.need_food_gold_feudal"));
         }
 
         void Update()

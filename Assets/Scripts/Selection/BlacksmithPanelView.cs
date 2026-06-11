@@ -37,7 +37,7 @@ namespace AoE.RTS.Selection
             GUI.Box(panelRect, GUIContent.none);
 
             GUILayout.BeginArea(panelRect);
-            GUILayout.Label("Blacksmith");
+            GUILayout.Label(Localization.BuildingName(PlacedBuildingKind.Blacksmith));
 
             bool alreadyResearched = TechnologyState.HasInfantryUpgrade(blacksmith.Team);
             bool isResearching = BlacksmithResearchManager.IsResearching(blacksmith);
@@ -47,21 +47,24 @@ namespace AoE.RTS.Selection
 
             if (alreadyResearched)
             {
-                GUILayout.Label($"{tech.displayName}: Complete");
+                GUILayout.Label(Localization.Format("ui.tech_complete", Localization.Get("tech.infantry_upgrade")));
             }
             else
             {
                 GUI.enabled = !isResearching && canAfford && !GameSessionManager.IsGameOver;
                 if (GUILayout.Button(
-                        $"{tech.displayName} (Q) ({Mathf.CeilToInt(tech.ScaledFoodCost)} Food, "
-                        + $"{Mathf.CeilToInt(tech.ScaledGoldCost)} Gold)"))
+                        Localization.Format(
+                            "ui.research_button",
+                            Localization.Get("tech.infantry_upgrade"),
+                            Mathf.CeilToInt(tech.ScaledFoodCost),
+                            Mathf.CeilToInt(tech.ScaledGoldCost))))
                     CommandQueue.Enqueue(new ResearchInfantryUpgradeCommand(blacksmith));
                 GUI.enabled = true;
 
                 if (!canAffordFood)
-                    GUILayout.Label("Need more Food");
+                    GUILayout.Label(Localization.Get("ui.need_food"));
                 else if (!canAffordGold)
-                    GUILayout.Label("Need more Gold");
+                    GUILayout.Label(Localization.Get("ui.need_gold"));
             }
 
             if (isResearching)
@@ -69,7 +72,7 @@ namespace AoE.RTS.Selection
                 float total = BlacksmithResearchManager.GetTotalSeconds(blacksmith);
                 float remaining = BlacksmithResearchManager.GetRemainingSeconds(blacksmith);
                 float progress = total > 0f ? 1f - remaining / total : 0f;
-                GUILayout.Label($"Researching... {remaining:0.0}s");
+                GUILayout.Label(Localization.Format("ui.researching", remaining));
                 Rect progressRect = GUILayoutUtility.GetRect(PanelWidth - 24f, 18f);
                 GUI.HorizontalSlider(progressRect, progress, 0f, 1f);
             }

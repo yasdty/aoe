@@ -24,7 +24,7 @@
 |-------|------|------|------|
 | 49 | **Wall & Gate System** | 通行遮断・ドラッグ連続配置・セグメント接続・**Gate（自軍通過）** | ✅ 完了 |
 | 50 | **Wall Age Grades** | 時代に応じた柵/壁グレード（AoE2: 初期柵 → 昇格後の石壁等） | ✅ 完了 |
-| 51 | **Localization (i18n)** | LanguageMap + **日本語表示**（AoE2 Wiki 用語）/ EN↔JA 切替 | ⬜ 未着手 |
+| 51 | **Localization (i18n)** | LanguageMap + **日本語表示**（AoE2 Wiki 用語）/ EN↔JA 切替 | ✅ 完了 |
 | 52 | View Layer Split | Simulation / View 分離 + uGUI Canvas シェル | ⬜ 未着手 |
 | 53 | HUD Migration | 資源・生産・選択パネルを uGUI へ（**i18n キー経由**） | ⬜ 未着手 |
 | 54 | Minimap | 俯瞰ミニマップ + TC / 主要建築アイコン | ⬜ 未着手 |
@@ -79,19 +79,16 @@
 
 ---
 
-## Phase 51 — Localization (i18n) ⬜
+## Phase 51 — Localization (i18n) ✅
 
 **目的:** 英語ハードコードをやめ、**LanguageMap** で EN / JA を切替。
 
-| 項目 | 方針 |
+| 項目 | 実装 |
 |------|------|
-| API | `Localization.Get(key)` or `LanguageMap` ScriptableObject / static registry |
-| 切替 | 設定 or ランタイム（Debug メニュー MVP 可） |
-| 日本語ソース | [Age of Empires Series Wiki（日本語）](https://ageofempires.fandom.com/ja/) のユニット・建築・資源名 |
-| 対象（MVP） | HUD ラベル、生産パネル、Selection Info、勝敗、建築ボタン |
-| 非対象 | 音声 / フォント本格対応（Nice to have） |
-
-**キー例:** `unit.villager` → EN `Villager` / JA `村民`、`building.house` → `House` / `家`、`resource.wood` → `Wood` / `木材`
+| API | `Localization.Get` / `Format` / `BuildingName` / `UnitName` |
+| 切替 | **`L` キー** + `GameTimeHudView` ボタン — PlayerPrefs 保存 |
+| 対象 | ResourceHud / 生産パネル / Selection Info / 勝敗 / Idle / Market 交易 |
+| キー数 | 80+（`LanguageMapBootstrap`） |
 
 **プロンプト:** [prompts/phase51-prompt.md](prompts/phase51-prompt.md)
 
@@ -106,7 +103,7 @@
 - Simulation Manager は View を直接参照しない
 - uGUI Canvas を Editor API 生成
 
-**プロンプト:** [prompts/phase52-prompt.md](prompts/phase52-prompt.md)（未作成）
+**プロンプト:** [prompts/phase52-prompt.md](prompts/phase52-prompt.md)
 
 ---
 
@@ -153,5 +150,5 @@
 
 1. M4 Phase 48 Play 確認完了
 2. **Phase 49 Wall & Gate** — gameplay 優先（UI 移行前）
-3. Phase 51 i18n → Phase 52 以降 Visual
+3. Phase 52 View Split → Phase 53 以降 Visual
 4. **1 Phase ごと small diff**

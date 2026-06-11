@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Economy;
 using AoE.RTS.Combat;
+using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -83,11 +84,11 @@ namespace AoE.RTS.Selection
             if (townCenter != null)
             {
                 AppendBuildingHealthInfo(
-                    townCenter.Data != null ? townCenter.Data.displayName : "Town Center",
+                    Localization.BuildingName(PlacedBuildingKind.TownCenter),
                     townCenter.GetComponent<BuildingHealth>(),
                     lines,
                     out title);
-                lines.Add(townCenter.HasRally ? "Rally: Set" : "Rally: None");
+                lines.Add(townCenter.HasRally ? Localization.Get("ui.rally_set") : Localization.Get("ui.rally_none"));
                 return true;
             }
 
@@ -95,11 +96,11 @@ namespace AoE.RTS.Selection
             if (barracks != null)
             {
                 AppendBuildingHealthInfo(
-                    barracks.Data != null ? barracks.Data.displayName : "Barracks",
+                    Localization.BuildingName(barracks.Data),
                     barracks.GetComponent<BuildingHealth>(),
                     lines,
                     out title);
-                lines.Add(barracks.HasRally ? "Rally: Set" : "Rally: None");
+                lines.Add(barracks.HasRally ? Localization.Get("ui.rally_set") : Localization.Get("ui.rally_none"));
                 return true;
             }
 
@@ -107,11 +108,11 @@ namespace AoE.RTS.Selection
             if (archeryRange != null)
             {
                 AppendBuildingHealthInfo(
-                    archeryRange.Data != null ? archeryRange.Data.displayName : "Archery Range",
+                    Localization.BuildingName(archeryRange.Data),
                     archeryRange.GetComponent<BuildingHealth>(),
                     lines,
                     out title);
-                lines.Add(archeryRange.HasRally ? "Rally: Set" : "Rally: None");
+                lines.Add(archeryRange.HasRally ? Localization.Get("ui.rally_set") : Localization.Get("ui.rally_none"));
                 return true;
             }
 
@@ -119,11 +120,11 @@ namespace AoE.RTS.Selection
             if (stable != null)
             {
                 AppendBuildingHealthInfo(
-                    stable.Data != null ? stable.Data.displayName : "Stable",
+                    Localization.BuildingName(stable.Data),
                     stable.GetComponent<BuildingHealth>(),
                     lines,
                     out title);
-                lines.Add(stable.HasRally ? "Rally: Set" : "Rally: None");
+                lines.Add(stable.HasRally ? Localization.Get("ui.rally_set") : Localization.Get("ui.rally_none"));
                 return true;
             }
 
@@ -131,7 +132,7 @@ namespace AoE.RTS.Selection
             if (blacksmith != null)
             {
                 AppendBuildingHealthInfo(
-                    blacksmith.Data != null ? blacksmith.Data.displayName : "Blacksmith",
+                    Localization.BuildingName(blacksmith.Data),
                     blacksmith.GetComponent<BuildingHealth>(),
                     lines,
                     out title);
@@ -142,7 +143,7 @@ namespace AoE.RTS.Selection
             if (market != null)
             {
                 AppendBuildingHealthInfo(
-                    market.Data != null ? market.Data.displayName : "Market",
+                    Localization.BuildingName(market.Data),
                     market.GetComponent<BuildingHealth>(),
                     lines,
                     out title);
@@ -169,17 +170,22 @@ namespace AoE.RTS.Selection
         static void AppendUnitInfo(Unit unit, List<string> lines, out string title)
         {
             title = UnitDisplayNameUtility.GetDisplayName(unit);
-            lines.Add($"HP: {Mathf.FloorToInt(unit.CurrentHp)} / {Mathf.FloorToInt(unit.MaxHp)}");
+            lines.Add(Localization.Format(
+                "ui.hp",
+                Mathf.FloorToInt(unit.CurrentHp),
+                Mathf.FloorToInt(unit.MaxHp)));
 
             if (unit.CanAttack)
             {
-                string damageTypeLabel = unit.AttackDamageType == AttackDamageType.Pierce ? "Pierce" : "Melee";
-                lines.Add($"Attack: {unit.AttackPower:0} ({damageTypeLabel})");
-                lines.Add($"Stance: {FormatStance(unit.CombatStance)}");
+                string damageTypeLabel = unit.AttackDamageType == AttackDamageType.Pierce
+                    ? Localization.Get("damage.pierce")
+                    : Localization.Get("damage.melee");
+                lines.Add(Localization.Format("ui.attack", unit.AttackPower, damageTypeLabel));
+                lines.Add(Localization.Format("ui.stance", FormatStance(unit.CombatStance)));
             }
 
-            lines.Add($"Melee Armor: {unit.MeleeArmor:0}");
-            lines.Add($"Pierce Armor: {unit.PierceArmor:0}");
+            lines.Add(Localization.Format("ui.melee_armor", unit.MeleeArmor));
+            lines.Add(Localization.Format("ui.pierce_armor", unit.PierceArmor));
         }
 
         static string FormatStance(UnitCombatStance stance)
@@ -187,11 +193,11 @@ namespace AoE.RTS.Selection
             switch (stance)
             {
                 case UnitCombatStance.Defensive:
-                    return "Defensive";
+                    return Localization.Get("stance.defensive");
                 case UnitCombatStance.StandGround:
-                    return "Stand Ground";
+                    return Localization.Get("stance.stand_ground");
                 default:
-                    return "Aggressive";
+                    return Localization.Get("stance.aggressive");
             }
         }
 
@@ -213,43 +219,49 @@ namespace AoE.RTS.Selection
             title = displayName;
             if (health != null)
             {
-                lines.Add($"HP: {Mathf.FloorToInt(health.CurrentHp)} / {Mathf.FloorToInt(health.MaxHp)}");
-                lines.Add($"Melee Armor: {health.MeleeArmor:0}");
-                lines.Add($"Pierce Armor: {health.PierceArmor:0}");
+                lines.Add(Localization.Format(
+                    "ui.hp",
+                    Mathf.FloorToInt(health.CurrentHp),
+                    Mathf.FloorToInt(health.MaxHp)));
+                lines.Add(Localization.Format("ui.melee_armor", health.MeleeArmor));
+                lines.Add(Localization.Format("ui.pierce_armor", health.PierceArmor));
             }
         }
 
         static void AppendPlacedBuildingInfo(BuildingHealth health, List<string> lines, out string title)
         {
             title = ResolvePlacedBuildingName(health);
-            lines.Add($"HP: {Mathf.FloorToInt(health.CurrentHp)} / {Mathf.FloorToInt(health.MaxHp)}");
-            lines.Add($"Melee Armor: {health.MeleeArmor:0}");
-            lines.Add($"Pierce Armor: {health.PierceArmor:0}");
+            lines.Add(Localization.Format(
+                "ui.hp",
+                Mathf.FloorToInt(health.CurrentHp),
+                Mathf.FloorToInt(health.MaxHp)));
+            lines.Add(Localization.Format("ui.melee_armor", health.MeleeArmor));
+            lines.Add(Localization.Format("ui.pierce_armor", health.PierceArmor));
         }
 
         static string ResolvePlacedBuildingName(BuildingHealth health)
         {
             Farm farm = health.GetComponent<Farm>();
             if (farm != null && farm.Data != null)
-                return farm.Data.displayName;
+                return Localization.BuildingName(farm.Data);
 
             House house = health.GetComponent<House>();
             if (house != null && house.Data != null)
-                return house.Data.displayName;
+                return Localization.BuildingName(house.Data);
 
             LumberCamp lumberCamp = health.GetComponent<LumberCamp>();
             if (lumberCamp != null && lumberCamp.Data != null)
-                return lumberCamp.Data.displayName;
+                return Localization.BuildingName(lumberCamp.Data);
 
             MiningCamp miningCamp = health.GetComponent<MiningCamp>();
             if (miningCamp != null && miningCamp.Data != null)
-                return miningCamp.Data.displayName;
+                return Localization.BuildingName(miningCamp.Data);
 
             Mill mill = health.GetComponent<Mill>();
             if (mill != null && mill.Data != null)
-                return mill.Data.displayName;
+                return Localization.BuildingName(mill.Data);
 
-            return "Building";
+            return Localization.Get("building.generic");
         }
 
         static void AppendResourceInfo(Component resource, List<string> lines, out string title)
@@ -257,42 +269,46 @@ namespace AoE.RTS.Selection
             switch (resource)
             {
                 case TreeResource tree:
-                    title = "Tree";
-                    lines.Add($"Wood: {Mathf.FloorToInt(tree.RemainingWood)}");
+                    title = Localization.Get("resource.node.tree");
+                    lines.Add(Localization.Format("ui.resource_amount", Localization.Get("resource.wood"), Mathf.FloorToInt(tree.RemainingWood)));
                     break;
                 case BerryBushResource bush:
-                    title = "Berry Bush";
-                    lines.Add($"Food: {Mathf.FloorToInt(bush.RemainingFood)}");
+                    title = Localization.Get("resource.node.berry_bush");
+                    lines.Add(Localization.Format("ui.resource_amount", Localization.Get("resource.food"), Mathf.FloorToInt(bush.RemainingFood)));
                     break;
                 case DeerResource deer:
-                    title = "Deer";
-                    lines.Add($"Food: {Mathf.FloorToInt(deer.RemainingFood)}");
+                    title = Localization.Get("resource.node.deer");
+                    lines.Add(Localization.Format("ui.resource_amount", Localization.Get("resource.food"), Mathf.FloorToInt(deer.RemainingFood)));
                     break;
                 case SheepResource sheep:
-                    title = "Sheep";
-                    lines.Add(sheep.IsNeutral ? "Owner: Neutral" : $"Owner: {sheep.OwnerTeam}");
-                    lines.Add($"Food: {Mathf.FloorToInt(sheep.RemainingFood)}");
+                    title = Localization.Get("resource.node.sheep");
+                    lines.Add(sheep.IsNeutral
+                        ? Localization.Get("ui.owner_neutral")
+                        : Localization.Format("ui.owner_team", sheep.OwnerTeam));
+                    lines.Add(Localization.Format("ui.resource_amount", Localization.Get("resource.food"), Mathf.FloorToInt(sheep.RemainingFood)));
                     break;
                 case BoarResource boar:
-                    title = "Boar";
+                    title = Localization.Get("resource.node.boar");
                     if (boar.IsDead)
-                        lines.Add($"Food: {Mathf.FloorToInt(boar.RemainingFood)}");
+                    {
+                        lines.Add(Localization.Format("ui.resource_amount", Localization.Get("resource.food"), Mathf.FloorToInt(boar.RemainingFood)));
+                    }
                     else
                     {
-                        lines.Add($"HP: {Mathf.FloorToInt(boar.CurrentHp)}/{Mathf.FloorToInt(boar.MaxHp)}");
-                        lines.Add($"Attack: {boar.AttackPower:0}");
+                        lines.Add(Localization.Format("ui.hp", Mathf.FloorToInt(boar.CurrentHp), Mathf.FloorToInt(boar.MaxHp)));
+                        lines.Add(Localization.Format("ui.attack", boar.AttackPower, Localization.Get("damage.melee")));
                     }
                     break;
                 case GoldMineResource goldMine:
-                    title = "Gold Mine";
-                    lines.Add($"Gold: {Mathf.FloorToInt(goldMine.RemainingAmount)}");
+                    title = Localization.Get("resource.node.gold_mine");
+                    lines.Add(Localization.Format("ui.resource_amount", Localization.Get("resource.gold"), Mathf.FloorToInt(goldMine.RemainingAmount)));
                     break;
                 case StoneMineResource stoneMine:
-                    title = "Stone Mine";
-                    lines.Add($"Stone: {Mathf.FloorToInt(stoneMine.RemainingAmount)}");
+                    title = Localization.Get("resource.node.stone_mine");
+                    lines.Add(Localization.Format("ui.resource_amount", Localization.Get("resource.stone"), Mathf.FloorToInt(stoneMine.RemainingAmount)));
                     break;
                 default:
-                    title = "Resource";
+                    title = Localization.Get("resource.node.generic");
                     break;
             }
         }

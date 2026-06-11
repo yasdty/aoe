@@ -33,7 +33,7 @@ namespace AoE.RTS.Selection
             GUI.Box(panelRect, GUIContent.none);
 
             GUILayout.BeginArea(panelRect);
-            GUILayout.Label("Stable");
+            GUILayout.Label(Localization.BuildingName(PlacedBuildingKind.Stable));
 
             int queueCount = StableProductionManager.GetQueueCount(stable);
             bool isProducing = queueCount > 0;
@@ -49,8 +49,11 @@ namespace AoE.RTS.Selection
 
             GUI.enabled = !queueFull && !populationFull && canAffordCavalry && !GameSessionManager.IsGameOver;
             if (GUILayout.Button(
-                    $"Create Cavalry (Q) ({Mathf.CeilToInt(data.ScaledTrainWoodCost)} Wood, "
-                    + $"{Mathf.CeilToInt(data.ScaledTrainFoodCost)} Food)"))
+                    Localization.Format(
+                        "ui.create_unit_dual",
+                        Localization.Get("unit.cavalry"),
+                        Mathf.CeilToInt(data.ScaledTrainWoodCost),
+                        Mathf.CeilToInt(data.ScaledTrainFoodCost))))
                 CommandQueue.Enqueue(new TrainCavalryCommand(stable));
 
             GUI.enabled = !queueFull && !populationFull && canAffordScout && !GameSessionManager.IsGameOver;
@@ -67,18 +70,18 @@ namespace AoE.RTS.Selection
             }
 
             if (queueFull)
-                GUILayout.Label("Queue full");
+                GUILayout.Label(Localization.Get("ui.queue_full"));
             else if (populationFull)
-                GUILayout.Label("Population full");
+                GUILayout.Label(Localization.Get("ui.population_full"));
             else if (!canAffordCavalry && !canAffordScout)
-                GUILayout.Label("Need more resources");
+                GUILayout.Label(Localization.Get("ui.need_resources"));
 
             if (isProducing)
             {
                 float total = StableProductionManager.GetTotalSeconds(stable);
                 float remaining = StableProductionManager.GetRemainingSeconds(stable);
                 float progress = total > 0f ? 1f - remaining / total : 0f;
-                GUILayout.Label($"Training... {remaining:0.0}s");
+                GUILayout.Label(Localization.Format("ui.training", remaining));
                 Rect progressRect = GUILayoutUtility.GetRect(PanelWidth - 24f, 18f);
                 GUI.HorizontalSlider(progressRect, progress, 0f, 1f);
             }
@@ -106,11 +109,17 @@ namespace AoE.RTS.Selection
         {
             if (data.ScaledSecondaryTrainWoodCost > 0f)
             {
-                return $"Create Scout (E) ({Mathf.CeilToInt(data.ScaledSecondaryTrainWoodCost)} Wood, "
-                    + $"{Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost)} Food)";
+                return Localization.Format(
+                    "ui.create_unit_dual_e",
+                    Localization.Get("unit.scout"),
+                    Mathf.CeilToInt(data.ScaledSecondaryTrainWoodCost),
+                    Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost));
             }
 
-            return $"Create Scout (E) ({Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost)} Food)";
+            return Localization.Format(
+                "ui.create_unit_food_e",
+                Localization.Get("unit.scout"),
+                Mathf.CeilToInt(data.ScaledSecondaryTrainFoodCost));
         }
     }
 }

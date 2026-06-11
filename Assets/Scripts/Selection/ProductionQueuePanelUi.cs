@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
+using AoE.RTS.Core;
 using UnityEngine;
 
 namespace AoE.RTS.Selection
@@ -19,7 +20,10 @@ namespace AoE.RTS.Selection
             {
                 ProductionQueueEntry entry = entries[i];
                 int queueIndex = entry.queueIndex;
-                if (GUILayout.Button($"Cancel #{queueIndex + 1}: {entry.displayName}"))
+                if (GUILayout.Button(Localization.Format(
+                    "ui.cancel_queue",
+                    queueIndex + 1,
+                    Localization.LocalizeDisplayName(entry.displayName))))
                     onCancel(queueIndex);
             }
         }

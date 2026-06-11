@@ -13,7 +13,9 @@ namespace AoE.RTS.Selection
                 return;
 
             MatchState state = GameSessionManager.State;
-            string title = state == MatchState.Victory ? "VICTORY" : "DEFEAT";
+            string title = state == MatchState.Victory
+                ? Localization.Get("ui.victory")
+                : Localization.Get("ui.defeat");
             Color titleColor = state == MatchState.Victory
                 ? new Color(0.35f, 0.95f, 0.45f)
                 : new Color(0.95f, 0.35f, 0.35f);
@@ -47,7 +49,7 @@ namespace AoE.RTS.Selection
             GUI.Label(titleRect, title, titleStyle);
 
             Rect subtitleRect = new Rect(boxRect.x, boxRect.y + 96f, boxRect.width, 32f);
-            GUI.Label(subtitleRect, "Press R to restart", subtitleStyle);
+            GUI.Label(subtitleRect, Localization.Get("ui.restart_hint"), subtitleStyle);
         }
 
         void Update()
