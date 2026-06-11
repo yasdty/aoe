@@ -144,7 +144,15 @@
 
 ## Phase 55 — Unit Animation ⬜
 
-**プロンプト:** [prompts/phase55-prompt.md](prompts/phase55-prompt.md)（未作成）
+**目的:** Villager / Militia / Archer の Idle・Walk・Gather・Attack を Animator MVP で表現。
+
+| 項目 | MVP |
+|------|-----|
+| View | `UnitAnimationView` + `UnitVisualStateResolver` |
+| 方式 | コード生成 AnimationClip + AnimatorController |
+| 分離 | Simulation（`Unit`）から Animator 参照を分離 |
+
+**プロンプト:** [prompts/phase55-prompt.md](prompts/phase55-prompt.md)
 
 ---
 
