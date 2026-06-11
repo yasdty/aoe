@@ -9,11 +9,15 @@ using AoE.RTS.Input;
 using AoE.RTS.Selection;
 using AoE.RTS.Spatial;
 using AoE.RTS.Units;
+using AoE.RTS.View;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace AoE.RTS.EditorTools
 {
@@ -693,6 +697,88 @@ namespace AoE.RTS.EditorTools
             Debug.Log("Added Second TC wiring. Save the scene (Ctrl+S) if needed.");
         }
 
+        [MenuItem("AoE/Add View Layer (Phase52)", true)]
+        static bool ValidateAddViewLayerPhase52() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add View Layer (Phase52)")]
+        public static void AddViewLayerToOpenScene()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            EnsureGameplayCanvas();
+            PlacementPreviewView previewView = EnsurePlacementPreviewView();
+            BuildingPlacementManager placementManager = Object.FindAnyObjectByType<BuildingPlacementManager>();
+            if (placementManager != null && previewView != null)
+            {
+                SerializedObject serializedPlacement = new SerializedObject(placementManager);
+                serializedPlacement.FindProperty("placementPreviewViewHost").objectReferenceValue = previewView;
+                serializedPlacement.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(placementManager);
+            }
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added View Layer (Phase52). Save the scene (Ctrl+S) if needed.");
+        }
+
+        static void EnsureInputSystemEventSystem()
+        {
+            EventSystem eventSystem = Object.FindAnyObjectByType<EventSystem>();
+            if (eventSystem == null)
+            {
+                GameObject eventSystemObject = new GameObject("EventSystem");
+                eventSystem = eventSystemObject.AddComponent<EventSystem>();
+            }
+
+            StandaloneInputModule legacyModule = eventSystem.GetComponent<StandaloneInputModule>();
+            if (legacyModule != null)
+                Object.DestroyImmediate(legacyModule);
+
+            if (eventSystem.GetComponent<InputSystemUIInputModule>() == null)
+            {
+                eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
+                EditorUtility.SetDirty(eventSystem);
+            }
+        }
+
+        static GameObject EnsureGameplayCanvas()
+        {
+            EnsureInputSystemEventSystem();
+
+            GameObject canvasObject = GameObject.Find("GameplayCanvas");
+            if (canvasObject != null)
+                return canvasObject;
+
+            canvasObject = new GameObject("GameplayCanvas");
+            Canvas canvas = canvasObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1280f, 720f);
+            scaler.matchWidthOrHeight = 0.5f;
+            canvasObject.AddComponent<GraphicRaycaster>();
+
+            GameObject hudRoot = new GameObject("HudRoot");
+            RectTransform hudRootTransform = hudRoot.AddComponent<RectTransform>();
+            hudRootTransform.SetParent(canvasObject.transform, false);
+            hudRootTransform.anchorMin = Vector2.zero;
+            hudRootTransform.anchorMax = Vector2.one;
+            hudRootTransform.offsetMin = Vector2.zero;
+            hudRootTransform.offsetMax = Vector2.zero;
+
+            return canvasObject;
+        }
+
+        static PlacementPreviewView EnsurePlacementPreviewView()
+        {
+            PlacementPreviewView existing = Object.FindAnyObjectByType<PlacementPreviewView>();
+            if (existing != null)
+                return existing;
+
+            GameObject viewObject = new GameObject("PlacementPreviewView");
+            return viewObject.AddComponent<PlacementPreviewView>();
+        }
+
         [MenuItem("AoE/Add Debug Playtest Input (Phase47)", true)]
         static bool ValidateAddDebugPlaytestInput() => !EditorApplication.isPlaying;
 
@@ -1265,6 +1351,10 @@ namespace AoE.RTS.EditorTools
             placementManagerObject.transform.SetParent(systems.transform);
             BuildingPlacementManager placementManager = placementManagerObject.AddComponent<BuildingPlacementManager>();
 
+            EnsureGameplayCanvas();
+            PlacementPreviewView placementPreviewView = EnsurePlacementPreviewView();
+            placementPreviewView.transform.SetParent(systems.transform);
+
             GameObject cpuEconomyObject = new GameObject("CpuEconomyAiManager");
             cpuEconomyObject.transform.SetParent(systems.transform);
             CpuEconomyAiManager cpuEconomy = cpuEconomyObject.AddComponent<CpuEconomyAiManager>();
@@ -1378,6 +1468,7 @@ namespace AoE.RTS.EditorTools
             SerializedObject serializedPlacement = new SerializedObject(placementManager);
             serializedPlacement.FindProperty("mainCamera").objectReferenceValue = mainCamera;
             serializedPlacement.FindProperty("input").objectReferenceValue = inputReader;
+            serializedPlacement.FindProperty("placementPreviewViewHost").objectReferenceValue = placementPreviewView;
             serializedPlacement.FindProperty("houseData").objectReferenceValue = houseData;
             serializedPlacement.FindProperty("barracksData").objectReferenceValue = barracksData;
             serializedPlacement.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;

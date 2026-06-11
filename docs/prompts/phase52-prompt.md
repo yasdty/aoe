@@ -1,6 +1,6 @@
 # Phase 52 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜51 完了（M5 i18n — LanguageMap + 主要 OnGUI HUD）  
 > **マイルストン:** M5 — **View Layer Split**  
 > **ロードマップ:** [09_M5_VISUAL_UI_PHASES.md](../09_M5_VISUAL_UI_PHASES.md)  
@@ -49,7 +49,7 @@
 
 ## ③ 実装タスク
 
-### 1. View インターフェース（`Assets/Scripts/View/` 新規）
+### 1. View インターフェース（`Assets/Scripts/Visuals/` — namespace `AoE.RTS.View`）
 
 ```csharp
 // 例 — 名前・シグネチャは実装に合わせて調整可
@@ -131,10 +131,12 @@ public readonly struct PlacementPreviewState
 
 ## ⑥ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 52 ✅ / View Split ✅ / 列ゴースト ✅
-- [ ] `09_M5_VISUAL_UI_PHASES.md` — Phase 52 ✅、繰越表の列ゴーストを ✅
-- [ ] 本プロンプト — ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 52 ✅ / View Split ✅ / 列ゴースト ✅
+- [x] `09_M5_VISUAL_UI_PHASES.md` — Phase 52 ✅、繰越表の列ゴーストを ✅
+- [x] 本プロンプト — ✅
 
 ---
 
 Phase 52 のみ。**Phase 53（HUD Migration）・Phase 54（Minimap）には触れない。**
+
+> **次:** [phase53-prompt.md](phase53-prompt.md) — HUD Migration

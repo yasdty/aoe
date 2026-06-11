@@ -15,7 +15,7 @@
 |------|----------|--------|
 | ドラッグ確定で壁列を配置 | ✅ | — |
 | 通行遮断・Gate | ✅ | — |
-| **ドラッグ中の列ゴースト**（全セグメントを有効/無効色で表示） | ⬜ 意図的後回し | **Phase 52〜53** — `IPlacementPreviewView` / uGUI 移行時 |
+| **ドラッグ中の列ゴースト**（全セグメントを有効/無効色で表示） | ✅ Phase 52 | — |
 | 角・接続の見た目 polish | △ MVP | Phase 55 以降（任意） |
 
 ## Phase 一覧
@@ -25,7 +25,7 @@
 | 49 | **Wall & Gate System** | 通行遮断・ドラッグ連続配置・セグメント接続・**Gate（自軍通過）** | ✅ 完了 |
 | 50 | **Wall Age Grades** | 時代に応じた柵/壁グレード（AoE2: 初期柵 → 昇格後の石壁等） | ✅ 完了 |
 | 51 | **Localization (i18n)** | LanguageMap + **日本語表示**（AoE2 Wiki 用語）/ EN↔JA 切替 | ✅ 完了 |
-| 52 | View Layer Split | Simulation / View 分離 + uGUI Canvas シェル | ⬜ 未着手 |
+| 52 | View Layer Split | Simulation / View 分離 + uGUI Canvas シェル | ✅ 完了 |
 | 53 | HUD Migration | 資源・生産・選択パネルを uGUI へ（**i18n キー経由**） | ⬜ 未着手 |
 | 54 | Minimap | 俯瞰ミニマップ + TC / 主要建築アイコン | ⬜ 未着手 |
 | 55 | Unit Animation | Animator MVP（歩行・採集・攻撃） | ⬜ 未着手 |
@@ -94,14 +94,17 @@
 
 ---
 
-## Phase 52 — View Layer Split ⬜
+## Phase 52 — View Layer Split ✅
 
-**目的:** Manager 内 OnGUI を段階的に剥がす。
+**目的:** Manager 内ゴースト描画を View 層へ分離し、uGUI Canvas シェルを追加。
 
-- `IHudPresenter` / `ISelectionView` 等
-- **`IPlacementPreviewView`** — 単体ゴーストに加え **壁ドラッグ列プレビュー**（Phase 49 繰越）
-- Simulation Manager は View を直接参照しない
-- uGUI Canvas を Editor API 生成
+| 項目 | 実装 |
+|------|------|
+| API | `IPlacementPreviewView` + `PlacementPreviewState` DTO |
+| 実装 | `PlacementPreviewView` — セグメントプール |
+| 壁列ゴースト | ドラッグ中 `ShowWallLinePreview`（有効/無効・資源打ち切り） |
+| uGUI | `GameplayCanvas` + EventSystem + `HudRoot`（Phase 53 用） |
+| Editor | `AoE → Add View Layer (Phase52)` |
 
 **プロンプト:** [prompts/phase52-prompt.md](prompts/phase52-prompt.md)
 
@@ -111,9 +114,7 @@
 
 **移行対象:** `ResourceHudView`, `ProductionPanelView`, `SelectionInfoPanelView`, `IdleUnitHudView`, `VictoryDefeatHudView` — **Phase 51 LanguageMap 必須**
 
-**配置 UX（Phase 49 繰越）:** 壁・Gate 配置中の **ドラッグ列ゴースト**（有効/無効色・資源不足時の打ち切り表示）を uGUI / Preview View で実装。
-
-**プロンプト:** [prompts/phase53-prompt.md](prompts/phase53-prompt.md)（未作成）
+**プロンプト:** [prompts/phase53-prompt.md](prompts/phase53-prompt.md)
 
 ---
 
@@ -150,5 +151,5 @@
 
 1. M4 Phase 48 Play 確認完了
 2. **Phase 49 Wall & Gate** — gameplay 優先（UI 移行前）
-3. Phase 52 View Split → Phase 53 以降 Visual
+3. Phase 53 HUD Migration → Phase 54 以降 Visual
 4. **1 Phase ごと small diff**

@@ -144,4 +144,4 @@
 
 Phase 51 のみ。**Phase 52（View Split）・Phase 53（HUD Migration）には触れない** — ただし LanguageMap API は Phase 52〜53 がそのまま使える設計にすること。
 
-> **次:** [phase52-prompt.md](phase52-prompt.md) — View Layer Split
+> **次:** [phase52-prompt.md](phase52-prompt.md) — View Layer Split（完了） / [phase53-prompt.md](phase53-prompt.md) — HUD Migration

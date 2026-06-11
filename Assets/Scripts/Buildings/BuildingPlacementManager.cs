@@ -4,6 +4,7 @@ using AoE.RTS.Economy;
 using AoE.RTS.Input;
 using AoE.RTS.Selection;
 using AoE.RTS.Units;
+using AoE.RTS.View;
 using AoE.RTS.Visuals;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -49,6 +50,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] PlacedBuildingData lumberCampData;
         [SerializeField] PlacedBuildingData miningCampData;
         [SerializeField] PlacedBuildingData millData;
+        [SerializeField] MonoBehaviour placementPreviewViewHost;
 
         PlacedBuildingData activePlacementData;
 
@@ -56,12 +58,9 @@ namespace AoE.RTS.Buildings
         readonly List<Unit> stashedBuilders = new List<Unit>();
         readonly List<Unit> builderLookupBuffer = new List<Unit>();
         readonly List<Vector3> wallLineBuffer = new List<Vector3>();
+        readonly List<PlacementPreviewState> wallPreviewBuffer = new List<PlacementPreviewState>();
 
-        GameObject ghostObject;
-        Renderer ghostRenderer;
-        MaterialPropertyBlock ghostPropertyBlock;
         Vector3 ghostPosition;
-        bool ghostValid;
         bool isPlacementModeActive;
         int placementOpenedFrame = -1;
         int wallLineBuilderCursor;
@@ -182,7 +181,14 @@ namespace AoE.RTS.Buildings
                 mainCamera = UnityEngine.Camera.main;
             if (input == null)
                 input = FindAnyObjectByType<RTSInputReader>();
-            CreateGhost();
+        }
+
+        IPlacementPreviewView GetPreviewView()
+        {
+            if (placementPreviewViewHost != null && placementPreviewViewHost is IPlacementPreviewView hostedView)
+                return hostedView;
+
+            return PlacementPreviewViewRegistry.Current;
         }
 
         void OnDestroy()
@@ -191,9 +197,6 @@ namespace AoE.RTS.Buildings
                 instance = null;
 
             SimulationTick.Unregister(this);
-
-            if (ghostObject != null)
-                Destroy(ghostObject);
         }
 
         void Update()
@@ -239,8 +242,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterHousePlacementMode()
@@ -272,8 +274,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterArcheryRangePlacementMode(IReadOnlyList<Unit> builders)
@@ -300,8 +301,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterStablePlacementMode(IReadOnlyList<Unit> builders)
@@ -328,8 +328,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterBlacksmithPlacementMode(IReadOnlyList<Unit> builders)
@@ -356,8 +355,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterPalisadeWallPlacementMode(IReadOnlyList<Unit> builders)
@@ -478,8 +476,7 @@ namespace AoE.RTS.Buildings
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
             instance.wallDragTracking = false;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterFarmPlacementMode(IReadOnlyList<Unit> builders)
@@ -506,8 +503,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterLumberCampPlacementMode(IReadOnlyList<Unit> builders)
@@ -534,8 +530,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterMiningCampPlacementMode(IReadOnlyList<Unit> builders)
@@ -562,8 +557,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void EnterMillPlacementMode(IReadOnlyList<Unit> builders)
@@ -590,8 +584,7 @@ namespace AoE.RTS.Buildings
             instance.isPlacementModeActive = true;
             instance.placementOpenedFrame = Time.frameCount;
             instance.wallLineBuilderCursor = 0;
-            instance.ghostObject.SetActive(true);
-            instance.RefreshGhostFromPointer();
+            instance.RefreshPlacementPreview();
         }
 
         public static void CancelPlacementMode()
@@ -601,11 +594,11 @@ namespace AoE.RTS.Buildings
 
             instance.isPlacementModeActive = false;
             instance.activePlacementData = null;
-            instance.ghostObject.SetActive(false);
+            instance.wallDragTracking = false;
+            instance.GetPreviewView()?.HidePreview();
             instance.stashedBuilders.Clear();
             instance.placementOpenedFrame = -1;
             instance.wallLineBuilderCursor = 0;
-            instance.wallDragTracking = false;
         }
 
         public static bool TryConfirmPlacement(IReadOnlyList<Unit> builders)
@@ -971,10 +964,8 @@ namespace AoE.RTS.Buildings
                 return;
             }
 
-            RefreshGhostFromPointer();
-
-            if (IsWallKind(activePlacementData))
-                UpdateWallDragInput();
+            UpdateWallDragInput();
+            RefreshPlacementPreview();
         }
 
         void UpdateWallDragInput()
@@ -1006,17 +997,122 @@ namespace AoE.RTS.Buildings
                 TryConfirmAtGhostPosition(stashedBuilders);
         }
 
+        void RefreshPlacementPreview()
+        {
+            if (activePlacementData == null)
+                return;
+
+            if (IsWallKind(activePlacementData) && wallDragTracking)
+            {
+                RefreshWallLinePreviewFromDrag();
+                return;
+            }
+
+            RefreshGhostFromPointer();
+        }
+
+        void RefreshWallLinePreviewFromDrag()
+        {
+            IPlacementPreviewView previewView = GetPreviewView();
+            if (previewView == null || activePlacementData == null)
+                return;
+
+            if (!TryScreenToPlacementPosition(wallDragStartScreen, out Vector3 startWorld)
+                || !TryGetPointerPlacementPosition(out Vector3 endWorld))
+            {
+                previewView.HidePreview();
+                return;
+            }
+
+            WallPlacementUtility.GetWallLinePositions(
+                startWorld,
+                endWorld,
+                activePlacementData,
+                wallLineBuffer,
+                out float orientationY);
+
+            BuildWallPreviewStates(orientationY);
+            if (wallPreviewBuffer.Count == 0)
+            {
+                previewView.HidePreview();
+                return;
+            }
+
+            previewView.ShowWallLinePreview(wallPreviewBuffer);
+        }
+
+        void BuildWallPreviewStates(float orientationY)
+        {
+            wallPreviewBuffer.Clear();
+            if (activePlacementData == null)
+                return;
+
+            float simulatedWood = ResourceManager.Wood;
+            float simulatedStone = ResourceManager.Stone;
+            bool chainActive = true;
+
+            for (int i = 0; i < wallLineBuffer.Count; i++)
+            {
+                Vector3 snapped = SnapToFootprint(wallLineBuffer[i]);
+                bool valid = false;
+                if (chainActive)
+                {
+                    valid = WouldQueueWallSegmentAt(
+                        snapped,
+                        activePlacementData,
+                        ref simulatedWood,
+                        ref simulatedStone);
+                    if (!valid)
+                        chainActive = false;
+                }
+
+                wallPreviewBuffer.Add(new PlacementPreviewState(
+                    activePlacementData,
+                    snapped,
+                    orientationY,
+                    valid));
+            }
+        }
+
+        bool WouldQueueWallSegmentAt(
+            Vector3 snapped,
+            PlacedBuildingData placementData,
+            ref float simulatedWood,
+            ref float simulatedStone)
+        {
+            if (!GameSessionManager.CanBuild(placementData, UnitTeam.Player))
+                return false;
+
+            if (!CanPlaceBuildingAt(snapped, placementData))
+                return false;
+
+            float woodCost = placementData.ScaledWoodCost;
+            float stoneCost = placementData.ScaledStoneCost;
+            if (woodCost > simulatedWood || stoneCost > simulatedStone)
+                return false;
+
+            simulatedWood -= woodCost;
+            simulatedStone -= stoneCost;
+            return true;
+        }
+
         void RefreshGhostFromPointer()
         {
-            if (mainCamera == null || input == null || activePlacementData == null)
+            IPlacementPreviewView previewView = GetPreviewView();
+            if (previewView == null || mainCamera == null || input == null || activePlacementData == null)
                 return;
 
             if (!TryGetPointerPlacementPosition(out Vector3 placementPosition))
                 return;
 
             ghostPosition = placementPosition;
-            ghostValid = CanPlaceBuildingAt(ghostPosition, activePlacementData);
-            UpdateGhostVisual(activePlacementData, ghostPosition, ghostValid);
+            float orientationY = ResolveWallOrientationForPosition(ghostPosition, activePlacementData);
+            bool valid = CanPlaceBuildingAt(ghostPosition, activePlacementData);
+            previewView.ShowSinglePreview(new PlacementPreviewState(
+                activePlacementData,
+                ghostPosition,
+                orientationY,
+                valid));
         }
 
         bool TryGetPointerPlacementPosition(out Vector3 placementPosition)
@@ -1386,47 +1482,6 @@ namespace AoE.RTS.Buildings
             }
 
             return false;
-        }
-
-        void CreateGhost()
-        {
-            ghostObject = new GameObject("PlacementGhost");
-            ghostObject.layer = LayerMask.NameToLayer("Ignore Raycast");
-            ghostObject.SetActive(false);
-            ghostRenderer = null;
-        }
-
-        void UpdateGhostVisual(PlacedBuildingData data, Vector3 position, bool valid)
-        {
-            if (ghostObject == null || data == null)
-                return;
-
-            for (int i = ghostObject.transform.childCount - 1; i >= 0; i--)
-                Destroy(ghostObject.transform.GetChild(i).gameObject);
-
-            Vector3 fallbackScale = new Vector3(data.footprintWidth, data.buildingHeight, data.footprintDepth);
-            PlaceholderVisualKind kind = EntityVisualBuilder.GetBuildingVisualKind(data);
-            GameObject visual = EntityVisualBuilder.CreateGhostVisual(kind, fallbackScale);
-            visual.transform.SetParent(ghostObject.transform, false);
-            visual.transform.localPosition = Vector3.zero;
-
-            ghostObject.transform.position = new Vector3(
-                position.x,
-                data.buildingHeight * 0.5f + 0.05f,
-                position.z);
-
-            ghostRenderer = visual.GetComponentInChildren<Renderer>();
-            if (ghostRenderer == null)
-                return;
-
-            if (ghostPropertyBlock == null)
-                ghostPropertyBlock = new MaterialPropertyBlock();
-
-            Color color = valid ? data.ghostValidColor : data.ghostInvalidColor;
-            ghostRenderer.GetPropertyBlock(ghostPropertyBlock);
-            ghostPropertyBlock.SetColor("_BaseColor", color);
-            ghostPropertyBlock.SetColor("_Color", color);
-            ghostRenderer.SetPropertyBlock(ghostPropertyBlock);
         }
 
         GameObject CreateConstructionVisual(PlacedBuildingData data, Vector3 position)
