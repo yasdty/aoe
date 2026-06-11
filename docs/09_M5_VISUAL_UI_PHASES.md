@@ -127,7 +127,16 @@
 
 ## Phase 54 — Minimap ⬜
 
-**プロンプト:** [prompts/phase54-prompt.md](prompts/phase54-prompt.md)（未作成）
+**目的:** 俯瞰ミニマップで両 TC 位置を把握。カメラ視野表示 + クリック移動 MVP。
+
+| 項目 | MVP |
+|------|-----|
+| 表示 | RawImage + TC アイコン（Player / Enemy） |
+| 位置 | 右上 uGUI（CpuHudView と重ならない） |
+| 座標 | `MapBounds` — Phase10 地面 AABB |
+| 操作 | クリックでカメラ focus 移動 |
+
+**プロンプト:** [prompts/phase54-prompt.md](prompts/phase54-prompt.md)
 
 ---
 
