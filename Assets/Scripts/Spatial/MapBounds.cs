@@ -5,6 +5,7 @@ namespace AoE.RTS.Spatial
     /// <summary>
     /// Phase10 地面 AABB — ワールド XZ ↔ ミニマップ UV の単一真実源。
     /// Unity Plane 10×10、scale (18,1,18)、position (0,0,-30) → X:-90..90, Z:-120..60。
+    /// 4人 FFA: scale (24,1,24)、position (0,0,0) → X:-120..120, Z:-120..120。
     /// </summary>
     public static class MapBounds
     {
@@ -14,6 +15,16 @@ namespace AoE.RTS.Spatial
         public const float Phase10MaxX = 90f;
         public const float Phase10MinZ = -120f;
         public const float Phase10MaxZ = 60f;
+
+        public const float FourPlayerMinX = -120f;
+        public const float FourPlayerMaxX = 120f;
+        public const float FourPlayerMinZ = -120f;
+        public const float FourPlayerMaxZ = 120f;
+
+        /// <summary>RTSCamera の startYaw と同値。ミニマップをゲーム画面の菱形に合わせる。</summary>
+        public const float MinimapRotationDegrees = -45f;
+
+        public static float MinimapDisplayScale => 1f / Mathf.Sqrt(2f);
 
         static float minX = Phase10MinX;
         static float maxX = Phase10MaxX;

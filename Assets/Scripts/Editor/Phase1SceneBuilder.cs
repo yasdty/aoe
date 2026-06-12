@@ -1650,7 +1650,7 @@ namespace AoE.RTS.EditorTools
 
             FoodNodeData data = ScriptableObject.CreateInstance<FoodNodeData>();
             data.displayName = "Berry Bush";
-            data.initialFood = 250f;
+            data.initialFood = 125f;
             AssetDatabase.CreateAsset(data, DefaultBerryBushDataPath);
             AssetDatabase.SaveAssets();
             return data;

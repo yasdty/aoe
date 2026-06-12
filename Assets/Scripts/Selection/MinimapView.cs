@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
 using AoE.RTS.Camera;
+using AoE.RTS.Core;
 using AoE.RTS.Spatial;
 using AoE.RTS.Units;
 using UnityEngine;
@@ -20,24 +21,18 @@ namespace AoE.RTS.Selection
         public static void Collect(List<Entry> buffer)
         {
             buffer.Clear();
-
-            TownCenter playerTownCenter = ProductionManager.GetTownCenterForTeam(UnitTeam.Player);
-            if (playerTownCenter != null)
+            IReadOnlyList<PlayerId> players = MatchSettings.ActivePlayers;
+            for (int i = 0; i < players.Count; i++)
             {
+                PlayerId playerId = players[i];
+                TownCenter townCenter = ProductionManager.GetTownCenterForPlayer(playerId);
+                if (townCenter == null)
+                    continue;
+
                 buffer.Add(new Entry
                 {
-                    transform = playerTownCenter.transform,
-                    color = new Color(0.25f, 0.55f, 1f, 1f)
-                });
-            }
-
-            TownCenter enemyTownCenter = ProductionManager.GetTownCenterForTeam(UnitTeam.Enemy);
-            if (enemyTownCenter != null)
-            {
-                buffer.Add(new Entry
-                {
-                    transform = enemyTownCenter.transform,
-                    color = new Color(1f, 0.3f, 0.3f, 1f)
+                    transform = townCenter.transform,
+                    color = MinimapView.GetPlayerColor(playerId)
                 });
             }
         }
@@ -55,6 +50,11 @@ namespace AoE.RTS.Selection
         static readonly Color MapBackgroundColor = new Color(0.12f, 0.28f, 0.12f, 0.95f);
         static readonly Color ViewportFillColor = new Color(1f, 1f, 0.35f, 0.18f);
 
+        static readonly Color Player0Color = new Color(0.25f, 0.55f, 1f, 1f);
+        static readonly Color Player1Color = new Color(1f, 0.3f, 0.3f, 1f);
+        static readonly Color Player2Color = new Color(1f, 0.65f, 0.2f, 1f);
+        static readonly Color Player3Color = new Color(0.75f, 0.35f, 1f, 1f);
+
         [SerializeField] UnityEngine.Camera mainCamera;
         [SerializeField] RTSCameraController cameraController;
 
@@ -62,11 +62,22 @@ namespace AoE.RTS.Selection
         RectTransform mapRect;
         RectTransform iconsRoot;
         RectTransform viewportRect;
-        Image playerIcon;
-        Image enemyIcon;
+        readonly List<Image> townCenterIcons = new List<Image>();
         MinimapClickHandler clickHandler;
         bool uiBuilt;
         static Texture2D solidTexture;
+
+        public static Color GetPlayerColor(PlayerId playerId)
+        {
+            return playerId switch
+            {
+                PlayerId.Player0 => Player0Color,
+                PlayerId.Player1 => Player1Color,
+                PlayerId.Player2 => Player2Color,
+                PlayerId.Player3 => Player3Color,
+                _ => Color.white
+            };
+        }
 
         void Awake()
         {
@@ -131,6 +142,8 @@ namespace AoE.RTS.Selection
             mapObject.transform.SetParent(mapHost, false);
             mapRect = mapObject.GetComponent<RectTransform>();
             HudUiFactory.SetStretchFull(mapRect);
+            mapRect.localRotation = Quaternion.Euler(0f, 0f, MapBounds.MinimapRotationDegrees);
+            mapRect.localScale = Vector3.one * MapBounds.MinimapDisplayScale;
 
             RawImage mapImage = mapObject.AddComponent<RawImage>();
             mapImage.texture = GetSolidTexture(MapBackgroundColor);
@@ -140,9 +153,6 @@ namespace AoE.RTS.Selection
             iconsObject.transform.SetParent(mapRect, false);
             iconsRoot = iconsObject.GetComponent<RectTransform>();
             HudUiFactory.SetStretchFull(iconsRoot);
-
-            playerIcon = CreateIcon(iconsRoot, "PlayerTcIcon", new Color(0.25f, 0.55f, 1f, 1f));
-            enemyIcon = CreateIcon(iconsRoot, "EnemyTcIcon", new Color(1f, 0.3f, 0.3f, 1f));
 
             GameObject viewportObject = new GameObject("CameraViewport", typeof(RectTransform));
             viewportObject.transform.SetParent(iconsRoot, false);
@@ -157,7 +167,7 @@ namespace AoE.RTS.Selection
             uiBuilt = true;
         }
 
-        static Image CreateIcon(Transform parent, string name, Color color)
+        static Image CreateIcon(Transform parent, string name)
         {
             GameObject iconObject = new GameObject(name, typeof(RectTransform));
             iconObject.transform.SetParent(parent, false);
@@ -165,32 +175,39 @@ namespace AoE.RTS.Selection
             iconRect.pivot = new Vector2(0.5f, 0.5f);
             iconRect.sizeDelta = new Vector2(IconSize, IconSize);
             Image image = iconObject.AddComponent<Image>();
-            image.color = color;
             image.raycastTarget = false;
             return image;
         }
 
-        void UpdateIcons()
+        void EnsureIconPool(int requiredCount)
         {
-            UpdateTeamIcon(playerIcon, UnitTeam.Player, new Color(0.25f, 0.55f, 1f, 1f));
-            UpdateTeamIcon(enemyIcon, UnitTeam.Enemy, new Color(1f, 0.3f, 0.3f, 1f));
+            while (townCenterIcons.Count < requiredCount)
+                townCenterIcons.Add(CreateIcon(iconsRoot, $"TcIcon_{townCenterIcons.Count}"));
+
+            for (int i = 0; i < townCenterIcons.Count; i++)
+                townCenterIcons[i].gameObject.SetActive(i < requiredCount);
         }
 
-        static void UpdateTeamIcon(Image icon, UnitTeam team, Color color)
+        void UpdateIcons()
         {
-            if (icon == null)
-                return;
+            IReadOnlyList<PlayerId> players = MatchSettings.ActivePlayers;
+            EnsureIconPool(players.Count);
 
-            TownCenter townCenter = ProductionManager.GetTownCenterForTeam(team);
-            if (townCenter == null)
+            for (int i = 0; i < players.Count; i++)
             {
-                icon.gameObject.SetActive(false);
-                return;
-            }
+                Image icon = townCenterIcons[i];
+                PlayerId playerId = players[i];
+                TownCenter townCenter = ProductionManager.GetTownCenterForPlayer(playerId);
+                if (townCenter == null)
+                {
+                    icon.gameObject.SetActive(false);
+                    continue;
+                }
 
-            icon.gameObject.SetActive(true);
-            icon.color = color;
-            SetIconNormalizedPosition(icon.rectTransform, MapBounds.WorldToNormalized01(townCenter.transform.position));
+                icon.gameObject.SetActive(true);
+                icon.color = GetPlayerColor(playerId);
+                SetIconNormalizedPosition(icon.rectTransform, MapBounds.WorldToNormalized01(townCenter.transform.position));
+            }
         }
 
         static void SetIconNormalizedPosition(RectTransform iconRect, Vector2 normalized01)

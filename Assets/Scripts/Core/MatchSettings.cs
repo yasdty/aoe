@@ -10,8 +10,7 @@ namespace AoE.RTS.Core
 
     public static class MatchSettings
     {
-        static readonly PlayerId[] OneVsOnePlayers = { PlayerId.Player0, PlayerId.Player1 };
-        static readonly PlayerId[] FourPlayerPlayers =
+        static readonly PlayerId[] AllPlayers =
         {
             PlayerId.Player0,
             PlayerId.Player1,
@@ -19,15 +18,40 @@ namespace AoE.RTS.Core
             PlayerId.Player3
         };
 
+        static readonly PlayerId[] ActivePlayerBuffer = new PlayerId[4];
+
         public static MatchMode Mode =>
             GameSessionManager.Instance != null
                 ? GameSessionManager.Instance.MatchMode
                 : MatchMode.FourPlayerFfa;
 
+        public static int ActivePlayerCount
+        {
+            get
+            {
+                if (Mode == MatchMode.OneVsOneCpu)
+                    return 2;
+
+                if (GameSessionManager.Instance != null)
+                    return GameSessionManager.Instance.FfaPlayerCount;
+
+                return 4;
+            }
+        }
+
         public static bool IsCpu(PlayerId id) => id != PlayerId.Player0;
 
-        public static IReadOnlyList<PlayerId> ActivePlayers =>
-            Mode == MatchMode.FourPlayerFfa ? FourPlayerPlayers : OneVsOnePlayers;
+        public static IReadOnlyList<PlayerId> ActivePlayers
+        {
+            get
+            {
+                int count = ActivePlayerCount;
+                for (int i = 0; i < count; i++)
+                    ActivePlayerBuffer[i] = AllPlayers[i];
+
+                return new System.ArraySegment<PlayerId>(ActivePlayerBuffer, 0, count);
+            }
+        }
 
         public static bool IsActivePlayer(PlayerId id)
         {

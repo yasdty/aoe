@@ -25,6 +25,7 @@ namespace AoE.RTS.Core
         static readonly bool[] playerEliminated = new bool[PlayerCount];
 
         [SerializeField] MatchMode matchMode = MatchMode.FourPlayerFfa;
+        [SerializeField] int ffaPlayerCount = 4;
         [SerializeField] GameplayBalanceMode balanceMode = GameplayBalanceMode.Debug;
         [SerializeField] CpuAttackPace cpuAttackPace = CpuAttackPace.Relaxed;
         [SerializeField] AgeData feudalAgeData;
@@ -35,6 +36,7 @@ namespace AoE.RTS.Core
 
         public static GameSessionManager Instance => instance;
         public MatchMode MatchMode => matchMode;
+        public int FfaPlayerCount => Mathf.Clamp(ffaPlayerCount, 2, 4);
 
         public static MatchState State => staticState;
         public static bool IsGameOver => staticState != MatchState.Playing;

@@ -9,11 +9,13 @@ namespace AoE.RTS.Economy
         const int PlayerCount = 4;
         const float ClassicStartFood = 200f;
         const float ClassicStartWood = 200f;
+        const float ClassicStartGold = 100f;
 
         static ResourceManager instance;
 
         [SerializeField] float initialFoodPerPlayer = ClassicStartFood;
         [SerializeField] float initialWoodPerPlayer = ClassicStartWood;
+        [SerializeField] float initialGoldPerPlayer = ClassicStartGold;
 
         readonly float[] wood = new float[PlayerCount];
         readonly float[] food = new float[PlayerCount];
@@ -32,6 +34,7 @@ namespace AoE.RTS.Economy
             {
                 food[i] = initialFoodPerPlayer;
                 wood[i] = initialWoodPerPlayer;
+                gold[i] = initialGoldPerPlayer;
             }
         }
 

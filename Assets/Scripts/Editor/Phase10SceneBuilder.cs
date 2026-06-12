@@ -24,6 +24,7 @@ namespace AoE.RTS.EditorTools
     public static class Phase10SceneBuilder
     {
         const string ScenePath = "Assets/Scenes/Phase10.unity";
+        const string FfaPlayerCountEditorPrefsKey = "AoE.Phase10.FfaPlayerCount";
         const float DefaultAttackWaveIntervalSeconds = 30f;
         const float DefaultBarracksBuildDelaySeconds = 60f;
         const float DefaultRelaxedFirstAttackGraceSeconds = 120f;
@@ -34,37 +35,109 @@ namespace AoE.RTS.EditorTools
         static readonly Vector3 CpuTownCenterPosition = new Vector3(0f, 0f, -60f);
         static readonly Vector3 CameraFocus = new Vector3(0f, 0f, -30f);
         static readonly Vector3 FourPlayerCameraFocus = new Vector3(0f, 0f, 0f);
+        static readonly Vector3 FourPlayerGroundScale = new Vector3(24f, 1f, 24f);
+        static readonly Vector3 FourPlayerGroundPosition = Vector3.zero;
+        const float FourPlayerSpawnInset = 72f;
 
         static readonly Vector3[] FourPlayerTownCenterPositions =
         {
-            new Vector3(-80f, 0f, -80f),
-            new Vector3(80f, 0f, 80f),
-            new Vector3(-80f, 0f, 80f),
-            new Vector3(80f, 0f, -80f)
+            new Vector3(-FourPlayerSpawnInset, 0f, -FourPlayerSpawnInset),
+            new Vector3(FourPlayerSpawnInset, 0f, FourPlayerSpawnInset),
+            new Vector3(-FourPlayerSpawnInset, 0f, FourPlayerSpawnInset),
+            new Vector3(FourPlayerSpawnInset, 0f, -FourPlayerSpawnInset)
         };
 
+        /// <summary>2人=SW vs NE、3人=SE なし、4人=全隅。</summary>
+        static readonly int[][] FfaCornerIndicesByPlayerCount =
+        {
+            null,
+            null,
+            new[] { 0, 1 },
+            new[] { 0, 1, 2 },
+            new[] { 0, 1, 2, 3 }
+        };
+
+        /// <summary>+X/+Z は常にマップ中心方向（各隅で MirrorStartOffset）。</summary>
         static readonly Vector3[] VillagerSpawnOffsets =
         {
-            new Vector3(-5f, 1f, 5f),
-            new Vector3(5f, 1f, 5f),
-            new Vector3(0f, 1f, 8f)
+            new Vector3(4f, 1f, 8f),
+            new Vector3(8f, 1f, 4f),
+            new Vector3(6f, 1f, 10f)
         };
 
-        static readonly Vector3[] CornerTreeOffsets =
-        {
-            new Vector3(12f, 0f, 8f),
-            new Vector3(-10f, 0f, 10f),
-            new Vector3(8f, 0f, -6f),
-            new Vector3(-8f, 0f, -8f),
-            new Vector3(14f, 0f, 4f)
-        };
-
-        static readonly Vector3[] CornerBerryOffsets =
+        /// <summary>AoE2 標準: 6 Berry（Player0 基準オフセット、各隅でミラー）。</summary>
+        static readonly Vector3[] AoE2BerryOffsets =
         {
             new Vector3(10f, 0f, 6f),
             new Vector3(-8f, 0f, 8f),
-            new Vector3(6f, 0f, -6f)
+            new Vector3(6f, 0f, -6f),
+            new Vector3(12f, 0f, 4f),
+            new Vector3(-10f, 0f, 5f),
+            new Vector3(4f, 0f, 10f)
         };
+
+        /// <summary>AoE2 標準: 8 Sheep。</summary>
+        static readonly Vector3[] AoE2SheepOffsets =
+        {
+            new Vector3(-2f, 0f, 10f),
+            new Vector3(9f, 0f, 3f),
+            new Vector3(-4f, 0f, 12f),
+            new Vector3(6f, 0f, 11f),
+            new Vector3(-8f, 0f, 8f),
+            new Vector3(11f, 0f, 6f),
+            new Vector3(2f, 0f, 14f),
+            new Vector3(-6f, 0f, 14f)
+        };
+
+        /// <summary>AoE2 標準: 2 Boar。</summary>
+        static readonly Vector3[] AoE2BoarOffsets =
+        {
+            new Vector3(4f, 0f, 11f),
+            new Vector3(-4f, 0f, 9f)
+        };
+
+        /// <summary>AoE2 標準: Gold×2 / Stone×2。</summary>
+        static readonly Vector3[] AoE2GoldMineOffsets =
+        {
+            new Vector3(16f, 0f, 12f),
+            new Vector3(20f, 0f, 18f)
+        };
+
+        static readonly Vector3[] AoE2StoneMineOffsets =
+        {
+            new Vector3(-16f, 0f, 12f),
+            new Vector3(-20f, 0f, 18f)
+        };
+
+        /// <summary>AoE2 標準: 3 森クラスター × 5 本（100 Wood/本）。</summary>
+        static readonly Vector3[][] AoE2TreeClumpOffsets =
+        {
+            new[]
+            {
+                new Vector3(10f, 0f, 8f),
+                new Vector3(12f, 0f, 10f),
+                new Vector3(8f, 0f, 10f),
+                new Vector3(14f, 0f, 8f),
+                new Vector3(10f, 0f, 12f)
+            },
+            new[]
+            {
+                new Vector3(18f, 0f, 2f),
+                new Vector3(20f, 0f, 4f),
+                new Vector3(16f, 0f, 4f),
+                new Vector3(22f, 0f, 0f),
+                new Vector3(18f, 0f, -2f)
+            },
+            new[]
+            {
+                new Vector3(-12f, 0f, 6f),
+                new Vector3(-14f, 0f, 8f),
+                new Vector3(-10f, 0f, 8f),
+                new Vector3(-16f, 0f, 4f),
+                new Vector3(-12f, 0f, 10f)
+            }
+        };
+
         static readonly Vector3 SandboxGroundScale = new Vector3(18f, 1f, 18f);
         static readonly Vector3 SandboxGroundPosition = new Vector3(0f, 0f, -30f);
 
@@ -272,15 +345,20 @@ namespace AoE.RTS.EditorTools
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             Phase1SceneBuilder.CreateLighting();
-            CreateSandboxGround();
+            bool fourPlayerFfa = ShouldBuildFourPlayerFfa();
+            CreateSandboxGround(fourPlayerFfa);
             GameObject playerTownCenter;
-            if (ShouldBuildFourPlayerFfa())
+            if (fourPlayerFfa)
             {
                 playerTownCenter = CreateFourPlayerMatch(
                     townCenterData,
                     villagerData,
                     treeData,
-                    berryBushData);
+                    berryBushData,
+                    sheepData,
+                    boarData,
+                    goldMineData,
+                    stoneMineData);
             }
             else
             {
@@ -1115,17 +1193,52 @@ namespace AoE.RTS.EditorTools
 
         static bool ShouldBuildFourPlayerFfa() => true;
 
+        static int GetFfaPlayerCount() =>
+            Mathf.Clamp(EditorPrefs.GetInt(FfaPlayerCountEditorPrefsKey, 4), 2, 4);
+
+        static void SetFfaPlayerCount(int count)
+        {
+            int clamped = Mathf.Clamp(count, 2, 4);
+            EditorPrefs.SetInt(FfaPlayerCountEditorPrefsKey, clamped);
+            Debug.Log($"Phase10 FFA player count → {clamped}. Run AoE → Setup Phase10 Scene to rebuild spawns.");
+        }
+
+        [MenuItem("AoE/Match/FFA Player Count/2 Players (Diagonal)")]
+        static void SetFfaPlayerCount2() => SetFfaPlayerCount(2);
+
+        [MenuItem("AoE/Match/FFA Player Count/2 Players (Diagonal)", true)]
+        static bool ValidateFfaPlayerCount2() => GetFfaPlayerCount() == 2;
+
+        [MenuItem("AoE/Match/FFA Player Count/3 Players")]
+        static void SetFfaPlayerCount3() => SetFfaPlayerCount(3);
+
+        [MenuItem("AoE/Match/FFA Player Count/3 Players", true)]
+        static bool ValidateFfaPlayerCount3() => GetFfaPlayerCount() == 3;
+
+        [MenuItem("AoE/Match/FFA Player Count/4 Players")]
+        static void SetFfaPlayerCount4() => SetFfaPlayerCount(4);
+
+        [MenuItem("AoE/Match/FFA Player Count/4 Players", true)]
+        static bool ValidateFfaPlayerCount4() => GetFfaPlayerCount() == 4;
+
         static GameObject CreateFourPlayerMatch(
             BuildingData townCenterData,
             UnitData villagerData,
             ResourceNodeData treeData,
-            FoodNodeData berryBushData)
+            FoodNodeData berryBushData,
+            FoodNodeData sheepData,
+            FoodNodeData boarData,
+            MineralNodeData goldMineData,
+            MineralNodeData stoneMineData)
         {
+            int playerCount = GetFfaPlayerCount();
+            int[] cornerIndices = FfaCornerIndicesByPlayerCount[playerCount];
             GameObject playerTownCenter = null;
-            for (int i = 0; i < FourPlayerTownCenterPositions.Length; i++)
+            for (int i = 0; i < playerCount; i++)
             {
                 PlayerId playerId = (PlayerId)i;
-                Vector3 tcPosition = FourPlayerTownCenterPositions[i];
+                int cornerIndex = cornerIndices[i];
+                Vector3 tcPosition = FourPlayerTownCenterPositions[cornerIndex];
                 GameObject townCenterObject = Phase1SceneBuilder.CreateTownCenter(townCenterData, tcPosition);
                 TownCenter townCenter = townCenterObject.GetComponent<TownCenter>();
                 townCenter.SetOwner(playerId);
@@ -1135,26 +1248,96 @@ namespace AoE.RTS.EditorTools
 
                 Vector3[] villagerPositions = new Vector3[VillagerSpawnOffsets.Length];
                 for (int v = 0; v < VillagerSpawnOffsets.Length; v++)
-                    villagerPositions[v] = tcPosition + VillagerSpawnOffsets[v];
+                {
+                    villagerPositions[v] = tcPosition
+                        + MirrorStartOffset(VillagerSpawnOffsets[v], cornerIndex);
+                }
 
                 CreateStartingVillagersForPlayer(villagerData, villagerPositions, playerId);
-                CreateCornerTrees(treeData, tcPosition);
-                CreateCornerBerryBushes(berryBushData, tcPosition);
+                CreateAoE2StartResourcesForCorner(
+                    cornerIndex,
+                    tcPosition,
+                    treeData,
+                    berryBushData,
+                    sheepData,
+                    boarData,
+                    goldMineData,
+                    stoneMineData);
             }
 
+            ResetAllSheepToNeutral();
             return playerTownCenter;
         }
 
-        static void CreateCornerTrees(ResourceNodeData treeData, Vector3 tcPosition)
+        static Vector3 MirrorStartOffset(Vector3 offset, int cornerIndex)
         {
-            for (int i = 0; i < CornerTreeOffsets.Length; i++)
-                Phase1SceneBuilder.CreateTree(treeData, tcPosition + CornerTreeOffsets[i]);
+            float x = offset.x;
+            float z = offset.z;
+            return cornerIndex switch
+            {
+                0 => offset,
+                1 => new Vector3(-x, offset.y, -z),
+                2 => new Vector3(x, offset.y, -z),
+                3 => new Vector3(-x, offset.y, z),
+                _ => offset
+            };
         }
 
-        static void CreateCornerBerryBushes(FoodNodeData berryBushData, Vector3 tcPosition)
+        static void CreateAoE2StartResourcesForCorner(
+            int cornerIndex,
+            Vector3 tcPosition,
+            ResourceNodeData treeData,
+            FoodNodeData berryBushData,
+            FoodNodeData sheepData,
+            FoodNodeData boarData,
+            MineralNodeData goldMineData,
+            MineralNodeData stoneMineData)
         {
-            for (int i = 0; i < CornerBerryOffsets.Length; i++)
-                Phase1SceneBuilder.CreateBerryBush(berryBushData, tcPosition + CornerBerryOffsets[i]);
+            for (int c = 0; c < AoE2TreeClumpOffsets.Length; c++)
+            {
+                Vector3[] clump = AoE2TreeClumpOffsets[c];
+                for (int t = 0; t < clump.Length; t++)
+                {
+                    Phase1SceneBuilder.CreateTree(
+                        treeData,
+                        tcPosition + MirrorStartOffset(clump[t], cornerIndex));
+                }
+            }
+
+            for (int b = 0; b < AoE2BerryOffsets.Length; b++)
+            {
+                Phase1SceneBuilder.CreateBerryBush(
+                    berryBushData,
+                    tcPosition + MirrorStartOffset(AoE2BerryOffsets[b], cornerIndex));
+            }
+
+            for (int s = 0; s < AoE2SheepOffsets.Length; s++)
+            {
+                Phase1SceneBuilder.CreateSheep(
+                    sheepData,
+                    tcPosition + MirrorStartOffset(AoE2SheepOffsets[s], cornerIndex));
+            }
+
+            for (int b = 0; b < AoE2BoarOffsets.Length; b++)
+            {
+                Phase1SceneBuilder.CreateBoar(
+                    boarData,
+                    tcPosition + MirrorStartOffset(AoE2BoarOffsets[b], cornerIndex));
+            }
+
+            for (int g = 0; g < AoE2GoldMineOffsets.Length; g++)
+            {
+                Phase1SceneBuilder.CreateGoldMine(
+                    goldMineData,
+                    tcPosition + MirrorStartOffset(AoE2GoldMineOffsets[g], cornerIndex));
+            }
+
+            for (int s = 0; s < AoE2StoneMineOffsets.Length; s++)
+            {
+                Phase1SceneBuilder.CreateStoneMine(
+                    stoneMineData,
+                    tcPosition + MirrorStartOffset(AoE2StoneMineOffsets[s], cornerIndex));
+            }
         }
 
         static GameObject CreateCpuTownCenter(BuildingData townCenterData)
@@ -1335,11 +1518,19 @@ namespace AoE.RTS.EditorTools
             ResetAllSheepToNeutral();
         }
 
-        static void CreateSandboxGround()
+        static void CreateSandboxGround(bool fourPlayerFfa)
         {
             GameObject ground = Phase1SceneBuilder.CreateGround();
-            ground.transform.localScale = SandboxGroundScale;
-            ground.transform.position = SandboxGroundPosition;
+            if (fourPlayerFfa)
+            {
+                ground.transform.localScale = FourPlayerGroundScale;
+                ground.transform.position = FourPlayerGroundPosition;
+            }
+            else
+            {
+                ground.transform.localScale = SandboxGroundScale;
+                ground.transform.position = SandboxGroundPosition;
+            }
         }
 
         static void CreateBoars(FoodNodeData boarData)
@@ -1401,6 +1592,7 @@ namespace AoE.RTS.EditorTools
             SerializedObject serializedSession = new SerializedObject(sessionManager);
             serializedSession.FindProperty("matchMode").enumValueIndex =
                 ShouldBuildFourPlayerFfa() ? (int)MatchMode.FourPlayerFfa : (int)MatchMode.OneVsOneCpu;
+            serializedSession.FindProperty("ffaPlayerCount").intValue = GetFfaPlayerCount();
             serializedSession.FindProperty("balanceMode").enumValueIndex = (int)GameplayBalanceMode.Debug;
             serializedSession.FindProperty("cpuAttackPace").enumValueIndex = (int)CpuAttackPace.Relaxed;
             serializedSession.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
@@ -1510,6 +1702,7 @@ namespace AoE.RTS.EditorTools
             SerializedObject serializedResourceManager = new SerializedObject(resourceManager);
             serializedResourceManager.FindProperty("initialFoodPerPlayer").floatValue = 200f;
             serializedResourceManager.FindProperty("initialWoodPerPlayer").floatValue = 200f;
+            serializedResourceManager.FindProperty("initialGoldPerPlayer").floatValue = 100f;
             serializedResourceManager.ApplyModifiedPropertiesWithoutUndo();
 
             GameObject gatherManagerObject = new GameObject("GatherManager");
@@ -1539,12 +1732,20 @@ namespace AoE.RTS.EditorTools
             CpuMilitaryAiManager cpuMilitary = null;
             if (ShouldBuildFourPlayerFfa())
             {
-                cpuEconomy = CreateCpuEconomyAi(systems.transform, PlayerId.Player1, houseData, millData);
-                CreateCpuEconomyAi(systems.transform, PlayerId.Player2, houseData, millData);
-                CreateCpuEconomyAi(systems.transform, PlayerId.Player3, houseData, millData);
-                cpuMilitary = CreateCpuMilitaryAi(systems.transform, PlayerId.Player1, barracksData, archeryRangeData, stableData);
-                CreateCpuMilitaryAi(systems.transform, PlayerId.Player2, barracksData, archeryRangeData, stableData);
-                CreateCpuMilitaryAi(systems.transform, PlayerId.Player3, barracksData, archeryRangeData, stableData);
+                int ffaPlayerCount = GetFfaPlayerCount();
+                for (int cpu = 1; cpu < ffaPlayerCount; cpu++)
+                {
+                    PlayerId cpuId = (PlayerId)cpu;
+                    if (cpuEconomy == null)
+                        cpuEconomy = CreateCpuEconomyAi(systems.transform, cpuId, houseData, millData);
+                    else
+                        CreateCpuEconomyAi(systems.transform, cpuId, houseData, millData);
+
+                    if (cpuMilitary == null)
+                        cpuMilitary = CreateCpuMilitaryAi(systems.transform, cpuId, barracksData, archeryRangeData, stableData);
+                    else
+                        CreateCpuMilitaryAi(systems.transform, cpuId, barracksData, archeryRangeData, stableData);
+                }
             }
             else
             {
