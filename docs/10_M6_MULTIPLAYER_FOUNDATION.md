@@ -11,10 +11,10 @@
 
 | 旧 M6 | 新方針 |
 |-------|--------|
-| Phase 59 決定論を最優先 | **Phase 66** に後ろ倒し（LAN 直前まで不要） |
+| Phase 59 決定論を最優先 | **Phase 67** に後ろ倒し（LAN 直前まで不要） |
 | Phase 60 リプレイ | **後回し（オプション）** — 現プロジェクトでは不要 |
 | Phase 61 ホットシート | **後回し（オプション）** — 現プロジェクトでは不要 |
-| 1v1 CPU のみ | **Phase 59〜65** で **4人・2v2・大マップ・Fog** を追加 |
+| 1v1 CPU のみ | **Phase 59〜66** で **4人・2v2・大マップ・Fog** を追加 |
 | Fog 直前にゲームプレイ不足 | **Phase 62〜64** で **敵 HP 表示・建物修理・複数 Villager 建設** を挿入 |
 
 **プレイ目標（M6 完了時）:**
@@ -34,14 +34,15 @@
 ```
 57 Entity ID & PlayerId     … 4 プレイヤー枠・Entity 参照の土台 ✅
 58 CPU Command Queue        … CPU×3 を同一 Command パイプラインへ ✅
-59 Four-Player Match        … 1 人間 + CPU 3・マッチ設定・4 隅スポーン
-60 Team & 2v2               … 同盟チーム・味方攻撃不可・2v2 勝利条件
-61 Large Map                … 地面拡大・資源配置・カメラ/ミニマップ
-62 Enemy HP Display         … 敵ユニット・敵建物の選択と HP 表示
-63 Building Repair          … Villager 修理コマンド・木材コスト
-64 Multi-Villager Build     … 同一サイト複数 builder・建築速度スケール
-65 Fog of War               … VisionManager・未探索/霧表示
-66 Deterministic Sim        … LAN 直前（任意タイミングで実施可）
+59 Four-Player Match        … 1 人間 + CPU 3・マッチ設定・4 隅スポーン ✅
+60 CPU Difficulty System    … Easy/Normal/Hard/Hardest・遅延キュー・軍量攻撃
+61 Team & 2v2               … 同盟チーム・味方攻撃不可・2v2 勝利条件
+62 Large Map                … 地面拡大・資源配置・カメラ/ミニマップ
+63 Enemy HP Display         … 敵ユニット・敵建物の選択と HP 表示
+64 Building Repair          … Villager 修理コマンド・木材コスト
+65 Multi-Villager Build     … 同一サイト複数 builder・建築速度スケール
+66 Fog of War               … VisionManager・未探索/霧表示
+67 Deterministic Sim        … LAN 直前（任意タイミングで実施可）
 ```
 
 **スキップ（オプション・M6 完了条件外）:** 旧 Phase 60 リプレイ / 旧 Phase 61 ホットシート / 本格オンライン（M9 以降）
@@ -55,13 +56,14 @@
 | 57 | Entity ID & PlayerId | int Entity ID / `PlayerId` 0〜3 | ✅ 完了 |
 | 58 | CPU Command Queue | CPU AI を `IGameCommand` 経由に統一 | ✅ 完了 |
 | 59 | Four-Player Match | 人間1 + CPU3・マッチ設定・4 隅 TC / 資源 per Player | ✅ 完了 |
-| 60 | Team & 2v2 | `TeamId` / 同盟・人間+CPU vs CPU×2 | ⬜ 未着手 — **次** |
-| 61 | Large Map | 大型地面・`MapBounds`・スポーン・カメラ範囲 | ⬜ 未着手 |
-| 62 | Enemy HP Display | 敵ユニット・敵建物の選択と HP 表示 | ⬜ 未着手 |
-| 63 | Building Repair | Villager による建物修理（木材消費） | ⬜ 未着手 |
-| 64 | Multi-Villager Build | 同一建設現場に複数 Villager・速度加速 | ⬜ 未着手 |
-| 65 | Fog of War | `VisionManager` + ミニマップ/ワールド未視認 | ⬜ 未着手 |
-| 66 | Deterministic Sim | Tick 順固定・RNG・float 削減（LAN 準備） | ⬜ 未着手 |
+| 60 | CPU Difficulty System | Easy〜Hardest・`CpuAiActionQueue`・軍量ベース攻撃 | ✅ 完了 |
+| 61 | Team & 2v2 | `TeamId` / 同盟・人間+CPU vs CPU×2 | ⬜ 未着手 — **次** |
+| 62 | Large Map | 大型地面・`MapBounds`・スポーン・カメラ範囲 | ⬜ 未着手 |
+| 63 | Enemy HP Display | 敵ユニット・敵建物の選択と HP 表示 | ⬜ 未着手 |
+| 64 | Building Repair | Villager による建物修理（木材消費） | ⬜ 未着手 |
+| 65 | Multi-Villager Build | 同一建設現場に複数 Villager・速度加速 | ⬜ 未着手 |
+| 66 | Fog of War | `VisionManager` + ミニマップ/ワールド未視認 | ⬜ 未着手 |
+| 67 | Deterministic Sim | Tick 順固定・RNG・float 削減（LAN 準備） | ⬜ 未着手 |
 
 ---
 
@@ -108,7 +110,24 @@
 
 ---
 
-## Phase 60 — Team & 2v2 ⬜
+## Phase 60 — CPU Difficulty System ✅
+
+**目的:** AoE2 風の **人間らしい CPU** — 反応速度ではなく経済・判断力で難易度差を表現。
+
+| 項目 | 実装 |
+|------|------|
+| 難易度 | `CpuDifficulty` Easy / Normal / Hard / Hardest |
+| Debug | **Balance Mode = Debug 時は常に Easy** |
+| 実行 | `CpuAiActionQueue` — `reactionDelay` + 人間的ランダム遅延後に Command 実行 |
+| 予算 | `maxActionsPerCycle` — 1 評価サイクルあたり同時行動数制限 |
+| 攻撃 | タイマー波攻撃廃止 → `armyCount` + `armyPower` ベース |
+| 経済 | `villagerTarget` / Easy は村人生産・House 優先度を緩く |
+
+**プロンプト:** [prompts/phase60-prompt.md](prompts/phase60-prompt.md)
+
+---
+
+## Phase 61 — Team & 2v2 ⬜
 
 **目的:** **人間 + CPU 同盟 vs CPU 2**。
 
@@ -117,11 +136,11 @@
 | Team | `TeamId` — 例: Team0 = {Player0, Player1}, Team1 = {Player2, Player3} |
 | 戦闘 | 同盟への攻撃命令不可 |
 | 勝利 | 敵チームの TC 全破壊 |
-| Fog 準備 | 同盟は **同一チーム視界**（Phase 65 で実装） |
+| Fog 準備 | 同盟は **同一チーム視界**（Phase 66 で実装） |
 
 ---
 
-## Phase 61 — Large Map ⬜
+## Phase 62 — Large Map ⬜
 
 **目的:** 4 陣営向け **大型マップ**。
 
@@ -131,7 +150,7 @@
 
 ---
 
-## Phase 62 — Enemy HP Display ⬜
+## Phase 63 — Enemy HP Display ⬜
 
 **目的:** 戦闘・攻城時に **敵の残 HP を確認**できるようにする（現状は敵選択不可）。
 
@@ -146,7 +165,7 @@
 
 ---
 
-## Phase 63 — Building Repair ⬜
+## Phase 64 — Building Repair ⬜
 
 **目的:** AoE2 的 **建物修理** — 損傷建物を Villager で修復。
 
@@ -161,7 +180,7 @@
 
 ---
 
-## Phase 64 — Multi-Villager Build ⬜
+## Phase 65 — Multi-Villager Build ⬜
 
 **目的:** **同一建設現場に複数 Villager** を載せ、人数に応じて建築速度を上げる。
 
@@ -176,7 +195,7 @@
 
 ---
 
-## Phase 65 — Fog of War ⬜
+## Phase 66 — Fog of War ⬜
 
 **目的:** AoE2 的 **戦場の霧** — 自軍（+ 同盟）視界外は未表示 or グレーアウト。
 
@@ -189,7 +208,7 @@
 
 ---
 
-## Phase 66 — Deterministic Sim ⬜
+## Phase 67 — Deterministic Sim ⬜
 
 **目的:** 将来 LAN / Lockstep のため **同一 Command → 同一結果**。
 

@@ -47,25 +47,31 @@ namespace AoE.RTS.EditorTools
             Debug.Log($"Balance mode set to {mode}. Save the scene (Ctrl+S) before Play.");
         }
 
-        [MenuItem("AoE/CPU Attack Pace/Relaxed (2min peace)", true)]
-        static bool ValidateSetRelaxedCpuPace() => !EditorApplication.isPlaying;
+        [MenuItem("AoE/CPU Difficulty/Easy", true)]
+        static bool ValidateSetCpuEasy() => !EditorApplication.isPlaying;
 
-        [MenuItem("AoE/CPU Attack Pace/Relaxed (2min peace)")]
-        public static void SetRelaxedCpuPace()
-        {
-            SetCpuAttackPace(CpuAttackPace.Relaxed);
-        }
+        [MenuItem("AoE/CPU Difficulty/Easy")]
+        public static void SetCpuEasy() => SetCpuDifficulty(CpuDifficulty.Easy);
 
-        [MenuItem("AoE/CPU Attack Pace/Aggressive (fast attacks)", true)]
-        static bool ValidateSetAggressiveCpuPace() => !EditorApplication.isPlaying;
+        [MenuItem("AoE/CPU Difficulty/Normal", true)]
+        static bool ValidateSetCpuNormal() => !EditorApplication.isPlaying;
 
-        [MenuItem("AoE/CPU Attack Pace/Aggressive (fast attacks)")]
-        public static void SetAggressiveCpuPace()
-        {
-            SetCpuAttackPace(CpuAttackPace.Aggressive);
-        }
+        [MenuItem("AoE/CPU Difficulty/Normal")]
+        public static void SetCpuNormal() => SetCpuDifficulty(CpuDifficulty.Normal);
 
-        static void SetCpuAttackPace(CpuAttackPace pace)
+        [MenuItem("AoE/CPU Difficulty/Hard", true)]
+        static bool ValidateSetCpuHard() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/CPU Difficulty/Hard")]
+        public static void SetCpuHard() => SetCpuDifficulty(CpuDifficulty.Hard);
+
+        [MenuItem("AoE/CPU Difficulty/Hardest", true)]
+        static bool ValidateSetCpuHardest() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/CPU Difficulty/Hardest")]
+        public static void SetCpuHardest() => SetCpuDifficulty(CpuDifficulty.Hardest);
+
+        static void SetCpuDifficulty(CpuDifficulty difficulty)
         {
             if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
                 return;
@@ -78,11 +84,11 @@ namespace AoE.RTS.EditorTools
             }
 
             SerializedObject serialized = new SerializedObject(sessionManager);
-            serialized.FindProperty("cpuAttackPace").enumValueIndex = (int)pace;
+            serialized.FindProperty("cpuDifficulty").enumValueIndex = (int)difficulty;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(sessionManager);
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-            Debug.Log($"CPU attack pace set to {pace}. Save the scene (Ctrl+S) before Play.");
+            Debug.Log($"CPU difficulty set to {difficulty}. Save the scene (Ctrl+S) before Play.");
         }
     }
 }

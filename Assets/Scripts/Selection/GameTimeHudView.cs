@@ -61,7 +61,7 @@ namespace AoE.RTS.Selection
             languageButton.onClick.AddListener(Localization.ToggleLanguage);
             waveText = HudUiFactory.CreateLabel(panelRoot, "Wave", LineHeight);
             paceButton = HudUiFactory.CreateButton(panelRoot, "PaceButton", LineHeight);
-            paceButton.onClick.AddListener(GameSessionManager.ToggleCpuAttackPace);
+            paceButton.onClick.AddListener(GameSessionManager.ToggleCpuDifficulty);
             debugText = HudUiFactory.CreateLabel(panelRoot, "Debug", LineHeight);
             barracksText = HudUiFactory.CreateLabel(panelRoot, "Barracks", LineHeight);
 
@@ -74,7 +74,7 @@ namespace AoE.RTS.Selection
                 return;
 
             if (Keyboard.current.pKey.wasPressedThisFrame)
-                GameSessionManager.ToggleCpuAttackPace();
+                GameSessionManager.ToggleCpuDifficulty();
 
             if (Keyboard.current.lKey.wasPressedThisFrame)
                 Localization.ToggleLanguage();
@@ -98,22 +98,25 @@ namespace AoE.RTS.Selection
 
             if (showMilitary)
             {
-                if (military.IsAttackGraceActive)
-                    HudUiFactory.SetText(waveText, $"CPU peace: {FormatTime(military.WaveTimerRemaining)}");
-                else
-                    HudUiFactory.SetText(waveText, $"Next wave: {FormatTime(military.WaveTimerRemaining)}");
+                CpuDifficulty effective = CpuDifficultySettings.EffectiveDifficulty;
+                HudUiFactory.SetText(
+                    waveText,
+                    $"CPU army: {military.CpuArmyCount} / atk≥{military.AttackThreshold}");
 
-                string paceLabel = GameSessionManager.CpuAttackPace == CpuAttackPace.Relaxed
-                    ? "Relaxed"
-                    : "Aggressive";
-                HudUiFactory.SetButtonLabel(paceButton, $"CPU pace: {paceLabel} (click / P)");
-                paceButton.interactable = !GameSessionManager.IsGameOver;
+                string difficultyLabel = effective.ToString();
+                if (GameplayBalance.Mode == GameplayBalanceMode.Debug)
+                    difficultyLabel += " (Debug lock)";
+
+                HudUiFactory.SetButtonLabel(paceButton, $"CPU: {difficultyLabel} (click / P)");
+                paceButton.interactable =
+                    !GameSessionManager.IsGameOver
+                    && GameplayBalance.Mode != GameplayBalanceMode.Debug;
             }
 
             bool showDebug = showMilitary && GameplayBalance.Mode == GameplayBalanceMode.Debug;
             debugText.gameObject.SetActive(showDebug);
             if (showDebug)
-                HudUiFactory.SetText(debugText, "Debug: K=TC dmg, Shift+K=CPU wave");
+                HudUiFactory.SetText(debugText, "Debug: K=TC dmg, Shift+K=CPU attack");
 
             barracksText.gameObject.SetActive(showMilitary);
             if (showMilitary)

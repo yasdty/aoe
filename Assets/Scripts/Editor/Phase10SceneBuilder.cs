@@ -1594,6 +1594,7 @@ namespace AoE.RTS.EditorTools
                 ShouldBuildFourPlayerFfa() ? (int)MatchMode.FourPlayerFfa : (int)MatchMode.OneVsOneCpu;
             serializedSession.FindProperty("ffaPlayerCount").intValue = GetFfaPlayerCount();
             serializedSession.FindProperty("balanceMode").enumValueIndex = (int)GameplayBalanceMode.Debug;
+            serializedSession.FindProperty("cpuDifficulty").enumValueIndex = (int)CpuDifficulty.Normal;
             serializedSession.FindProperty("cpuAttackPace").enumValueIndex = (int)CpuAttackPace.Relaxed;
             serializedSession.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
             serializedSession.FindProperty("playerCivilization").objectReferenceValue = playerCivilization;
@@ -1607,6 +1608,10 @@ namespace AoE.RTS.EditorTools
             GameObject commandQueueObject = new GameObject("CommandQueue");
             commandQueueObject.transform.SetParent(systems.transform);
             commandQueueObject.AddComponent<CommandQueue>();
+
+            GameObject cpuAiActionQueueObject = new GameObject("CpuAiActionQueue");
+            cpuAiActionQueueObject.transform.SetParent(systems.transform);
+            cpuAiActionQueueObject.AddComponent<CpuAiActionQueue>();
 
             GameObject unitPoolObject = new GameObject("UnitPool");
             unitPoolObject.transform.SetParent(systems.transform);

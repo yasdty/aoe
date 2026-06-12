@@ -12,14 +12,7 @@ namespace AoE.RTS.AI
 {
     public class CpuMilitaryAiManager : MonoBehaviour, ISimulationTickable
     {
-        const float EvaluateInterval = 2f;
-        const int TargetMilitiaCount = 8;
-        const int TargetSpearmanCount = 4;
-        const int TargetArcherCount = 4;
-        const int TargetCavalryCount = 3;
-        const int TargetScoutCount = 2;
-        const int MinAttackUnitsForWaveAggressive = 1;
-        const int MinAttackUnitsForWaveRelaxed = 1;
+        const float AttackReevaluateCooldown = 4f;
 
         static readonly string[] WaveUnitTypeOrder =
         {
@@ -43,17 +36,8 @@ namespace AoE.RTS.AI
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData archeryRangeData;
         [SerializeField] PlacedBuildingData stableData;
-        [SerializeField] float barracksBuildDelaySeconds = 60f;
-        [SerializeField] float attackWaveIntervalSeconds = 30f;
-        [SerializeField] float relaxedFirstAttackGraceSeconds = 120f;
-        [SerializeField] float relaxedBarracksBuildDelaySeconds = 90f;
-        [SerializeField] float relaxedAttackWaveIntervalSeconds = 300f;
-        [SerializeField] int relaxedMaxUnitsPerTypePerWave = 2;
-        [SerializeField] int aggressiveMaxUnitsPerTypePerWave = 2;
-
         float evaluateTimer;
-        float waveTimer;
-        float relaxedGraceEndsAt;
+        float attackEvaluateTimer;
         TownCenter cpuTownCenter;
         readonly List<Unit> unitBuffer = new List<Unit>(24);
         readonly List<Unit> attackWaveBuffer = new List<Unit>(16);
@@ -62,46 +46,15 @@ namespace AoE.RTS.AI
         UnitTeam OpponentTeam => PlayerIdMapping.ToLegacyTeam(opponentPlayerId);
 
         public static CpuMilitaryAiManager Instance => instance;
-        public static bool IsCpuOffensiveActionsSuppressed =>
-            instance != null && instance.IsAttackGraceActive;
+        public static bool IsCpuOffensiveActionsSuppressed => false;
 
-        public float WaveTimerRemaining
-        {
-            get
-            {
-                float graceRemaining = AttackGraceRemainingSeconds;
-                if (graceRemaining > 0f)
-                    return graceRemaining;
+        public int CpuArmyCount => CountArmyUnits();
 
-                return waveTimer;
-            }
-        }
+        public int AttackThreshold =>
+            CpuDifficultySettings.Current.ResolveAttackThreshold(CountOpponentArmyUnits());
 
         public float BarracksBuildDelayRemaining =>
-            Mathf.Max(0f, EffectiveBarracksBuildDelaySeconds - Time.timeSinceLevelLoad);
-
-        public bool IsAttackGraceActive => AttackGraceRemainingSeconds > 0f;
-
-        float AttackGraceRemainingSeconds =>
-            IsRelaxedPace ? Mathf.Max(0f, relaxedGraceEndsAt - Time.timeSinceLevelLoad) : 0f;
-
-        bool IsRelaxedPace => GameSessionManager.CpuAttackPace == CpuAttackPace.Relaxed;
-
-        float EffectiveBarracksBuildDelaySeconds =>
-            IsRelaxedPace
-                ? relaxedBarracksBuildDelaySeconds
-                : GameplayBalance.ScaleCpuDelaySeconds(barracksBuildDelaySeconds);
-
-        float EffectiveAttackWaveIntervalSeconds =>
-            IsRelaxedPace
-                ? relaxedAttackWaveIntervalSeconds
-                : GameplayBalance.ScaleCpuDelaySeconds(attackWaveIntervalSeconds);
-
-        int EffectiveMinAttackUnitsForWave =>
-            IsRelaxedPace ? MinAttackUnitsForWaveRelaxed : MinAttackUnitsForWaveAggressive;
-
-        int EffectiveMaxUnitsPerTypePerWave =>
-            IsRelaxedPace ? relaxedMaxUnitsPerTypePerWave : aggressiveMaxUnitsPerTypePerWave;
+            Mathf.Max(0f, CpuDifficultySettings.Current.BarracksUnlockSeconds - Time.timeSinceLevelLoad);
         public float BarracksWoodCost => barracksData != null ? barracksData.ScaledWoodCost : 0f;
         public bool HasCpuBarracks => PlayerBuildingQueries.HasBarracksForPlayer(cpuPlayerId);
         public bool IsBuildingCpuBarracks => BuildingPlacementManager.HasActiveBarracksConstructionForPlayer(cpuPlayerId);
@@ -124,59 +77,23 @@ namespace AoE.RTS.AI
             SimulationTick.Unregister(this);
         }
 
-        float ScaledBarracksBuildDelaySeconds => EffectiveBarracksBuildDelaySeconds;
-
-        float ScaledAttackWaveIntervalSeconds => EffectiveAttackWaveIntervalSeconds;
-
         void Start()
         {
             RefreshCpuTownCenter();
             evaluateTimer = 1f;
-            waveTimer = ScaledAttackWaveIntervalSeconds;
-            ApplyGraceForCurrentPace(resetFromNow: false);
+            attackEvaluateTimer = 2f;
             SimulationTick.Register(this);
         }
 
-        public void NotifyCpuAttackPaceChanged(CpuAttackPace pace)
+        public void NotifyCpuDifficultyChanged()
         {
-            ApplyGraceForCurrentPace(resetFromNow: pace == CpuAttackPace.Relaxed);
-            waveTimer = ScaledAttackWaveIntervalSeconds;
-        }
-
-        void ApplyGraceForCurrentPace(bool resetFromNow)
-        {
-            if (!IsRelaxedPace)
-            {
-                relaxedGraceEndsAt = 0f;
-                return;
-            }
-
-            relaxedGraceEndsAt = resetFromNow
-                ? Time.timeSinceLevelLoad + relaxedFirstAttackGraceSeconds
-                : relaxedFirstAttackGraceSeconds;
+            attackEvaluateTimer = 2f;
         }
 
         public void TickSimulation(float fixedDeltaTime)
         {
-            if (IsAttackGraceActive)
-            {
-                waveTimer = ScaledAttackWaveIntervalSeconds;
-            }
-            else
-            {
-                waveTimer -= fixedDeltaTime;
-                if (waveTimer <= 0f)
-                {
-                    waveTimer = ScaledAttackWaveIntervalSeconds;
-                    LaunchAttackWave();
-                }
-            }
-
             evaluateTimer -= fixedDeltaTime;
-            if (evaluateTimer > 0f)
-                return;
-
-            evaluateTimer = EvaluateInterval;
+            attackEvaluateTimer -= fixedDeltaTime;
 
             if (cpuTownCenter == null)
                 RefreshCpuTownCenter();
@@ -184,17 +101,31 @@ namespace AoE.RTS.AI
             if (cpuTownCenter == null)
                 return;
 
-            TryBuildBarracks();
-            TryBuildArcheryRange();
-            TryBuildStable();
-            TryTrainMilitia();
-            TryTrainSpearman();
-            TryTrainArcher();
-            TryTrainCavalry();
-            TryTrainScout();
+            if (evaluateTimer <= 0f)
+            {
+                CpuDifficultyProfile profile = CpuDifficultySettings.Current;
+                evaluateTimer = profile.DecisionInterval;
+                CpuAiActionQueue.BeginCycle(cpuPlayerId, profile.MaxActionsPerCycle);
+
+                TryBuildBarracks();
+                TryBuildArcheryRange();
+                TryBuildStable();
+                TryTrainMilitia();
+                TryTrainSpearman();
+                TryTrainArcher();
+                TryTrainCavalry();
+                TryTrainScout();
+            }
+
+            if (attackEvaluateTimer <= 0f)
+            {
+                attackEvaluateTimer = AttackReevaluateCooldown;
+                TryLaunchArmyAttack();
+            }
         }
 
-        void EnqueueCpu(IGameCommand command) => CpuAiCommandQueue.Enqueue(cpuPlayerId, command);
+        bool TryScheduleCpu(CpuAiActionKind kind, IGameCommand command) =>
+            CpuAiActionQueue.TrySchedule(cpuPlayerId, kind, command);
 
         void RefreshCpuTownCenter()
         {
@@ -206,7 +137,7 @@ namespace AoE.RTS.AI
             if (barracksData == null)
                 return;
 
-            if (Time.timeSinceLevelLoad < EffectiveBarracksBuildDelaySeconds)
+            if (Time.timeSinceLevelLoad < CpuDifficultySettings.Current.BarracksUnlockSeconds)
                 return;
 
             if (PlayerBuildingQueries.HasBarracksForPlayer(cpuPlayerId))
@@ -231,7 +162,7 @@ namespace AoE.RTS.AI
                     out Vector3 placement))
                 return;
 
-            EnqueueCpu(new CpuStartTeamConstructionCommand(barracksData, placement, builder));
+            TryScheduleCpu(CpuAiActionKind.Build, new CpuStartTeamConstructionCommand(barracksData, placement, builder));
             Debug.Log($"[CPU Military] Barracks construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
@@ -270,7 +201,7 @@ namespace AoE.RTS.AI
                     out Vector3 placement))
                 return;
 
-            EnqueueCpu(new CpuStartTeamConstructionCommand(archeryRangeData, placement, builder));
+            TryScheduleCpu(CpuAiActionKind.Build, new CpuStartTeamConstructionCommand(archeryRangeData, placement, builder));
             Debug.Log($"[CPU Military] Archery Range construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
@@ -309,13 +240,13 @@ namespace AoE.RTS.AI
                     out Vector3 placement))
                 return;
 
-            EnqueueCpu(new CpuStartTeamConstructionCommand(stableData, placement, builder));
+            TryScheduleCpu(CpuAiActionKind.Build, new CpuStartTeamConstructionCommand(stableData, placement, builder));
             Debug.Log($"[CPU Military] Stable construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
         void TryTrainMilitia()
         {
-            if (CountCpuUnitsByName("Militia") >= TargetMilitiaCount)
+            if (CountCpuUnitsByName("Militia") >= GetTargetCountForUnitType("Militia"))
                 return;
 
             Barracks barracks = PlayerBuildingQueries.GetBarracksForPlayer(cpuPlayerId);
@@ -335,12 +266,12 @@ namespace AoE.RTS.AI
                 && ResourceManager.GetWood(cpuPlayerId) < barracks.Data.ScaledTrainWoodCost)
                 return;
 
-            EnqueueCpu(new TrainMilitiaCommand(barracks));
+            TryScheduleCpu(CpuAiActionKind.Train, new TrainMilitiaCommand(barracks));
         }
 
         void TryTrainSpearman()
         {
-            if (CountCpuUnitsByName("Spearman") >= TargetSpearmanCount)
+            if (CountCpuUnitsByName("Spearman") >= GetTargetCountForUnitType("Spearman"))
                 return;
 
             Barracks barracks = PlayerBuildingQueries.GetBarracksForPlayer(cpuPlayerId);
@@ -359,12 +290,12 @@ namespace AoE.RTS.AI
             if (ResourceManager.GetFood(cpuPlayerId) < barracks.Data.ScaledSecondaryTrainFoodCost)
                 return;
 
-            EnqueueCpu(new TrainSpearmanCommand(barracks));
+            TryScheduleCpu(CpuAiActionKind.Train, new TrainSpearmanCommand(barracks));
         }
 
         void TryTrainArcher()
         {
-            if (CountCpuUnitsByName("Archer") >= TargetArcherCount)
+            if (CountCpuUnitsByName("Archer") >= GetTargetCountForUnitType("Archer"))
                 return;
 
             ArcheryRange archeryRange = PlayerBuildingQueries.GetArcheryRangeForPlayer(cpuPlayerId);
@@ -383,12 +314,12 @@ namespace AoE.RTS.AI
             if (ResourceManager.GetFood(cpuPlayerId) < archeryRange.Data.ScaledTrainFoodCost)
                 return;
 
-            EnqueueCpu(new TrainArcherCommand(archeryRange));
+            TryScheduleCpu(CpuAiActionKind.Train, new TrainArcherCommand(archeryRange));
         }
 
         void TryTrainCavalry()
         {
-            if (CountCpuUnitsByName("Cavalry") >= TargetCavalryCount)
+            if (CountCpuUnitsByName("Cavalry") >= GetTargetCountForUnitType("Cavalry"))
                 return;
 
             Stable stable = PlayerBuildingQueries.GetStableForPlayer(cpuPlayerId);
@@ -407,12 +338,12 @@ namespace AoE.RTS.AI
             if (ResourceManager.GetFood(cpuPlayerId) < stable.Data.ScaledTrainFoodCost)
                 return;
 
-            EnqueueCpu(new TrainCavalryCommand(stable));
+            TryScheduleCpu(CpuAiActionKind.Train, new TrainCavalryCommand(stable));
         }
 
         void TryTrainScout()
         {
-            if (CountCpuUnitsByName("Scout") >= TargetScoutCount)
+            if (CountCpuUnitsByName("Scout") >= GetTargetCountForUnitType("Scout"))
                 return;
 
             Stable stable = PlayerBuildingQueries.GetStableForPlayer(cpuPlayerId);
@@ -431,7 +362,7 @@ namespace AoE.RTS.AI
             if (ResourceManager.GetFood(cpuPlayerId) < stable.Data.ScaledSecondaryTrainFoodCost)
                 return;
 
-            EnqueueCpu(new TrainScoutCommand(stable));
+            TryScheduleCpu(CpuAiActionKind.Train, new TrainScoutCommand(stable));
         }
 
         void TryEnsureFeudalAge()
@@ -439,12 +370,7 @@ namespace AoE.RTS.AI
             if (GameSessionManager.GetAge(cpuPlayerId) >= GameAge.Feudal)
                 return;
 
-            EnqueueCpu(new CpuAgeUpCommand(cpuPlayerId));
-        }
-
-        void LaunchAttackWave()
-        {
-            LaunchAttackWaveInternal(respectAttackGrace: true);
+            TryScheduleCpu(CpuAiActionKind.Train, new CpuAgeUpCommand(cpuPlayerId));
         }
 
         public void ForceDebugAttackWave()
@@ -452,21 +378,31 @@ namespace AoE.RTS.AI
             if (GameplayBalance.Mode != GameplayBalanceMode.Debug)
                 return;
 
-            LaunchAttackWaveInternal(respectAttackGrace: false);
+            LaunchArmyAttack(force: true);
         }
 
-        void LaunchAttackWaveInternal(bool respectAttackGrace)
+        void TryLaunchArmyAttack()
         {
-            if (respectAttackGrace && IsAttackGraceActive)
+            LaunchArmyAttack(force: false);
+        }
+
+        void LaunchArmyAttack(bool force)
+        {
+            CpuDifficultyProfile profile = CpuDifficultySettings.Current;
+            int armyCount = CountArmyUnits();
+            int opponentArmy = CountOpponentArmyUnits();
+            int threshold = profile.ResolveAttackThreshold(opponentArmy);
+            if (!force && armyCount < threshold)
                 return;
 
-            CollectCpuAttackWaveUnits(attackWaveBuffer);
-            if (attackWaveBuffer.Count < EffectiveMinAttackUnitsForWave)
-            {
-                if (PlayerBuildingQueries.HasBarracksForPlayer(cpuPlayerId))
-                    Debug.Log("[CPU Military] Attack wave skipped — no military units");
+            float armyPower = ComputeArmyPower(cpuPlayerId);
+            float enemyPower = ComputeArmyPower(opponentPlayerId);
+            if (!force && armyPower < enemyPower * profile.AttackConfidence)
                 return;
-            }
+
+            CollectCpuAttackWaveUnits(attackWaveBuffer, armyCount);
+            if (attackWaveBuffer.Count == 0)
+                return;
 
             Vector3 rallyPoint = cpuTownCenter != null
                 ? cpuTownCenter.transform.position
@@ -475,9 +411,9 @@ namespace AoE.RTS.AI
             Unit target = UnitSpatialIndex.FindNearestUnit(rallyPoint, OpponentTeam);
             if (target != null)
             {
-                EnqueueCpu(new AttackUnitCommand(attackWaveBuffer, target));
+                TryScheduleCpu(CpuAiActionKind.Attack, new AttackUnitCommand(attackWaveBuffer, target));
                 Debug.Log(
-                    $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} at {FormatTime(Time.timeSinceLevelLoad)}");
+                    $"[CPU Military] Army attack: {FormatWaveComposition(attackWaveBuffer)} at {FormatTime(Time.timeSinceLevelLoad)}");
                 return;
             }
 
@@ -487,9 +423,9 @@ namespace AoE.RTS.AI
                 BuildingHealth playerTownCenterHealth = playerTownCenter.GetComponent<BuildingHealth>();
                 if (playerTownCenterHealth != null && playerTownCenterHealth.IsAlive)
                 {
-                    EnqueueCpu(new AttackBuildingCommand(attackWaveBuffer, playerTownCenterHealth));
+                    TryScheduleCpu(CpuAiActionKind.Attack, new AttackBuildingCommand(attackWaveBuffer, playerTownCenterHealth));
                     Debug.Log(
-                        $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} → Town Center at {FormatTime(Time.timeSinceLevelLoad)}");
+                        $"[CPU Military] Army attack: {FormatWaveComposition(attackWaveBuffer)} → Town Center at {FormatTime(Time.timeSinceLevelLoad)}");
                     return;
                 }
             }
@@ -498,10 +434,10 @@ namespace AoE.RTS.AI
                 ? playerTownCenter.transform.position
                 : attackWaveBuffer[0].transform.position;
             advanceTarget.y = 1f;
-            EnqueueCpu(new MoveCommand(attackWaveBuffer, advanceTarget, 2f));
+            TryScheduleCpu(CpuAiActionKind.Attack, new MoveCommand(attackWaveBuffer, advanceTarget, 2f));
 
             Debug.Log(
-                $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} advancing at {FormatTime(Time.timeSinceLevelLoad)}");
+                $"[CPU Military] Army advance: {FormatWaveComposition(attackWaveBuffer)} at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
         static string FormatWaveComposition(IReadOnlyList<Unit> units)
@@ -557,32 +493,95 @@ namespace AoE.RTS.AI
             return $"{units.Count} units ({breakdown})";
         }
 
-        void CollectCpuAttackWaveUnits(List<Unit> buffer)
+        void CollectCpuAttackWaveUnits(List<Unit> buffer, int maxUnits)
         {
             buffer.Clear();
-            int maxPerType = Mathf.Max(1, EffectiveMaxUnitsPerTypePerWave);
             UnitManager.CopyUnitsTo(unitBuffer);
-
-            for (int typeIndex = 0; typeIndex < WaveUnitTypeOrder.Length; typeIndex++)
+            for (int i = 0; i < unitBuffer.Count; i++)
             {
-                string unitType = WaveUnitTypeOrder[typeIndex];
-                int taken = 0;
-                for (int i = 0; i < unitBuffer.Count; i++)
-                {
-                    if (taken >= maxPerType)
-                        break;
+                if (buffer.Count >= maxUnits)
+                    break;
 
-                    Unit unit = unitBuffer[i];
-                    if (unit == null || !unit.IsAlive || unit.OwnerId != cpuPlayerId || !unit.CanAttack)
-                        continue;
+                Unit unit = unitBuffer[i];
+                if (unit == null || !unit.IsAlive || unit.OwnerId != cpuPlayerId || !unit.CanAttack)
+                    continue;
 
-                    if (unit.Data == null || unit.Data.displayName != unitType)
-                        continue;
-
-                    buffer.Add(unit);
-                    taken++;
-                }
+                buffer.Add(unit);
             }
+        }
+
+        int GetTargetCountForUnitType(string displayName)
+        {
+            CpuDifficultyProfile profile = CpuDifficultySettings.Current;
+            int villagerCount = CountVillagers();
+            int totalArmy = profile.ResolveTargetArmyCount(villagerCount);
+            return displayName switch
+            {
+                "Militia" => Mathf.Max(2, Mathf.RoundToInt(totalArmy * 0.35f)),
+                "Spearman" => Mathf.Max(1, Mathf.RoundToInt(totalArmy * 0.15f)),
+                "Archer" => Mathf.Max(2, Mathf.RoundToInt(totalArmy * 0.25f)),
+                "Cavalry" => Mathf.Max(1, Mathf.RoundToInt(totalArmy * 0.15f)),
+                "Scout" => Mathf.Max(1, Mathf.RoundToInt(totalArmy * 0.10f)),
+                _ => 1
+            };
+        }
+
+        int CountVillagers()
+        {
+            int count = 0;
+            UnitManager.CopyUnitsTo(unitBuffer);
+            for (int i = 0; i < unitBuffer.Count; i++)
+            {
+                Unit unit = unitBuffer[i];
+                if (unit != null && unit.IsAlive && unit.OwnerId == cpuPlayerId && !unit.CanAttack)
+                    count++;
+            }
+
+            return count;
+        }
+
+        int CountArmyUnits()
+        {
+            int count = 0;
+            UnitManager.CopyUnitsTo(unitBuffer);
+            for (int i = 0; i < unitBuffer.Count; i++)
+            {
+                Unit unit = unitBuffer[i];
+                if (unit != null && unit.IsAlive && unit.OwnerId == cpuPlayerId && unit.CanAttack)
+                    count++;
+            }
+
+            return count;
+        }
+
+        int CountOpponentArmyUnits()
+        {
+            int count = 0;
+            UnitManager.CopyUnitsTo(unitBuffer);
+            for (int i = 0; i < unitBuffer.Count; i++)
+            {
+                Unit unit = unitBuffer[i];
+                if (unit != null && unit.IsAlive && unit.OwnerId == opponentPlayerId && unit.CanAttack)
+                    count++;
+            }
+
+            return count;
+        }
+
+        float ComputeArmyPower(PlayerId playerId)
+        {
+            float power = 0f;
+            UnitManager.CopyUnitsTo(unitBuffer);
+            for (int i = 0; i < unitBuffer.Count; i++)
+            {
+                Unit unit = unitBuffer[i];
+                if (unit == null || !unit.IsAlive || unit.OwnerId != playerId || !unit.CanAttack)
+                    continue;
+
+                power += unit.AttackPower * unit.MaxHp;
+            }
+
+            return power;
         }
 
         int CountCpuUnitsByName(string displayName)

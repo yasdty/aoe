@@ -11,8 +11,6 @@ namespace AoE.RTS.AI
 {
     public class CpuEconomyAiManager : MonoBehaviour, ISimulationTickable
     {
-        const float EvaluateInterval = 2f;
-        const int TargetVillagerCount = 6;
         const float HouseMinRadius = 8f;
         const float HouseMaxRadius = 24f;
         const float EconomyBuildMinRadius = 8f;
@@ -61,7 +59,8 @@ namespace AoE.RTS.AI
             if (evaluateTimer > 0f)
                 return;
 
-            evaluateTimer = EvaluateInterval;
+            CpuDifficultyProfile profile = CpuDifficultySettings.Current;
+            evaluateTimer = profile.DecisionInterval;
 
             if (cpuTownCenter == null)
                 RefreshCpuTownCenter();
@@ -69,13 +68,17 @@ namespace AoE.RTS.AI
             if (cpuTownCenter == null)
                 return;
 
-            TryBuildHouse();
-            TryTrainVillager();
+            CpuAiActionQueue.BeginCycle(cpuPlayerId, profile.MaxActionsPerCycle);
+
+            TryBuildHouse(profile);
+            TryTrainVillager(profile);
             TryBuildEconomyBuildings();
-            AssignIdleVillagers();
+            AssignIdleVillagers(profile);
         }
 
-        void EnqueueCpu(IGameCommand command) => CpuAiCommandQueue.Enqueue(cpuPlayerId, command);
+        bool TryScheduleCpu(CpuAiActionKind kind, IGameCommand command) =>
+            CpuAiActionQueue.TrySchedule(cpuPlayerId, kind, command);
+
 
         void RefreshCpuTownCenter()
         {
@@ -161,7 +164,7 @@ namespace AoE.RTS.AI
                     out Vector3 placement))
                 return false;
 
-            EnqueueCpu(new CpuStartTeamConstructionCommand(data, placement, builder));
+            TryScheduleCpu(CpuAiActionKind.Build, new CpuStartTeamConstructionCommand(data, placement, builder));
 
             Debug.Log(
                 $"[CPU Economy] {logName} construction started at {FormatTime(Time.timeSinceLevelLoad)} "
@@ -169,9 +172,9 @@ namespace AoE.RTS.AI
             return true;
         }
 
-        void AssignIdleVillagers()
+        void AssignIdleVillagers(CpuDifficultyProfile profile)
         {
-            if (ShouldReserveBuilderForHouse())
+            if (ShouldReserveBuilderForHouse() && profile.VillagerTarget >= 40)
                 return;
 
             int woodSlot = 0;
@@ -183,25 +186,25 @@ namespace AoE.RTS.AI
                     continue;
 
                 if (TryAssignFoodGather(unit))
-                    continue;
+                    return;
 
                 if (TryAssignGoldGather(unit))
-                    continue;
+                    return;
 
                 if (TryAssignStoneGather(unit))
-                    continue;
+                    return;
 
                 if (TryAssignFarmGather(unit))
-                    continue;
+                    return;
 
                 TreeResource tree = TreeSpatialIndex.FindRankedAvailable(unit.transform.position, woodSlot);
-                woodSlot++;
                 if (tree == null)
                     continue;
 
                 gatherCommandBuffer.Clear();
                 gatherCommandBuffer.Add(unit);
-                EnqueueCpu(new GatherCommand(gatherCommandBuffer, tree));
+                if (TryScheduleCpu(CpuAiActionKind.Gather, new GatherCommand(gatherCommandBuffer, tree)))
+                    return;
             }
         }
 
@@ -215,7 +218,9 @@ namespace AoE.RTS.AI
             {
                 gatherCommandBuffer.Clear();
                 gatherCommandBuffer.Add(unit);
-                EnqueueCpu(new GatherFoodCommand(gatherCommandBuffer, bush));
+                if (!TryScheduleCpu(CpuAiActionKind.Gather, new GatherFoodCommand(gatherCommandBuffer, bush)))
+                    return false;
+
                 Debug.Log(
                     $"[CPU Economy] villager → Berry Bush (Food={ResourceManager.GetFood(cpuPlayerId):0})");
                 return true;
@@ -248,13 +253,17 @@ namespace AoE.RTS.AI
 
             gatherCommandBuffer.Clear();
             gatherCommandBuffer.Add(unit);
+            bool scheduled;
             if (animal is DeerResource deer)
-                EnqueueCpu(new HuntFoodCommand(gatherCommandBuffer, deer));
+                scheduled = TryScheduleCpu(CpuAiActionKind.Gather, new HuntFoodCommand(gatherCommandBuffer, deer));
             else if (animal is SheepResource ownedSheep)
-                EnqueueCpu(new HuntFoodCommand(gatherCommandBuffer, ownedSheep));
+                scheduled = TryScheduleCpu(CpuAiActionKind.Gather, new HuntFoodCommand(gatherCommandBuffer, ownedSheep));
             else if (animal is BoarResource boar)
-                EnqueueCpu(new HuntFoodCommand(gatherCommandBuffer, boar));
+                scheduled = TryScheduleCpu(CpuAiActionKind.Gather, new HuntFoodCommand(gatherCommandBuffer, boar));
             else
+                return false;
+
+            if (!scheduled)
                 return false;
 
             Debug.Log(
@@ -273,7 +282,9 @@ namespace AoE.RTS.AI
 
             gatherCommandBuffer.Clear();
             gatherCommandBuffer.Add(unit);
-            EnqueueCpu(new GatherGoldCommand(gatherCommandBuffer, mine));
+            if (!TryScheduleCpu(CpuAiActionKind.Gather, new GatherGoldCommand(gatherCommandBuffer, mine)))
+                return false;
+
             Debug.Log(
                 $"[CPU Economy] villager → Gold Mine (Gold={ResourceManager.GetGold(cpuPlayerId):0})");
             return true;
@@ -290,7 +301,9 @@ namespace AoE.RTS.AI
 
             gatherCommandBuffer.Clear();
             gatherCommandBuffer.Add(unit);
-            EnqueueCpu(new GatherStoneCommand(gatherCommandBuffer, mine));
+            if (!TryScheduleCpu(CpuAiActionKind.Gather, new GatherStoneCommand(gatherCommandBuffer, mine)))
+                return false;
+
             Debug.Log(
                 $"[CPU Economy] villager → Stone Mine (Stone={ResourceManager.GetStone(cpuPlayerId):0})");
             return true;
@@ -307,7 +320,9 @@ namespace AoE.RTS.AI
 
             gatherCommandBuffer.Clear();
             gatherCommandBuffer.Add(unit);
-            EnqueueCpu(new GatherFarmFoodCommand(gatherCommandBuffer, farm));
+            if (!TryScheduleCpu(CpuAiActionKind.Gather, new GatherFarmFoodCommand(gatherCommandBuffer, farm)))
+                return false;
+
             Debug.Log(
                 $"[CPU Economy] villager → Farm (Food={ResourceManager.GetFood(cpuPlayerId):0})");
             return true;
@@ -329,7 +344,7 @@ namespace AoE.RTS.AI
                 && FindIdleVillagerNearestTownCenter() == null;
         }
 
-        void TryBuildHouse()
+        void TryBuildHouse(CpuDifficultyProfile profile)
         {
             if (houseData == null)
                 return;
@@ -357,18 +372,40 @@ namespace AoE.RTS.AI
                     out Vector3 placement))
                 return;
 
-            EnqueueCpu(new CpuStartTeamConstructionCommand(houseData, placement, builder));
+            TryScheduleCpu(CpuAiActionKind.Build, new CpuStartTeamConstructionCommand(houseData, placement, builder));
         }
 
-        void TryTrainVillager()
+        void TryTrainVillager(CpuDifficultyProfile profile)
         {
-            if (PopulationManager.GetCurrentPopulation(cpuPlayerId) >= TargetVillagerCount)
+            int villagerCount = CountCpuVillagers();
+            if (villagerCount >= profile.VillagerTarget)
                 return;
 
             if (!PopulationManager.CanTrainUnit(cpuPlayerId))
+            {
+                if (profile.VillagerTarget < 40)
+                    return;
+
+                return;
+            }
+
+            if (profile.VillagerTarget <= 20 && Random.value < 0.35f)
                 return;
 
-            EnqueueCpu(new TrainVillagerCommand(cpuTownCenter));
+            TryScheduleCpu(CpuAiActionKind.Train, new TrainVillagerCommand(cpuTownCenter));
+        }
+
+        int CountCpuVillagers()
+        {
+            int count = 0;
+            UnitManager.CopyUnitsTo(unitBuffer);
+            for (int i = 0; i < unitBuffer.Count; i++)
+            {
+                if (IsCpuVillager(unitBuffer[i]))
+                    count++;
+            }
+
+            return count;
         }
 
         bool IsCpuVillager(Unit unit)

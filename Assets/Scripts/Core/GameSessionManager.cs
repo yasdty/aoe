@@ -28,6 +28,7 @@ namespace AoE.RTS.Core
         [SerializeField] int ffaPlayerCount = 4;
         [SerializeField] GameplayBalanceMode balanceMode = GameplayBalanceMode.Debug;
         [SerializeField] CpuAttackPace cpuAttackPace = CpuAttackPace.Relaxed;
+        [SerializeField] CpuDifficulty cpuDifficulty = CpuDifficulty.Normal;
         [SerializeField] AgeData feudalAgeData;
         [SerializeField] CivilizationData playerCivilization;
         [SerializeField] CivilizationData enemyCivilization;
@@ -44,27 +45,56 @@ namespace AoE.RTS.Core
         public static CpuAttackPace CpuAttackPace =>
             instance != null ? instance.cpuAttackPace : CpuAttackPace.Relaxed;
 
+        public static CpuDifficulty CpuDifficulty =>
+            instance != null ? instance.cpuDifficulty : CpuDifficulty.Normal;
+
+        public static void SetCpuDifficulty(CpuDifficulty difficulty)
+        {
+            if (instance == null || instance.cpuDifficulty == difficulty)
+                return;
+
+            instance.cpuDifficulty = difficulty;
+            NotifyCpuDifficultyChanged();
+            Debug.Log($"GameSession: CPU difficulty → {difficulty}");
+        }
+
+        public static void ToggleCpuDifficulty()
+        {
+            if (GameplayBalance.Mode == GameplayBalanceMode.Debug)
+            {
+                Debug.Log("GameSession: Debug mode locks CPU difficulty to Easy.");
+                return;
+            }
+
+            CpuDifficulty next = CpuDifficulty switch
+            {
+                CpuDifficulty.Easy => CpuDifficulty.Normal,
+                CpuDifficulty.Normal => CpuDifficulty.Hard,
+                CpuDifficulty.Hard => CpuDifficulty.Hardest,
+                _ => CpuDifficulty.Easy
+            };
+            SetCpuDifficulty(next);
+        }
+
         public static void SetCpuAttackPace(CpuAttackPace pace)
         {
             if (instance == null || instance.cpuAttackPace == pace)
                 return;
 
             instance.cpuAttackPace = pace;
+            Debug.Log($"GameSession: CPU attack pace (legacy) → {pace}");
+        }
+
+        public static void ToggleCpuAttackPace() => ToggleCpuDifficulty();
+
+        static void NotifyCpuDifficultyChanged()
+        {
             CpuMilitaryAiManager[] militaryManagers = FindObjectsByType<CpuMilitaryAiManager>();
             for (int i = 0; i < militaryManagers.Length; i++)
             {
                 if (militaryManagers[i] != null)
-                    militaryManagers[i].NotifyCpuAttackPaceChanged(pace);
+                    militaryManagers[i].NotifyCpuDifficultyChanged();
             }
-
-            Debug.Log($"GameSession: CPU attack pace → {pace}");
-        }
-
-        public static void ToggleCpuAttackPace()
-        {
-            SetCpuAttackPace(CpuAttackPace == CpuAttackPace.Relaxed
-                ? CpuAttackPace.Aggressive
-                : CpuAttackPace.Relaxed);
         }
 
         public static void ToggleMatchMode()
