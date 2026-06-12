@@ -29,12 +29,14 @@ namespace AoE.RTS.Economy
 
         void OnEnable()
         {
+            EntityRegistry.Register(this);
             BerryBushSpatialIndex.Register(this);
             UpdateVisual();
         }
 
         void OnDisable()
         {
+            EntityRegistry.UnregisterResource(this);
             BerryBushSpatialIndex.Unregister(this);
         }
 

@@ -12,9 +12,11 @@ namespace AoE.RTS.Commands
             public int tick;
             public string commandType;
             public UnitTeam team;
+            public string entityIds;
         }
 
         static readonly List<CommandRecord> records = new List<CommandRecord>();
+        static readonly List<int> entityIdScratch = new List<int>();
 
         public static IReadOnlyList<CommandRecord> Records => records;
 
@@ -23,14 +25,41 @@ namespace AoE.RTS.Commands
             if (command == null)
                 return;
 
+            entityIdScratch.Clear();
+            if (command is IEntityIdSource entityIdSource)
+                entityIdSource.CollectEntityIds(entityIdScratch);
+
+            string entityIdSummary = FormatEntityIds(entityIdScratch);
+
             records.Add(new CommandRecord
             {
                 tick = tick,
                 commandType = command.DebugName,
-                team = UnitTeam.Player
+                team = UnitTeam.Player,
+                entityIds = entityIdSummary
             });
 
-            Debug.Log($"CommandLog: tick={tick} {command.DebugName}");
+            if (entityIdSummary.Length > 0)
+                Debug.Log($"CommandLog: tick={tick} {command.DebugName} entities={entityIdSummary}");
+            else
+                Debug.Log($"CommandLog: tick={tick} {command.DebugName}");
+        }
+
+        static string FormatEntityIds(List<int> entityIds)
+        {
+            if (entityIds == null || entityIds.Count == 0)
+                return string.Empty;
+
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            for (int i = 0; i < entityIds.Count; i++)
+            {
+                if (i > 0)
+                    builder.Append(',');
+
+                builder.Append(entityIds[i]);
+            }
+
+            return builder.ToString();
         }
 
         public static void Clear()

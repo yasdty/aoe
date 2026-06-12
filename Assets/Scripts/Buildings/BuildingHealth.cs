@@ -16,7 +16,9 @@ namespace AoE.RTS.Buildings
 
         float currentHp;
         bool isConfigured;
+        int entityId;
 
+        public int EntityId => entityId;
         public float MaxHp => maxHp;
         public float CurrentHp => currentHp;
         public float MeleeArmor => meleeArmor;
@@ -46,6 +48,21 @@ namespace AoE.RTS.Buildings
             if (!isConfigured)
                 currentHp = maxHp;
         }
+
+        void OnEnable()
+        {
+            EntityRegistry.Register(this);
+        }
+
+        void OnDisable()
+        {
+            if (entityId > 0)
+                EntityRegistry.Unregister(entityId);
+        }
+
+        internal void SetEntityId(int id) => entityId = id;
+
+        internal void ClearEntityId() => entityId = 0;
 
         public void TakeDamage(float amount)
         {

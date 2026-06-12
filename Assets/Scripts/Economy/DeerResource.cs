@@ -28,12 +28,14 @@ namespace AoE.RTS.Economy
 
         void OnEnable()
         {
+            EntityRegistry.Register(this);
             DeerRegistry.Register(this);
             UpdateVisual();
         }
 
         void OnDisable()
         {
+            EntityRegistry.UnregisterResource(this);
             DeerRegistry.Unregister(this);
         }
 

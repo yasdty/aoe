@@ -25,8 +25,10 @@ namespace AoE.RTS.Units
         bool isSelected;
         bool isDead;
         int standSlot;
+        int entityId;
         UnitCombatStance combatStance = UnitCombatStance.Aggressive;
 
+        public int EntityId => entityId;
         public float CurrentHp => currentHp;
         public float MaxHp => effectiveMaxHp > 0f ? effectiveMaxHp : (data != null ? data.maxHp : 100f);
         public bool IsAlive => !isDead;
@@ -78,7 +80,11 @@ namespace AoE.RTS.Units
         void OnEnable()
         {
             if (!isDead)
+            {
                 UnitManager.Register(this);
+                EntityRegistry.Register(this);
+            }
+
             UpdateVisual();
         }
 
@@ -99,7 +105,13 @@ namespace AoE.RTS.Units
         void OnDisable()
         {
             UnitManager.Unregister(this);
+            if (entityId > 0)
+                EntityRegistry.Unregister(entityId);
         }
+
+        internal void SetEntityId(int id) => entityId = id;
+
+        internal void ClearEntityId() => entityId = 0;
 
         public void SetData(UnitData unitData)
         {

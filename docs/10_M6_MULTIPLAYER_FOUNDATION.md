@@ -45,8 +45,8 @@
 
 | Phase | 名称 | 目的 | 状態 |
 |-------|------|------|------|
-| 57 | Entity ID & PlayerId | int Entity ID / `PlayerId` 0〜3 | ⬜ 未着手 — **次** |
-| 58 | CPU Command Queue | CPU AI を `IGameCommand` 経由に統一 | ⬜ 未着手 |
+| 57 | Entity ID & PlayerId | int Entity ID / `PlayerId` 0〜3 | ✅ 完了 |
+| 58 | CPU Command Queue | CPU AI を `IGameCommand` 経由に統一 | ⬜ 未着手 — **次** |
 | 59 | Four-Player Match | 人間1 + CPU3・マッチ設定・4 隅 TC / 資源 per Player | ⬜ 未着手 |
 | 60 | Team & 2v2 | `TeamId` / 同盟・人間+CPU vs CPU×2 | ⬜ 未着手 |
 | 61 | Large Map | 大型地面・`MapBounds`・スポーン・カメラ範囲 | ⬜ 未着手 |
@@ -55,7 +55,7 @@
 
 ---
 
-## Phase 57 — Entity ID & PlayerId ⬜
+## Phase 57 — Entity ID & PlayerId ✅
 
 **目的:** GameObject 参照から脱却し、**4 プレイヤー**をデータ上表現できるようにする。
 
@@ -152,7 +152,7 @@
 
 ## M6 完了条件（改訂）
 
-- [ ] `PlayerId` 0〜3 + `EntityRegistry` が Command / Sim の参照基盤
+- [x] `PlayerId` 0〜3 + `EntityRegistry` が Command / Sim の参照基盤（Phase 57 — Move / AttackUnit は ID 化済み）
 - [ ] CPU が Command パイプライン経由（PlayerId ごと）
 - [ ] **人間1 + CPU3** で 4 隅マッチが Play 可能
 - [ ] **2v2**（人間+CPU vs CPU×2）が Play 可能

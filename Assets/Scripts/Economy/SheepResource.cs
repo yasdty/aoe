@@ -41,12 +41,14 @@ namespace AoE.RTS.Economy
 
         void OnEnable()
         {
+            EntityRegistry.Register(this);
             SheepRegistry.Register(this);
             UpdateVisual();
         }
 
         void OnDisable()
         {
+            EntityRegistry.UnregisterResource(this);
             SheepRegistry.Unregister(this);
         }
 

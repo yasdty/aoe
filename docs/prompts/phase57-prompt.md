@@ -1,6 +1,6 @@
 # Phase 57 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜56 完了（M5 Visual / UI / Combat VFX）  
 > **マイルストン:** M6 — **Entity ID & PlayerId**（4 人対戦の土台）  
 > **ロードマップ:** [10_M6_MULTIPLAYER_FOUNDATION.md](../10_M6_MULTIPLAYER_FOUNDATION.md)  
@@ -143,9 +143,9 @@ public static class EntityRegistry
 
 ## ⑦ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 57 ✅
-- [ ] `10_M6_MULTIPLAYER_FOUNDATION.md` — Phase 57 ✅
-- [ ] 本プロンプト — ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 57 ✅
+- [x] `10_M6_MULTIPLAYER_FOUNDATION.md` — Phase 57 ✅
+- [x] 本プロンプト — ✅
 
 ---
 

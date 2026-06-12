@@ -29,12 +29,14 @@ namespace AoE.RTS.Economy
 
         void OnEnable()
         {
+            EntityRegistry.Register(this);
             TreeSpatialIndex.Register(this);
             UpdateVisual();
         }
 
         void OnDisable()
         {
+            EntityRegistry.UnregisterResource(this);
             TreeSpatialIndex.Unregister(this);
         }
 

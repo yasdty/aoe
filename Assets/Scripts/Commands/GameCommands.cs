@@ -26,36 +26,72 @@ namespace AoE.RTS.Commands
 
             return copy;
         }
+
+        public static List<int> CopyUnitEntityIds(IReadOnlyList<Unit> source)
+        {
+            List<int> entityIds = new List<int>();
+            if (source == null)
+                return entityIds;
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                Unit unit = source[i];
+                if (unit != null && unit.EntityId > 0)
+                    entityIds.Add(unit.EntityId);
+            }
+
+            return entityIds;
+        }
+
+        public static void ResolveUnits(IReadOnlyList<int> entityIds, List<Unit> resolvedUnits)
+        {
+            resolvedUnits.Clear();
+            if (entityIds == null)
+                return;
+
+            for (int i = 0; i < entityIds.Count; i++)
+            {
+                if (EntityRegistry.TryGetUnit(entityIds[i], out Unit unit) && unit.IsAlive)
+                    resolvedUnits.Add(unit);
+            }
+        }
     }
 
-    public sealed class MoveCommand : IGameCommand
+    public sealed class MoveCommand : IGameCommand, IEntityIdSource
     {
-        readonly List<Unit> units;
+        readonly List<int> unitEntityIds;
         readonly Vector3 destination;
         readonly float spacing;
+        readonly List<Unit> resolvedUnits = new List<Unit>();
 
         public string DebugName => "Move";
 
         public MoveCommand(IReadOnlyList<Unit> units, Vector3 destination, float spacing)
         {
-            this.units = GameCommandLists.CopyUnits(units);
+            unitEntityIds = GameCommandLists.CopyUnitEntityIds(units);
             this.destination = destination;
             this.spacing = spacing;
         }
 
+        public void CollectEntityIds(List<int> entityIds)
+        {
+            entityIds.AddRange(unitEntityIds);
+        }
+
         public void Execute()
         {
-            if (units.Count == 0)
+            GameCommandLists.ResolveUnits(unitEntityIds, resolvedUnits);
+            if (resolvedUnits.Count == 0)
                 return;
 
-            BuildingPlacementManager.AbortConstructionForUnits(units);
-            GatherManager.CancelForUnits(units);
-            FoodGatherManager.CancelForUnits(units);
-            MineralGatherManager.CancelForUnits(units);
-            AttackManager.CancelForUnits(units);
-            AttackMoveManager.CancelForUnits(units);
-            BoarAttackManager.CancelForUnits(units);
-            FormationMoveManager.Register(units, destination, spacing);
+            BuildingPlacementManager.AbortConstructionForUnits(resolvedUnits);
+            GatherManager.CancelForUnits(resolvedUnits);
+            FoodGatherManager.CancelForUnits(resolvedUnits);
+            MineralGatherManager.CancelForUnits(resolvedUnits);
+            AttackManager.CancelForUnits(resolvedUnits);
+            AttackMoveManager.CancelForUnits(resolvedUnits);
+            BoarAttackManager.CancelForUnits(resolvedUnits);
+            FormationMoveManager.Register(resolvedUnits, destination, spacing);
         }
     }
 
@@ -290,29 +326,42 @@ namespace AoE.RTS.Commands
         }
     }
 
-    public sealed class AttackUnitCommand : IGameCommand
+    public sealed class AttackUnitCommand : IGameCommand, IEntityIdSource
     {
-        readonly List<Unit> selectedUnits;
-        readonly Unit targetUnit;
+        readonly List<int> selectedUnitEntityIds;
+        readonly int targetUnitEntityId;
+        readonly List<Unit> resolvedUnits = new List<Unit>();
         readonly List<Unit> attackers = new List<Unit>();
 
         public string DebugName => "AttackUnit";
 
         public AttackUnitCommand(IReadOnlyList<Unit> selectedUnits, Unit targetUnit)
         {
-            this.selectedUnits = GameCommandLists.CopyUnits(selectedUnits);
-            this.targetUnit = targetUnit;
+            selectedUnitEntityIds = GameCommandLists.CopyUnitEntityIds(selectedUnits);
+            targetUnitEntityId = targetUnit != null ? targetUnit.EntityId : 0;
+        }
+
+        public void CollectEntityIds(List<int> entityIds)
+        {
+            entityIds.AddRange(selectedUnitEntityIds);
+            if (targetUnitEntityId > 0)
+                entityIds.Add(targetUnitEntityId);
         }
 
         public void Execute()
         {
-            if (targetUnit == null || !targetUnit.IsAlive || selectedUnits.Count == 0)
+            if (!EntityRegistry.TryGetUnit(targetUnitEntityId, out Unit targetUnit)
+                || !targetUnit.IsAlive)
+                return;
+
+            GameCommandLists.ResolveUnits(selectedUnitEntityIds, resolvedUnits);
+            if (resolvedUnits.Count == 0)
                 return;
 
             attackers.Clear();
-            for (int i = 0; i < selectedUnits.Count; i++)
+            for (int i = 0; i < resolvedUnits.Count; i++)
             {
-                Unit unit = selectedUnits[i];
+                Unit unit = resolvedUnits[i];
                 if (unit == null || !unit.CanAttack || unit.Team == targetUnit.Team)
                     continue;
 
@@ -322,12 +371,12 @@ namespace AoE.RTS.Commands
             if (attackers.Count == 0)
                 return;
 
-            BuildingPlacementManager.AbortConstructionForUnits(selectedUnits);
-            GatherManager.CancelForUnits(selectedUnits);
-            FoodGatherManager.CancelForUnits(selectedUnits);
-            MineralGatherManager.CancelForUnits(selectedUnits);
-            AttackMoveManager.CancelForUnits(selectedUnits);
-            BoarAttackManager.CancelForUnits(selectedUnits);
+            BuildingPlacementManager.AbortConstructionForUnits(resolvedUnits);
+            GatherManager.CancelForUnits(resolvedUnits);
+            FoodGatherManager.CancelForUnits(resolvedUnits);
+            MineralGatherManager.CancelForUnits(resolvedUnits);
+            AttackMoveManager.CancelForUnits(resolvedUnits);
+            BoarAttackManager.CancelForUnits(resolvedUnits);
             AttackManager.IssueAttack(attackers, targetUnit);
         }
     }

@@ -43,7 +43,13 @@ namespace AoE.RTS.Economy
 
         void OnEnable()
         {
+            EntityRegistry.Register(this);
             UpdateVisual();
+        }
+
+        void OnDisable()
+        {
+            EntityRegistry.UnregisterResource(this);
         }
 
         public void SetData(FoodNodeData nodeData)
