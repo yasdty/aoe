@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using AoE.RTS.Buildings;
-using AoE.RTS.Combat;
+using AoE.RTS.Commands;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Selection;
@@ -35,11 +35,11 @@ namespace AoE.RTS.AI
         const float ArcheryRangeMaxRadius = 28f;
         const float StableMinRadius = 14f;
         const float StableMaxRadius = 32f;
-        const UnitTeam CpuTeam = UnitTeam.Enemy;
-        const UnitTeam PlayerTeam = UnitTeam.Player;
 
         static CpuMilitaryAiManager instance;
 
+        [SerializeField] PlayerId cpuPlayerId = PlayerId.Player1;
+        [SerializeField] PlayerId opponentPlayerId = PlayerId.Player0;
         [SerializeField] PlacedBuildingData barracksData;
         [SerializeField] PlacedBuildingData archeryRangeData;
         [SerializeField] PlacedBuildingData stableData;
@@ -57,6 +57,9 @@ namespace AoE.RTS.AI
         TownCenter cpuTownCenter;
         readonly List<Unit> unitBuffer = new List<Unit>(24);
         readonly List<Unit> attackWaveBuffer = new List<Unit>(16);
+
+        UnitTeam Team => PlayerIdMapping.ToLegacyTeam(cpuPlayerId);
+        UnitTeam OpponentTeam => PlayerIdMapping.ToLegacyTeam(opponentPlayerId);
 
         public static CpuMilitaryAiManager Instance => instance;
         public static bool IsCpuOffensiveActionsSuppressed =>
@@ -100,10 +103,10 @@ namespace AoE.RTS.AI
         int EffectiveMaxUnitsPerTypePerWave =>
             IsRelaxedPace ? relaxedMaxUnitsPerTypePerWave : aggressiveMaxUnitsPerTypePerWave;
         public float BarracksWoodCost => barracksData != null ? barracksData.ScaledWoodCost : 0f;
-        public bool HasCpuBarracks => BarracksProductionManager.HasBarracksForTeam(CpuTeam);
-        public bool IsBuildingCpuBarracks => BuildingPlacementManager.HasActiveBarracksConstructionForTeam(CpuTeam);
-        public bool HasCpuArcheryRange => ArcheryRangeProductionManager.HasArcheryRangeForTeam(CpuTeam);
-        public bool HasCpuStable => StableProductionManager.HasStableForTeam(CpuTeam);
+        public bool HasCpuBarracks => BarracksProductionManager.HasBarracksForTeam(Team);
+        public bool IsBuildingCpuBarracks => BuildingPlacementManager.HasActiveBarracksConstructionForTeam(Team);
+        public bool HasCpuArcheryRange => ArcheryRangeProductionManager.HasArcheryRangeForTeam(Team);
+        public bool HasCpuStable => StableProductionManager.HasStableForTeam(Team);
 
         void Awake()
         {
@@ -191,9 +194,11 @@ namespace AoE.RTS.AI
             TryTrainScout();
         }
 
+        void EnqueueCpu(IGameCommand command) => CpuAiCommandQueue.Enqueue(cpuPlayerId, command);
+
         void RefreshCpuTownCenter()
         {
-            cpuTownCenter = ProductionManager.GetTownCenterForTeam(CpuTeam);
+            cpuTownCenter = ProductionManager.GetTownCenterForTeam(Team);
         }
 
         void TryBuildBarracks()
@@ -204,13 +209,13 @@ namespace AoE.RTS.AI
             if (Time.timeSinceLevelLoad < EffectiveBarracksBuildDelaySeconds)
                 return;
 
-            if (BarracksProductionManager.HasBarracksForTeam(CpuTeam))
+            if (BarracksProductionManager.HasBarracksForTeam(Team))
                 return;
 
-            if (BuildingPlacementManager.HasActiveConstructionForTeam(CpuTeam))
+            if (BuildingPlacementManager.HasActiveConstructionForTeam(Team))
                 return;
 
-            if (ResourceManager.GetWood(CpuTeam) < barracksData.ScaledWoodCost)
+            if (ResourceManager.GetWood(Team) < barracksData.ScaledWoodCost)
                 return;
 
             Unit builder = FindBuilderVillager();
@@ -226,8 +231,8 @@ namespace AoE.RTS.AI
                     out Vector3 placement))
                 return;
 
-            if (BuildingPlacementManager.TryStartTeamConstruction(barracksData, placement, builder))
-                Debug.Log($"[CPU Military] Barracks construction started at {FormatTime(Time.timeSinceLevelLoad)}");
+            EnqueueCpu(new CpuStartTeamConstructionCommand(barracksData, placement, builder));
+            Debug.Log($"[CPU Military] Barracks construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
         void TryBuildArcheryRange()
@@ -235,21 +240,21 @@ namespace AoE.RTS.AI
             if (archeryRangeData == null)
                 return;
 
-            if (!BarracksProductionManager.HasBarracksForTeam(CpuTeam))
+            if (!BarracksProductionManager.HasBarracksForTeam(Team))
                 return;
 
             TryEnsureFeudalAge();
 
-            if (!GameSessionManager.CanBuild(archeryRangeData, CpuTeam))
+            if (!GameSessionManager.CanBuild(archeryRangeData, Team))
                 return;
 
-            if (ArcheryRangeProductionManager.HasArcheryRangeForTeam(CpuTeam))
+            if (ArcheryRangeProductionManager.HasArcheryRangeForTeam(Team))
                 return;
 
-            if (BuildingPlacementManager.HasActiveConstructionForTeam(CpuTeam))
+            if (BuildingPlacementManager.HasActiveConstructionForTeam(Team))
                 return;
 
-            if (ResourceManager.GetWood(CpuTeam) < archeryRangeData.ScaledWoodCost)
+            if (ResourceManager.GetWood(Team) < archeryRangeData.ScaledWoodCost)
                 return;
 
             Unit builder = FindBuilderVillager();
@@ -265,8 +270,8 @@ namespace AoE.RTS.AI
                     out Vector3 placement))
                 return;
 
-            if (BuildingPlacementManager.TryStartTeamConstruction(archeryRangeData, placement, builder))
-                Debug.Log($"[CPU Military] Archery Range construction started at {FormatTime(Time.timeSinceLevelLoad)}");
+            EnqueueCpu(new CpuStartTeamConstructionCommand(archeryRangeData, placement, builder));
+            Debug.Log($"[CPU Military] Archery Range construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
         void TryBuildStable()
@@ -274,21 +279,21 @@ namespace AoE.RTS.AI
             if (stableData == null)
                 return;
 
-            if (!ArcheryRangeProductionManager.HasArcheryRangeForTeam(CpuTeam))
+            if (!ArcheryRangeProductionManager.HasArcheryRangeForTeam(Team))
                 return;
 
             TryEnsureFeudalAge();
 
-            if (!GameSessionManager.CanBuild(stableData, CpuTeam))
+            if (!GameSessionManager.CanBuild(stableData, Team))
                 return;
 
-            if (StableProductionManager.HasStableForTeam(CpuTeam))
+            if (StableProductionManager.HasStableForTeam(Team))
                 return;
 
-            if (BuildingPlacementManager.HasActiveConstructionForTeam(CpuTeam))
+            if (BuildingPlacementManager.HasActiveConstructionForTeam(Team))
                 return;
 
-            if (ResourceManager.GetWood(CpuTeam) < stableData.ScaledWoodCost)
+            if (ResourceManager.GetWood(Team) < stableData.ScaledWoodCost)
                 return;
 
             Unit builder = FindBuilderVillager();
@@ -304,8 +309,8 @@ namespace AoE.RTS.AI
                     out Vector3 placement))
                 return;
 
-            if (BuildingPlacementManager.TryStartTeamConstruction(stableData, placement, builder))
-                Debug.Log($"[CPU Military] Stable construction started at {FormatTime(Time.timeSinceLevelLoad)}");
+            EnqueueCpu(new CpuStartTeamConstructionCommand(stableData, placement, builder));
+            Debug.Log($"[CPU Military] Stable construction started at {FormatTime(Time.timeSinceLevelLoad)}");
         }
 
         void TryTrainMilitia()
@@ -313,24 +318,24 @@ namespace AoE.RTS.AI
             if (CountCpuUnitsByName("Militia") >= TargetMilitiaCount)
                 return;
 
-            Barracks barracks = BarracksProductionManager.GetBarracksForTeam(CpuTeam);
+            Barracks barracks = BarracksProductionManager.GetBarracksForTeam(Team);
             if (barracks == null)
                 return;
 
-            if (!PopulationManager.CanTrainUnit(CpuTeam))
+            if (!PopulationManager.CanTrainUnit(Team))
                 return;
 
             if (barracks.Data == null || barracks.Data.trainUnitData == null)
                 return;
 
-            if (ResourceManager.GetFood(CpuTeam) < barracks.Data.ScaledTrainFoodCost)
+            if (ResourceManager.GetFood(Team) < barracks.Data.ScaledTrainFoodCost)
                 return;
 
             if (barracks.Data.ScaledTrainWoodCost > 0f
-                && ResourceManager.GetWood(CpuTeam) < barracks.Data.ScaledTrainWoodCost)
+                && ResourceManager.GetWood(Team) < barracks.Data.ScaledTrainWoodCost)
                 return;
 
-            barracks.TryQueueMilitiaProduction();
+            EnqueueCpu(new TrainMilitiaCommand(barracks));
         }
 
         void TryTrainSpearman()
@@ -338,23 +343,23 @@ namespace AoE.RTS.AI
             if (CountCpuUnitsByName("Spearman") >= TargetSpearmanCount)
                 return;
 
-            Barracks barracks = BarracksProductionManager.GetBarracksForTeam(CpuTeam);
+            Barracks barracks = BarracksProductionManager.GetBarracksForTeam(Team);
             if (barracks == null)
                 return;
 
-            if (!PopulationManager.CanTrainUnit(CpuTeam))
+            if (!PopulationManager.CanTrainUnit(Team))
                 return;
 
             if (barracks.Data == null || barracks.Data.secondaryTrainUnitData == null)
                 return;
 
-            if (ResourceManager.GetWood(CpuTeam) < barracks.Data.ScaledSecondaryTrainWoodCost)
+            if (ResourceManager.GetWood(Team) < barracks.Data.ScaledSecondaryTrainWoodCost)
                 return;
 
-            if (ResourceManager.GetFood(CpuTeam) < barracks.Data.ScaledSecondaryTrainFoodCost)
+            if (ResourceManager.GetFood(Team) < barracks.Data.ScaledSecondaryTrainFoodCost)
                 return;
 
-            barracks.TryQueueSpearmanProduction();
+            EnqueueCpu(new TrainSpearmanCommand(barracks));
         }
 
         void TryTrainArcher()
@@ -362,23 +367,23 @@ namespace AoE.RTS.AI
             if (CountCpuUnitsByName("Archer") >= TargetArcherCount)
                 return;
 
-            ArcheryRange archeryRange = ArcheryRangeProductionManager.GetArcheryRangeForTeam(CpuTeam);
+            ArcheryRange archeryRange = ArcheryRangeProductionManager.GetArcheryRangeForTeam(Team);
             if (archeryRange == null)
                 return;
 
-            if (!PopulationManager.CanTrainUnit(CpuTeam))
+            if (!PopulationManager.CanTrainUnit(Team))
                 return;
 
             if (archeryRange.Data == null || archeryRange.Data.trainUnitData == null)
                 return;
 
-            if (ResourceManager.GetWood(CpuTeam) < archeryRange.Data.ScaledTrainWoodCost)
+            if (ResourceManager.GetWood(Team) < archeryRange.Data.ScaledTrainWoodCost)
                 return;
 
-            if (ResourceManager.GetFood(CpuTeam) < archeryRange.Data.ScaledTrainFoodCost)
+            if (ResourceManager.GetFood(Team) < archeryRange.Data.ScaledTrainFoodCost)
                 return;
 
-            archeryRange.TryQueueArcherProduction();
+            EnqueueCpu(new TrainArcherCommand(archeryRange));
         }
 
         void TryTrainCavalry()
@@ -386,23 +391,23 @@ namespace AoE.RTS.AI
             if (CountCpuUnitsByName("Cavalry") >= TargetCavalryCount)
                 return;
 
-            Stable stable = StableProductionManager.GetStableForTeam(CpuTeam);
+            Stable stable = StableProductionManager.GetStableForTeam(Team);
             if (stable == null)
                 return;
 
-            if (!PopulationManager.CanTrainUnit(CpuTeam))
+            if (!PopulationManager.CanTrainUnit(Team))
                 return;
 
             if (stable.Data == null || stable.Data.trainUnitData == null)
                 return;
 
-            if (ResourceManager.GetWood(CpuTeam) < stable.Data.ScaledTrainWoodCost)
+            if (ResourceManager.GetWood(Team) < stable.Data.ScaledTrainWoodCost)
                 return;
 
-            if (ResourceManager.GetFood(CpuTeam) < stable.Data.ScaledTrainFoodCost)
+            if (ResourceManager.GetFood(Team) < stable.Data.ScaledTrainFoodCost)
                 return;
 
-            stable.TryQueueCavalryProduction();
+            EnqueueCpu(new TrainCavalryCommand(stable));
         }
 
         void TryTrainScout()
@@ -410,31 +415,31 @@ namespace AoE.RTS.AI
             if (CountCpuUnitsByName("Scout") >= TargetScoutCount)
                 return;
 
-            Stable stable = StableProductionManager.GetStableForTeam(CpuTeam);
+            Stable stable = StableProductionManager.GetStableForTeam(Team);
             if (stable == null)
                 return;
 
-            if (!PopulationManager.CanTrainUnit(CpuTeam))
+            if (!PopulationManager.CanTrainUnit(Team))
                 return;
 
             if (stable.Data == null || stable.Data.secondaryTrainUnitData == null)
                 return;
 
-            if (ResourceManager.GetWood(CpuTeam) < stable.Data.ScaledSecondaryTrainWoodCost)
+            if (ResourceManager.GetWood(Team) < stable.Data.ScaledSecondaryTrainWoodCost)
                 return;
 
-            if (ResourceManager.GetFood(CpuTeam) < stable.Data.ScaledSecondaryTrainFoodCost)
+            if (ResourceManager.GetFood(Team) < stable.Data.ScaledSecondaryTrainFoodCost)
                 return;
 
-            stable.TryQueueScoutProduction();
+            EnqueueCpu(new TrainScoutCommand(stable));
         }
 
         void TryEnsureFeudalAge()
         {
-            if (GameSessionManager.GetAge(CpuTeam) >= GameAge.Feudal)
+            if (GameSessionManager.GetAge(Team) >= GameAge.Feudal)
                 return;
 
-            GameSessionManager.TryAgeUpForTeam(CpuTeam);
+            EnqueueCpu(new CpuAgeUpCommand(Team));
         }
 
         void LaunchAttackWave()
@@ -458,7 +463,7 @@ namespace AoE.RTS.AI
             CollectCpuAttackWaveUnits(attackWaveBuffer);
             if (attackWaveBuffer.Count < EffectiveMinAttackUnitsForWave)
             {
-                if (BarracksProductionManager.HasBarracksForTeam(CpuTeam))
+                if (BarracksProductionManager.HasBarracksForTeam(Team))
                     Debug.Log("[CPU Military] Attack wave skipped — no military units");
                 return;
             }
@@ -467,22 +472,22 @@ namespace AoE.RTS.AI
                 ? cpuTownCenter.transform.position
                 : attackWaveBuffer[0].transform.position;
 
-            Unit target = UnitSpatialIndex.FindNearestUnit(rallyPoint, PlayerTeam);
+            Unit target = UnitSpatialIndex.FindNearestUnit(rallyPoint, OpponentTeam);
             if (target != null)
             {
-                AttackManager.IssueAttack(attackWaveBuffer, target);
+                EnqueueCpu(new AttackUnitCommand(attackWaveBuffer, target));
                 Debug.Log(
                     $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} at {FormatTime(Time.timeSinceLevelLoad)}");
                 return;
             }
 
-            TownCenter playerTownCenter = ProductionManager.GetTownCenterForTeam(PlayerTeam);
+            TownCenter playerTownCenter = ProductionManager.GetTownCenterForTeam(OpponentTeam);
             if (playerTownCenter != null)
             {
                 BuildingHealth playerTownCenterHealth = playerTownCenter.GetComponent<BuildingHealth>();
                 if (playerTownCenterHealth != null && playerTownCenterHealth.IsAlive)
                 {
-                    AttackManager.IssueAttack(attackWaveBuffer, playerTownCenterHealth);
+                    EnqueueCpu(new AttackBuildingCommand(attackWaveBuffer, playerTownCenterHealth));
                     Debug.Log(
                         $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} → Town Center at {FormatTime(Time.timeSinceLevelLoad)}");
                     return;
@@ -493,7 +498,7 @@ namespace AoE.RTS.AI
                 ? playerTownCenter.transform.position
                 : attackWaveBuffer[0].transform.position;
             advanceTarget.y = 1f;
-            FormationMoveManager.Register(attackWaveBuffer, advanceTarget, 2f);
+            EnqueueCpu(new MoveCommand(attackWaveBuffer, advanceTarget, 2f));
 
             Debug.Log(
                 $"[CPU Military] Attack wave: {FormatWaveComposition(attackWaveBuffer)} advancing at {FormatTime(Time.timeSinceLevelLoad)}");
@@ -568,7 +573,7 @@ namespace AoE.RTS.AI
                         break;
 
                     Unit unit = unitBuffer[i];
-                    if (unit == null || !unit.IsAlive || unit.Team != CpuTeam || !unit.CanAttack)
+                    if (unit == null || !unit.IsAlive || unit.Team != Team || !unit.CanAttack)
                         continue;
 
                     if (unit.Data == null || unit.Data.displayName != unitType)
@@ -587,7 +592,7 @@ namespace AoE.RTS.AI
             for (int i = 0; i < unitBuffer.Count; i++)
             {
                 Unit unit = unitBuffer[i];
-                if (unit == null || !unit.IsAlive || unit.Team != CpuTeam)
+                if (unit == null || !unit.IsAlive || unit.Team != Team)
                     continue;
 
                 if (unit.Data != null && unit.Data.displayName == displayName)
@@ -604,15 +609,15 @@ namespace AoE.RTS.AI
 
             return UnitSpatialIndex.FindNearestUnit(
                 cpuTownCenter.transform.position,
-                CpuTeam,
+                Team,
                 unit => IsCpuVillager(unit) && !BuildingPlacementManager.IsUnitBuilding(unit));
         }
 
-        static bool IsCpuVillager(Unit unit)
+        bool IsCpuVillager(Unit unit)
         {
             return unit != null
                 && unit.IsAlive
-                && unit.Team == CpuTeam
+                && unit.Team == Team
                 && !unit.CanAttack;
         }
 

@@ -84,6 +84,7 @@ namespace AoE.RTS.EditorTools
             GameObject cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
             cameraObject.AddComponent<UnityEngine.Camera>();
+            cameraObject.AddComponent<AudioListener>();
             Phase1SceneBuilder.ApplyOverviewCamera(cameraObject.transform, Vector3.zero);
             return cameraObject;
         }

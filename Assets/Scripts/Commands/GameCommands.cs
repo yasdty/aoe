@@ -745,4 +745,54 @@ namespace AoE.RTS.Commands
                 stable.SetRally(rally);
         }
     }
+
+    public sealed class CpuStartTeamConstructionCommand : IGameCommand, IEntityIdSource
+    {
+        readonly PlacedBuildingData data;
+        readonly Vector3 position;
+        readonly int builderEntityId;
+
+        public string DebugName => "CpuStartConstruction";
+
+        public CpuStartTeamConstructionCommand(PlacedBuildingData data, Vector3 position, Unit builder)
+        {
+            this.data = data;
+            this.position = position;
+            builderEntityId = builder != null ? builder.EntityId : 0;
+        }
+
+        public void CollectEntityIds(List<int> entityIds)
+        {
+            if (builderEntityId > 0)
+                entityIds.Add(builderEntityId);
+        }
+
+        public void Execute()
+        {
+            if (data == null || builderEntityId <= 0)
+                return;
+
+            if (!EntityRegistry.TryGetUnit(builderEntityId, out Unit builder) || !builder.IsAlive)
+                return;
+
+            BuildingPlacementManager.TryStartTeamConstruction(data, position, builder);
+        }
+    }
+
+    public sealed class CpuAgeUpCommand : IGameCommand
+    {
+        readonly UnitTeam team;
+
+        public string DebugName => "CpuAgeUp";
+
+        public CpuAgeUpCommand(UnitTeam team)
+        {
+            this.team = team;
+        }
+
+        public void Execute()
+        {
+            GameSessionManager.TryAgeUpForTeam(team);
+        }
+    }
 }

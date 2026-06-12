@@ -2073,6 +2073,7 @@ namespace AoE.RTS.EditorTools
             GameObject cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
             cameraObject.AddComponent<UnityEngine.Camera>();
+            cameraObject.AddComponent<AudioListener>();
 
             RTSInputReader inputReader = cameraObject.AddComponent<RTSInputReader>();
             SerializedObject serializedInput = new SerializedObject(inputReader);

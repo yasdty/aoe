@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 57 ✅（Entity ID & PlayerId）。**M6 進行中 — 次: Phase 58 CPU Command Queue。**
+> **最終更新:** Phase 58 ✅（CPU Command Queue）。**M6 進行中 — 次: Phase 59 Four-Player Match。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -19,7 +19,7 @@
 | **目的** | Age of Empires II ライクな Low-Spec RTS エンジンのプロトタイプ。MacBook Air 16GB 級で大規模戦闘を目指す基盤を Phase 単位で構築する |
 | **技術スタック** | Unity 6 / C# / URP / New Input System |
 | **対象スペック** | MacBook Air 16GB 級（将来: 4 チーム × 200 ユニット + 建築多数 + 大規模戦闘） |
-| **対戦想定** | 現状は **1 人間 vs 1 CPU** のローカルシングルプレイ。**M6 目標: 人間1+CPU3・2v2・大マップ・Fog**（Phase 57〜62） |
+| **対戦想定** | 現状は **1 人間 vs 1 CPU** のローカルシングルプレイ。**M6 目標: 人間1+CPU3・2v2・大マップ・敵HP/修理/複数建設・Fog**（Phase 57〜65） |
 | **設計方針** | Manager 集中更新 / NavMesh 禁止 / Unit 個別 Update 禁止 / Asset Store 購入禁止 / Unity アセット手書き禁止（Editor API のみ）/ Phase 単位の small diff / マルチプレイ将来互換を意識した simulation 分離 |
 
 ### アーキテクチャ原則（CONSTITUTION より）
@@ -92,12 +92,15 @@
 | 55 | Unit Animation | `Phase10.unity` | ✅ 完了（M5）— Animator MVP / Idle・Walk・Gather・Attack |
 | 56 | Combat VFX & Audio | `Phase10.unity` | ✅ 完了（M5）— 弾丸 / ヒット VFX / SE / 死亡 puff |
 | 57 | Entity ID & PlayerId | `Phase10.unity` | ✅ 完了（M6）— `EntityRegistry` / `PlayerId` / Move・Attack Command ID 化 |
-| 58 | CPU Command Queue | `Phase10.unity` | ⬜ 未着手（M6）— **次** |
-| 59 | Four-Player Match（1H + 3CPU） | `Phase10.unity` | ⬜ 未着手（M6） |
+| 58 | CPU Command Queue | `Phase10.unity` | ✅ 完了（M6）— CPU AI → `CommandQueue` / `PlayerId` 対応 |
+| 59 | Four-Player Match（1H + 3CPU） | `Phase10.unity` | ⬜ 未着手（M6）— **次** |
 | 60 | Team & 2v2 | `Phase10.unity` | ⬜ 未着手（M6） |
 | 61 | Large Map | `Phase10.unity` | ⬜ 未着手（M6） |
-| 62 | Fog of War | `Phase10.unity` | ⬜ 未着手（M6） |
-| 63 | Deterministic Sim（LAN 準備） | `Phase10.unity` | ⬜ 未着手（M6・後回し可） |
+| 62 | Enemy HP Display（敵選択・HP バー） | `Phase10.unity` | ⬜ 未着手（M6） |
+| 63 | Building Repair（建物修理） | `Phase10.unity` | ⬜ 未着手（M6） |
+| 64 | Multi-Villager Build（複数人建設加速） | `Phase10.unity` | ⬜ 未着手（M6） |
+| 65 | Fog of War | `Phase10.unity` | ⬜ 未着手（M6） |
+| 66 | Deterministic Sim（LAN 準備） | `Phase10.unity` | ⬜ 未着手（M6・後回し可） |
 
 **ゲームループ:** 採集 → 建築 → 生産 → 戦闘 → **勝敗判定**
 
@@ -117,7 +120,7 @@
 
 **Milestone 5 Gameplay Polish & Visual / UI:** ✅ 完了（Phase 49〜56）
 
-**Milestone 6 — 4-Player & World Scale:** ⬜ 進行中（Phase 58〜62 が本体 / 63 は LAN 前 — **次: Phase 58**）
+**Milestone 6 — 4-Player & World Scale:** ⬜ 進行中（Phase 59〜65 が本体 / 66 は LAN 前 — **次: Phase 59**）
 
 ---
 
@@ -163,7 +166,7 @@
 | 単体選択 | ✅ | |
 | 複数選択・矩形選択 | ✅ | `SelectionBoxView`（OnGUI） |
 | 建築選択（TC / Barracks） | ✅ | |
-| CPU ユニット・建築の選択不可 | ✅ | `UnitTeam.Enemy` フィルタ |
+| CPU ユニット・建築の選択不可 | ✅ | `UnitTeam.Enemy` フィルタ — **Phase 62 で敵選択・HP 表示** |
 | 選択時色変更 | ✅ | MaterialPropertyBlock |
 | グループ移動グリッド整列 | ✅ | `GroupMoveFormation`（√n グリッド） |
 | 建物スポーン周囲グリッド | ✅ | Phase 22 — `BuildingSpawnFormation`（TC / Barracks、16 スロット √n グリッド） |
@@ -230,8 +233,9 @@
 | Mining Camp | ✅ | 100 Wood / 6 秒 / Gold+Stone Drop-off 拠点 |
 | Mill | ✅ | 100 Wood / 6 秒 / Food Drop-off 拠点 |
 | 配置ゴーストプレビュー | ✅ | 有効/無効色 |
-| Villager による建築 | ✅ | 現場移動 → 建築タイマー |
+| Villager による建築 | ✅ | 現場移動 → 建築タイマー（**1 人/サイト** — Phase 64 で複数人加速） |
 | 建築中断（移動命令） | ✅ | Wood 返金なし |
+| 建物修理 | ❌ | Phase 63 予定 |
 | CPU 自動建築 | ✅ | House / Barracks（AI） |
 | 建築破壊・Pop 減少 | ✅ | Phase 48 — House 破壊時 `PopulationManager.RemoveHousing` |
 | 壁・塔（配置・HP） | ✅ | Phase 44 — Palisade / Stone Wall / Watch Tower |
@@ -251,7 +255,7 @@
 | 攻撃クールダウン | ✅ | Militia 1 秒 |
 | 攻撃接近リング散開 | ✅ | `UnitPositionOffsets` |
 | 死亡（Pool 返却） | ✅ | HP ≦ 0 → `UnitPool.Return`（Destroy 禁止） |
-| HP バー（選択時） | ✅ | `UnitHpBarView`（OnGUI） |
+| HP バー（選択時） | ✅ | `UnitHpBarView`（OnGUI）— **自軍のみ** / 敵は Phase 62 |
 | 攻撃中色変化 | ✅ | オレンジ系ティント |
 | 建築 HP / TC 破壊 | ✅ | `BuildingHealth`（Phase 11） |
 | 遠距離攻撃（弓・投石） | ❌ | |
@@ -551,9 +555,12 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **船** | 海上戦・貿易 | ❌ | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 | **市場** | 資源交易 | Market + 固定レート売買 ✅（Phase 45） | M4 Phase 46+ |
 | **テクノロジー** | Dark→Imperial | Feudal 昇格 ✅（Phase 42）/ Blacksmith 研究 1 系統 ✅（Phase 43） | M4 Phase 44+ |
-| **マルチプレイ** | LAN/オンライン | ❌（基盤 40〜50%） | M6 Phase 58〜63 |
+| **マルチプレイ** | LAN/オンライン | ❌（基盤 40〜50%） | M6 Phase 58〜66 |
 | **4 人 / 2v2** | 1H+3CPU / 同盟 | ❌ | M6 Phase 59〜60 |
-| **Fog of War** | 視界制限 | ❌ | M6 Phase 62 |
+| **敵 HP 表示** | 敵選択・識別 | ❌（敵選択不可） | M6 Phase 62 |
+| **建物修理** | Villager 修理 | ❌ | M6 Phase 63 |
+| **複数人建設** | 建築速度加速 | ❌（1人/サイト） | M6 Phase 64 |
+| **Fog of War** | 視界制限 | ❌ | M6 Phase 65 |
 | **大型マップ** | 4 隅スポーン | △ Phase10 小 | M6 Phase 61 |
 | **マップ** | ランダムマップ | 固定 Plane（Phase 35 で拡大） | ✅ Sandbox / ランダムは M8 |
 | **勝敗** | 征服・遺跡等 | TC 破壊 ✅ | 拡張フック定義済み |
@@ -587,7 +594,10 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | 本格 HUD（uGUI） | ✅ Phase 53 — 資源・生産・選択・勝敗・Idle / Canvas ✅ Phase 52 |
 | ミニマップ | ✅ Phase 54 — `MinimapView` / `MapBounds` / TC アイコン / 視野矩形 / クリック移動 |
 | ユニットアニメ | ✅ Phase 55 — `UnitAnimationView` / Animator MVP（Villager・Militia・Archer） |
-| 4 チーム対応 | 憲法目標だが enum は 2 チームのみ |
+| 4 チーム対応 | 憲法目標だが enum は 2 チームのみ — Phase 59 |
+| 敵 HP 表示 | Phase 62 — 敵選択 + HP バー |
+| 建物修理 | Phase 63 — `RepairManager` + 木材コスト |
+| 複数 Villager 建設 | Phase 64 — `ConstructionSite` 複数 builder |
 | Castle / Wonder | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 
 ### Nice To Have
@@ -694,7 +704,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **Fixed Tick Simulation** | ✅ | 20 TPS。Game Over 中停止 |
 | **Command Queue（プレイヤー）** | ✅ | 9 種 Command。Tick 先頭 Execute |
 | **Command Log** | △ | `CommandLog` 記録あり（EntityId 付き — Move / AttackUnit）。再生・保存なし |
-| **Command Queue（CPU）** | ❌ | CPU は Manager 直接呼び出し |
+| **Command Queue（CPU）** | ✅ | `CpuEconomyAiManager` / `CpuMilitaryAiManager` → `CpuAiCommandQueue` |
 | **Deterministic Simulation** | ❌ | float 演算・Tickable 登録順 |
 | **Turn / Lockstep** | ❌ | 未設計 |
 | **Replay 再生** | ❌ | 未実装 |
@@ -727,12 +737,15 @@ Phase 11 以降の候補（優先度順）。
 | P2 | 時代昇格 / 鍛冶屋 / 市場 / 文明 | ✅ M4 Phase 42〜48 |
 | P2 | 壁時代グレード | ✅ M5 Phase 50 |
 | P1 | Entity ID & PlayerId | ✅ M6 Phase 57 |
-| P2 | CPU Command 化 | M6 Phase 58 — **次** |
-| P3 | 4 人（1H+3CPU） | M6 Phase 59 |
+| P2 | CPU Command 化 | ✅ M6 Phase 58 |
+| P3 | 4 人（1H+3CPU） | M6 Phase 59 — **次** |
 | P3 | 2v2 同盟 | M6 Phase 60 |
 | P4 | 大型マップ | M6 Phase 61 |
-| P4 | Fog of War | M6 Phase 62 |
-| P5 | 決定論（LAN 前） | M6 Phase 63 |
+| P4 | 敵 HP 表示 | M6 Phase 62 |
+| P4 | 建物修理 | M6 Phase 63 |
+| P4 | 複数 Villager 建設 | M6 Phase 64 |
+| P4 | Fog of War | M6 Phase 65 |
+| P5 | 決定論（LAN 前） | M6 Phase 66 |
 | — | リプレイ / ホットシート | オプション（後回し） |
 | — | 本格オンラインマルチ | M9 以降 |
 
@@ -1008,7 +1021,7 @@ Overall Completion（現状 Phase 34）: 15%
 | M3 完了 | ~22% | ~90% | 35% | ~18% |
 | M4 完了 | ~38% | ~92% | 40% | ~20% |
 | **M5 完了** | **~50〜55%** | **~90%** | **55〜60%** | **~30%** |
-| M6 完了（57〜62） | ~60% | ~95% | **4人ローカル** | ~40% |
+| M6 完了（57〜65） | ~62% | ~96% | **4人ローカル** | ~40% |
 
 **M5 完了で 50% 前後**の内訳: Economy / Military / Technology / UX が大幅向上。未着手が大きい領域は **海軍・攻城・全文明・ランダムマップ・Fog・本格オンライン MP・800 体性能**。
 
@@ -1061,8 +1074,8 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・Feudal 経済・多兵種・1 CPU — **Dark〜Feudal 垂直スライス**（全体 ~38%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 58 CPU Command Queue** — [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) |
-| M6 のゴールは？ | **人間1+CPU3・2v2・大マップ・Fog**（57→58→59→60→61→62） |
+| 次に何を作るべき？ | **Phase 59 Four-Player Match** — [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) |
+| M6 のゴールは？ | **人間1+CPU3・2v2・大マップ・敵HP/修理/複数建設・Fog**（57→58→59→60→61→62→63→64→65） |
 | リプレイ・ホットシートは？ | **M6 スコープ外（後回し）** |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

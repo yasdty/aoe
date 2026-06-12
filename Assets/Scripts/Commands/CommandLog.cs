@@ -31,18 +31,23 @@ namespace AoE.RTS.Commands
 
             string entityIdSummary = FormatEntityIds(entityIdScratch);
 
+            PlayerId issuingPlayerId = command is IPlayerCommand playerCommand
+                ? playerCommand.IssuingPlayerId
+                : PlayerId.Player0;
+            UnitTeam team = PlayerIdMapping.ToLegacyTeam(issuingPlayerId);
+
             records.Add(new CommandRecord
             {
                 tick = tick,
                 commandType = command.DebugName,
-                team = UnitTeam.Player,
+                team = team,
                 entityIds = entityIdSummary
             });
 
             if (entityIdSummary.Length > 0)
-                Debug.Log($"CommandLog: tick={tick} {command.DebugName} entities={entityIdSummary}");
+                Debug.Log($"CommandLog: tick={tick} {command.DebugName} player={issuingPlayerId} entities={entityIdSummary}");
             else
-                Debug.Log($"CommandLog: tick={tick} {command.DebugName}");
+                Debug.Log($"CommandLog: tick={tick} {command.DebugName} player={issuingPlayerId}");
         }
 
         static string FormatEntityIds(List<int> entityIds)

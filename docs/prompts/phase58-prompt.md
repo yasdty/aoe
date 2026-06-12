@@ -1,6 +1,6 @@
 # Phase 58 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜57 完了（Entity ID & PlayerId 基盤）  
 > **マイルストン:** M6 — **CPU Command Queue**（4 人 CPU×3 の前段）  
 > **ロードマップ:** [10_M6_MULTIPLAYER_FOUNDATION.md](../10_M6_MULTIPLAYER_FOUNDATION.md)  
@@ -163,13 +163,13 @@ public interface IPlayerCommand
 
 ## ⑦ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 58 ✅
-- [ ] `10_M6_MULTIPLAYER_FOUNDATION.md` — Phase 58 ✅
-- [ ] 本プロンプト — ✅
-- [ ] `phase57-prompt.md` の「次」リンクがあれば `phase58-prompt.md` 参照を確認
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 58 ✅
+- [x] `10_M6_MULTIPLAYER_FOUNDATION.md` — Phase 58 ✅
+- [x] 本プロンプト — ✅
+- [x] `phase57-prompt.md` の「次」リンクがあれば `phase58-prompt.md` 参照を確認
 
 ---
 
 Phase 58 のみ。**Phase 59（4 人マッチ）・Phase 60（2v2）には触れない。**
 
-> **次:** Phase 59 Four-Player Match（人間1 + CPU3）
+> **次:** [phase59-prompt.md](phase59-prompt.md) — Four-Player Match（人間1 + CPU3）
