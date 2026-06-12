@@ -1,6 +1,6 @@
 # Phase 56 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜55 完了（View Split / uGUI HUD / Minimap / Unit Animation）  
 > **マイルストン:** M5 — **Combat VFX & Audio**（M5 最終 Phase）  
 > **ロードマップ:** [09_M5_VISUAL_UI_PHASES.md](../09_M5_VISUAL_UI_PHASES.md)  
@@ -157,9 +157,9 @@ public static class CombatAudioHooks
 
 ## ⑦ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 56 ✅ / M5 完了
-- [ ] `09_M5_VISUAL_UI_PHASES.md` — Phase 56 ✅
-- [ ] 本プロンプト — ✅
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 56 ✅ / M5 完了
+- [x] `09_M5_VISUAL_UI_PHASES.md` — Phase 56 ✅
+- [x] 本プロンプト — ✅
 
 ---
 

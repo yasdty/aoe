@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 55 ✅（Unit Animation — `UnitAnimationView` / Animator MVP / Villager・Militia・Archer 状態アニメ）。**次: Phase 56 Combat VFX & Audio（M5）。**
+> **最終更新:** Phase 56 ✅（Combat VFX & Audio — `CombatFeedbackView` / 弾丸・ヒット・SE / 死亡 puff）。**M5 完了。次: Phase 57 Entity ID & PlayerId（M6）。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -90,8 +90,8 @@
 | 53 | HUD Migration | `Phase10.unity` | ✅ 完了（M5）— uGUI 主要 HUD |
 | 54 | Minimap | `Phase10.unity` | ✅ 完了（M5）— TC アイコン / 視野 / クリック移動 |
 | 55 | Unit Animation | `Phase10.unity` | ✅ 完了（M5）— Animator MVP / Idle・Walk・Gather・Attack |
-| 56 | Combat VFX & Audio | `Phase10.unity` | ⬜ 未着手（M5）— **次** |
-| 57 | Entity ID & PlayerId | `Phase10.unity` | ⬜ 未着手（M6） |
+| 56 | Combat VFX & Audio | `Phase10.unity` | ✅ 完了（M5）— 弾丸 / ヒット VFX / SE / 死亡 puff |
+| 57 | Entity ID & PlayerId | `Phase10.unity` | ⬜ 未着手（M6）— **次** |
 | 58 | CPU Command Queue | `Phase10.unity` | ⬜ 未着手（M6） |
 | 59 | Deterministic Sim | `Phase10.unity` | ⬜ 未着手（M6） |
 | 60 | Replay & Snapshot | `Phase10.unity` | ⬜ 未着手（M6） |
@@ -113,9 +113,9 @@
 
 **Milestone 4 AoE Gameplay:** ✅ 完了（Phase 42〜48）
 
-**Milestone 5 Gameplay Polish & Visual / UI:** ⬜ 進行中（Phase 49〜55 ✅ / **次: Phase 56 Combat VFX & Audio**）
+**Milestone 5 Gameplay Polish & Visual / UI:** ✅ 完了（Phase 49〜56）
 
-**Milestone 6 Multiplayer Foundation:** ⬜ 未着手（Phase 57〜61）
+**Milestone 6 Multiplayer Foundation:** ⬜ 未着手（Phase 57〜61 — **次: Phase 57**）
 
 ---
 
@@ -1049,7 +1049,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・Feudal 経済・多兵種・1 CPU — **Dark〜Feudal 垂直スライス**（全体 ~38%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 56 Combat VFX & Audio** — [09_M5](09_M5_VISUAL_UI_PHASES.md) |
+| 次に何を作るべき？ | **Phase 57 Entity ID & PlayerId** — [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) |
 | UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |

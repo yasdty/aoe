@@ -114,6 +114,14 @@ namespace AoE.RTS.Combat
             float damage = attacker.AttackPower;
             boar.ApplyAttackDamage(damage, attacker);
 
+            CombatFeedbackBus.Raise(new CombatFeedbackEvent
+            {
+                sourceWorldPosition = attacker.transform.position + Vector3.up * 1.2f,
+                targetWorldPosition = boar.transform.position + Vector3.up * 0.5f,
+                kind = CombatFeedbackKind.MeleeHit,
+                targetWasKilled = false
+            });
+
             if (!JobStillActive(index, attacker))
                 return false;
 

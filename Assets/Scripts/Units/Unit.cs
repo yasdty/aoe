@@ -187,7 +187,7 @@ namespace AoE.RTS.Units
             SelectionManager.HandleUnitDied(this);
             UnitManager.Unregister(this);
 
-            UnitPool.Return(this);
+            CombatDeathScheduler.ScheduleReturn(this);
         }
 
         public void SetSelected(bool selected)

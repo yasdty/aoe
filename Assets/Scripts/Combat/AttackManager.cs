@@ -211,6 +211,8 @@ namespace AoE.RTS.Combat
             else if (buildingTarget != null)
                 buildingTarget.TakeDamage(damage);
 
+            RaiseCombatFeedback(attacker, targetPosition, unitTarget, buildingTarget);
+
             // TakeDamage/Die may remove this job via CancelJobsForUnit while we are in Update.
             if (!JobStillActive(index, attacker))
                 return false;
@@ -455,6 +457,32 @@ namespace AoE.RTS.Combat
         static string FormatTeam(UnitTeam team)
         {
             return team == UnitTeam.Player ? "Player" : "CPU";
+        }
+
+        static void RaiseCombatFeedback(
+            Unit attacker,
+            Vector3 targetPosition,
+            Unit unitTarget,
+            BuildingHealth buildingTarget)
+        {
+            bool ranged = CombatFeedbackClassifier.IsRangedUnit(attacker);
+            CombatFeedbackKind kind;
+            if (buildingTarget != null)
+                kind = ranged ? CombatFeedbackKind.RangedHit : CombatFeedbackKind.BuildingHit;
+            else
+                kind = ranged ? CombatFeedbackKind.RangedHit : CombatFeedbackKind.MeleeHit;
+
+            bool targetWasKilled = unitTarget != null && !unitTarget.IsAlive;
+            Vector3 sourcePosition = attacker.transform.position + Vector3.up * 1.2f;
+            Vector3 impactPosition = targetPosition + Vector3.up * 0.5f;
+
+            CombatFeedbackBus.Raise(new CombatFeedbackEvent
+            {
+                sourceWorldPosition = sourcePosition,
+                targetWorldPosition = impactPosition,
+                kind = kind,
+                targetWasKilled = targetWasKilled
+            });
         }
     }
 }

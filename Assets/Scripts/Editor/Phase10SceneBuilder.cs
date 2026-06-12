@@ -780,6 +780,26 @@ namespace AoE.RTS.EditorTools
                 selectionManager.gameObject.AddComponent<MinimapView>();
         }
 
+        [MenuItem("AoE/Add Combat Feedback (Phase56)", true)]
+        static bool ValidateAddCombatFeedbackPhase56() => !EditorApplication.isPlaying;
+
+        [MenuItem("AoE/Add Combat Feedback (Phase56)")]
+        public static void AddCombatFeedbackPhase56()
+        {
+            if (!Phase1SceneBuilder.EnsureEditModeForSceneSetup())
+                return;
+
+            EnsureCombatFeedbackView();
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Added CombatFeedbackView (Phase56). Save the scene (Ctrl+S) if needed.");
+        }
+
+        public static void EnsureCombatFeedbackView()
+        {
+            GameObject systems = GameObject.Find("Systems");
+            CombatFeedbackView.Ensure(systems);
+        }
+
         static void EnsureInputSystemEventSystem()
         {
             EventSystem eventSystem = Object.FindAnyObjectByType<EventSystem>();
@@ -1414,6 +1434,8 @@ namespace AoE.RTS.EditorTools
             EnsureHudUi();
             PlacementPreviewView placementPreviewView = EnsurePlacementPreviewView();
             placementPreviewView.transform.SetParent(systems.transform);
+
+            CombatFeedbackView.Ensure(systems);
 
             GameObject cpuEconomyObject = new GameObject("CpuEconomyAiManager");
             cpuEconomyObject.transform.SetParent(systems.transform);

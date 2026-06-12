@@ -83,6 +83,15 @@ namespace AoE.RTS.Buildings
                 target);
             target.TakeDamage(breakdown.totalDamage);
 
+            bool targetWasKilled = !target.IsAlive;
+            CombatFeedbackBus.Raise(new CombatFeedbackEvent
+            {
+                sourceWorldPosition = tower.transform.position + Vector3.up * 4f,
+                targetWorldPosition = target.transform.position + Vector3.up * 1f,
+                kind = CombatFeedbackKind.RangedHit,
+                targetWasKilled = targetWasKilled
+            });
+
             string towerName = tower.Data.displayName ?? "Watch Tower";
             string targetName = target.Data?.displayName ?? "Unit";
             Debug.Log(
