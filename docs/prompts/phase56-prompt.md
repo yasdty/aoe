@@ -165,4 +165,4 @@ public static class CombatAudioHooks
 
 Phase 56 のみ。**M6（Phase 57 Entity ID）には触れない。**
 
-> **次:** M6 Phase 57 Entity ID & PlayerId — [10_M6_MULTIPLAYER_FOUNDATION.md](../10_M6_MULTIPLAYER_FOUNDATION.md)
+> **次:** M6 Phase 57 Entity ID & PlayerId — [phase57-prompt.md](phase57-prompt.md) / [10_M6_MULTIPLAYER_FOUNDATION.md](../10_M6_MULTIPLAYER_FOUNDATION.md)

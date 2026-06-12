@@ -3,7 +3,7 @@
 > **Milestone:** M5 — **防衛 gameplay 完成** + Visual / UI Polish + **Localization**  
 > **前提:** [08_M4_GAMEPLAY_PHASES.md](08_M4_GAMEPLAY_PHASES.md)（Phase 42〜48）完了  
 > **実装状況:** [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)  
-> **前:** M4 AoE Gameplay / **次:** [10_M6_MULTIPLAYER_FOUNDATION.md](10_M6_MULTIPLAYER_FOUNDATION.md)（Phase 57〜61）
+> **前:** M4 AoE Gameplay / **次:** [10_M6_MULTIPLAYER_FOUNDATION.md](10_M6_MULTIPLAYER_FOUNDATION.md)（Phase 57〜63 — 4人・2v2・大マップ・Fog）
 
 > **2026-06 拡張:** Phase 44/48 の壁は配置・HP MVP。Phase 49 で **通行遮断・ドラッグ列配置・Gate** を実装。**ドラッグ中の列ゴーストプレビュー**は Phase 52〜53（View / HUD）で対応。
 

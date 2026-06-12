@@ -267,10 +267,10 @@ namespace AoE.RTS.Selection
             {
                 solidTexture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
                 solidTexture.hideFlags = HideFlags.HideAndDontSave;
+                solidTexture.SetPixel(0, 0, color);
+                solidTexture.Apply(false, false);
             }
 
-            solidTexture.SetPixel(0, 0, color);
-            solidTexture.Apply(false, true);
             return solidTexture;
         }
 

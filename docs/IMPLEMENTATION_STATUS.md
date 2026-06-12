@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 56 ✅（Combat VFX & Audio — `CombatFeedbackView` / 弾丸・ヒット・SE / 死亡 puff）。**M5 完了。次: Phase 57 Entity ID & PlayerId（M6）。**
+> **最終更新:** Phase 56 ✅（M5 完了）。**M6 ロードマップ再編（57〜63: 4人・2v2・大マップ・Fog）。次: Phase 57 Entity ID & PlayerId。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -19,7 +19,7 @@
 | **目的** | Age of Empires II ライクな Low-Spec RTS エンジンのプロトタイプ。MacBook Air 16GB 級で大規模戦闘を目指す基盤を Phase 単位で構築する |
 | **技術スタック** | Unity 6 / C# / URP / New Input System |
 | **対象スペック** | MacBook Air 16GB 級（将来: 4 チーム × 200 ユニット + 建築多数 + 大規模戦闘） |
-| **対戦想定** | 現状は **1 人間（Player）vs 1 CPU（Enemy）** のローカルシングルプレイ。マルチプレイは未実装 |
+| **対戦想定** | 現状は **1 人間 vs 1 CPU** のローカルシングルプレイ。**M6 目標: 人間1+CPU3・2v2・大マップ・Fog**（Phase 57〜62） |
 | **設計方針** | Manager 集中更新 / NavMesh 禁止 / Unit 個別 Update 禁止 / Asset Store 購入禁止 / Unity アセット手書き禁止（Editor API のみ）/ Phase 単位の small diff / マルチプレイ将来互換を意識した simulation 分離 |
 
 ### アーキテクチャ原則（CONSTITUTION より）
@@ -93,9 +93,11 @@
 | 56 | Combat VFX & Audio | `Phase10.unity` | ✅ 完了（M5）— 弾丸 / ヒット VFX / SE / 死亡 puff |
 | 57 | Entity ID & PlayerId | `Phase10.unity` | ⬜ 未着手（M6）— **次** |
 | 58 | CPU Command Queue | `Phase10.unity` | ⬜ 未着手（M6） |
-| 59 | Deterministic Sim | `Phase10.unity` | ⬜ 未着手（M6） |
-| 60 | Replay & Snapshot | `Phase10.unity` | ⬜ 未着手（M6） |
-| 61 | Hotseat / Net Shell | `Phase10.unity` | ⬜ 未着手（M6） |
+| 59 | Four-Player Match（1H + 3CPU） | `Phase10.unity` | ⬜ 未着手（M6） |
+| 60 | Team & 2v2 | `Phase10.unity` | ⬜ 未着手（M6） |
+| 61 | Large Map | `Phase10.unity` | ⬜ 未着手（M6） |
+| 62 | Fog of War | `Phase10.unity` | ⬜ 未着手（M6） |
+| 63 | Deterministic Sim（LAN 準備） | `Phase10.unity` | ⬜ 未着手（M6・後回し可） |
 
 **ゲームループ:** 採集 → 建築 → 生産 → 戦闘 → **勝敗判定**
 
@@ -115,7 +117,7 @@
 
 **Milestone 5 Gameplay Polish & Visual / UI:** ✅ 完了（Phase 49〜56）
 
-**Milestone 6 Multiplayer Foundation:** ⬜ 未着手（Phase 57〜61 — **次: Phase 57**）
+**Milestone 6 — 4-Player & World Scale:** ⬜ 進行中（Phase 57〜62 が本体 / 63 は LAN 前 — **次: Phase 57**）
 
 ---
 
@@ -549,10 +551,13 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **船** | 海上戦・貿易 | ❌ | [11_DEFERRED](11_DEFERRED_EXTENSION_DESIGN.md) |
 | **市場** | 資源交易 | Market + 固定レート売買 ✅（Phase 45） | M4 Phase 46+ |
 | **テクノロジー** | Dark→Imperial | Feudal 昇格 ✅（Phase 42）/ Blacksmith 研究 1 系統 ✅（Phase 43） | M4 Phase 44+ |
-| **マルチプレイ** | LAN/オンライン | ❌（基盤 30〜40%） | M6 Phase 57〜61 |
+| **マルチプレイ** | LAN/オンライン | ❌（基盤 30〜40%） | M6 Phase 57〜63 |
+| **4 人 / 2v2** | 1H+3CPU / 同盟 | ❌ | M6 Phase 59〜60 |
+| **Fog of War** | 視界制限 | ❌ | M6 Phase 62 |
+| **大型マップ** | 4 隅スポーン | △ Phase10 小 | M6 Phase 61 |
 | **マップ** | ランダムマップ | 固定 Plane（Phase 35 で拡大） | ✅ Sandbox / ランダムは M8 |
 | **勝敗** | 征服・遺跡等 | TC 破壊 ✅ | 拡張フック定義済み |
-| **リプレイ** | あり | CommandLog のみ △ | M6 Phase 60 |
+| **リプレイ** | あり | CommandLog のみ △ | オプション（後回し） |
 | **UI** | 本格 HUD・ミニマップ | OnGUI MVP ✅ / i18n ❌ | M5 Phase 51〜54 |
 
 **総合（現状）:** Dark Age 経済 + 最小 RTS 操作 + Militia 戦。**M5 完了で AoE2 全体の約 50〜55%** を目標（§AoE2 Completion Analysis 投影表）。
@@ -698,7 +703,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **Team / Player ID** | △ | `UnitTeam` 2 値のみ |
 | **Simulation / View 分離** | △ | Manager に OnGUI View 混在 |
 
-**現状評価:** ローカルプロトタイプとして動作。**マルチプレイ準備度は中程度（30〜40%）**。Fixed Tick + プレイヤー Command 基盤あり。**UI 完成（M5）だけではマルチプレイ不可** — M6（Entity ID / CPU Command / 決定論 / Replay）が必要。詳細は [10_M6_MULTIPLAYER_FOUNDATION.md](10_M6_MULTIPLAYER_FOUNDATION.md)。
+**現状評価:** ローカル 1v1 CPU として動作。**M6 は 4 人・2v2・大マップ・Fog を優先**（リプレイ・ホットシートは後回し）。詳細は [10_M6_MULTIPLAYER_FOUNDATION.md](10_M6_MULTIPLAYER_FOUNDATION.md)。
 
 ---
 
@@ -720,10 +725,15 @@ Phase 11 以降の候補（優先度順）。
 | P1 | 壁・Gate + i18n + 本格 HUD | ⬜ M5 Phase 49〜54 |
 | P2 | 時代昇格 / 鍛冶屋 / 市場 / 文明 | ✅ M4 Phase 42〜48 |
 | P2 | 壁時代グレード | ✅ M5 Phase 50 |
-| P3 | 4 チーム PlayerId | M6 Phase 57 |
-| P4 | リプレイ / セーブ | M6 Phase 60 |
-| P4 | ホットシート / ネットスタブ | M6 Phase 61 |
-| P4 | 本格オンラインマルチ | M6 以降 |
+| P1 | Entity ID & PlayerId | M6 Phase 57 — **次** |
+| P2 | CPU Command 化 | M6 Phase 58 |
+| P3 | 4 人（1H+3CPU） | M6 Phase 59 |
+| P3 | 2v2 同盟 | M6 Phase 60 |
+| P4 | 大型マップ | M6 Phase 61 |
+| P4 | Fog of War | M6 Phase 62 |
+| P5 | 決定論（LAN 前） | M6 Phase 63 |
+| — | リプレイ / ホットシート | オプション（後回し） |
+| — | 本格オンラインマルチ | M9 以降 |
 
 ---
 
@@ -997,7 +1007,7 @@ Overall Completion（現状 Phase 34）: 15%
 | M3 完了 | ~22% | ~90% | 35% | ~18% |
 | M4 完了 | ~38% | ~92% | 40% | ~20% |
 | **M5 完了** | **~50〜55%** | **~90%** | **55〜60%** | **~30%** |
-| M6 完了 | ~58% | ~93% | **75〜80%** | ~35% |
+| M6 完了（57〜62） | ~60% | ~95% | **4人ローカル** | ~40% |
 
 **M5 完了で 50% 前後**の内訳: Economy / Military / Technology / UX が大幅向上。未着手が大きい領域は **海軍・攻城・全文明・ランダムマップ・Fog・本格オンライン MP・800 体性能**。
 
@@ -1050,7 +1060,8 @@ Assets/Scripts/
 | AoE2 にどれくらい近い？ | 4 資源・Feudal 経済・多兵種・1 CPU — **Dark〜Feudal 垂直スライス**（全体 ~38%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
 | 次に何を作るべき？ | **Phase 57 Entity ID & PlayerId** — [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) |
-| UI できたらマルチ？ | **いいえ** — M5 は表示層。M6（Entity ID / 決定論 / Replay）が必要 |
+| M6 のゴールは？ | **人間1+CPU3・2v2・大マップ・Fog**（57→58→59→60→61→62） |
+| リプレイ・ホットシートは？ | **M6 スコープ外（後回し）** |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |
 | プレイ用シーンは？ | **`Phase10.unity`** |
 | 自軍は自動反撃？ | **する**（Phase 29 — 待機 Militia が近接敵を自動攻撃。Move 中はしない） |
