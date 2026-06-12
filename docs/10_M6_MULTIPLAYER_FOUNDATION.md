@@ -76,6 +76,10 @@
 
 **目的:** `CpuEconomyAiManager` / `CpuMilitaryAiManager` が `CommandQueue.Enqueue` を使用。CPU を **PlayerId ごとに複数インスタンス化** 可能に。
 
+**プロンプト:** [prompts/phase58-prompt.md](prompts/phase58-prompt.md)
+
+**やらないこと:** 4 人スポーン / 2v2 / Fog（Phase 59〜62）
+
 ---
 
 ## Phase 59 — Four-Player Match ⬜

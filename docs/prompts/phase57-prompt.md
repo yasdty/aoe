@@ -151,4 +151,4 @@ public static class EntityRegistry
 
 Phase 57 のみ。**Phase 58（CPU Command）・Phase 59（4人マッチ）には触れない。**
 
-> **次:** Phase 58 CPU Command Queue
+> **次:** Phase 58 CPU Command Queue — [phase58-prompt.md](phase58-prompt.md)
