@@ -54,8 +54,8 @@
 |-------|------|------|------|
 | 57 | Entity ID & PlayerId | int Entity ID / `PlayerId` 0〜3 | ✅ 完了 |
 | 58 | CPU Command Queue | CPU AI を `IGameCommand` 経由に統一 | ✅ 完了 |
-| 59 | Four-Player Match | 人間1 + CPU3・マッチ設定・4 隅 TC / 資源 per Player | ⬜ 未着手 — **次** |
-| 60 | Team & 2v2 | `TeamId` / 同盟・人間+CPU vs CPU×2 | ⬜ 未着手 |
+| 59 | Four-Player Match | 人間1 + CPU3・マッチ設定・4 隅 TC / 資源 per Player | ✅ 完了 |
+| 60 | Team & 2v2 | `TeamId` / 同盟・人間+CPU vs CPU×2 | ⬜ 未着手 — **次** |
 | 61 | Large Map | 大型地面・`MapBounds`・スポーン・カメラ範囲 | ⬜ 未着手 |
 | 62 | Enemy HP Display | 敵ユニット・敵建物の選択と HP 表示 | ⬜ 未着手 |
 | 63 | Building Repair | Villager による建物修理（木材消費） | ⬜ 未着手 |
@@ -92,7 +92,7 @@
 
 ---
 
-## Phase 59 — Four-Player Match ⬜
+## Phase 59 — Four-Player Match ✅
 
 **目的:** **人間 1 + CPU 3** の 4 人マッチ（ローカル FFA）。
 
@@ -215,7 +215,7 @@
 
 - [x] `PlayerId` 0〜3 + `EntityRegistry` が Command / Sim の参照基盤（Phase 57 — Move / AttackUnit は ID 化済み）
 - [x] CPU が Command パイプライン経由（PlayerId ごと — Phase 58、1 CPU インスタンス）
-- [ ] **人間1 + CPU3** で 4 隅マッチが Play 可能
+- [x] **人間1 + CPU3** で 4 隅マッチが Play 可能（Phase 59）
 - [ ] **2v2**（人間+CPU vs CPU×2）が Play 可能
 - [ ] **大型マップ** + 4 隅スポーン
 - [ ] **敵 HP 表示**（敵選択 + HP バー）

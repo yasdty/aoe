@@ -137,7 +137,7 @@ namespace AoE.RTS.Economy
                 if (unit == null || unit.CanAttack || unit.Team != farm.Team)
                     continue;
 
-                if (!ProductionManager.HasAnyTownCenterForTeam(unit.Team))
+                if (!ProductionManager.HasAnyTownCenterForPlayer(unit.OwnerId))
                     continue;
 
                 if (IsFarmOccupiedByOther(farm, unit))
@@ -166,7 +166,7 @@ namespace AoE.RTS.Economy
                 if (unit == null || unit.CanAttack || unit.Team != farm.Team)
                     continue;
 
-                if (!ProductionManager.HasAnyTownCenterForTeam(unit.Team))
+                if (!ProductionManager.HasAnyTownCenterForPlayer(unit.OwnerId))
                     continue;
 
                 if (!IsFarmOccupiedByOther(farm, unit))
@@ -220,7 +220,7 @@ namespace AoE.RTS.Economy
             for (int i = 0; i < units.Count; i++)
             {
                 Unit unit = units[i];
-                if (unit == null || !ProductionManager.HasAnyTownCenterForTeam(unit.Team))
+                if (unit == null || !ProductionManager.HasAnyTownCenterForPlayer(unit.OwnerId))
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -266,7 +266,7 @@ namespace AoE.RTS.Economy
                 if (animal is SheepResource sheep && !sheep.CanBeHuntedBy(unit.Team))
                     continue;
 
-                if (!ProductionManager.HasAnyTownCenterForTeam(unit.Team))
+                if (!ProductionManager.HasAnyTownCenterForPlayer(unit.OwnerId))
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -406,7 +406,7 @@ namespace AoE.RTS.Economy
 
         void FinishFarmJobWithoutTarget(ref FarmGatherJob job, int index)
         {
-            if (job.carriedFood > 0f && ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
+            if (job.carriedFood > 0f && ProductionManager.HasAnyTownCenterForPlayer(job.unit.OwnerId))
             {
                 BeginFarmMoveToDeposit(ref job, index);
                 return;
@@ -466,7 +466,7 @@ namespace AoE.RTS.Economy
 
         void BeginFarmMoveToDeposit(ref FarmGatherJob job, int index)
         {
-            if (job.carriedFood <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
+            if (job.carriedFood <= 0f || !ProductionManager.HasAnyTownCenterForPlayer(job.unit.OwnerId))
             {
                 job.unit.ClearMoveTarget();
                 if (index < farmJobs.Count && farmJobs[index].unit == job.unit)
@@ -492,7 +492,7 @@ namespace AoE.RTS.Economy
 
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
-                ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                ResourceManager.AddFood(job.unit.OwnerId, job.carriedFood);
                 CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedFood = 0f;
 
@@ -566,7 +566,7 @@ namespace AoE.RTS.Economy
 
         void BeginMoveToDeposit(ref FoodGatherJob job, int index)
         {
-            if (job.carriedFood <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
+            if (job.carriedFood <= 0f || !ProductionManager.HasAnyTownCenterForPlayer(job.unit.OwnerId))
             {
                 job.unit.ClearMoveTarget();
                 jobs.RemoveAt(index);
@@ -589,7 +589,7 @@ namespace AoE.RTS.Economy
 
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
-                ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                ResourceManager.AddFood(job.unit.OwnerId, job.carriedFood);
                 CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedFood = 0f;
 
@@ -677,7 +677,7 @@ namespace AoE.RTS.Economy
 
         void FinishHuntJobWithoutTarget(ref HuntGatherJob job, int index)
         {
-            if (job.carriedFood > 0f && ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
+            if (job.carriedFood > 0f && ProductionManager.HasAnyTownCenterForPlayer(job.unit.OwnerId))
             {
                 ClearBoarHunter(job);
                 BeginHuntMoveToDeposit(ref job, index);
@@ -766,7 +766,7 @@ namespace AoE.RTS.Economy
 
         void BeginHuntMoveToDeposit(ref HuntGatherJob job, int index)
         {
-            if (job.carriedFood <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
+            if (job.carriedFood <= 0f || !ProductionManager.HasAnyTownCenterForPlayer(job.unit.OwnerId))
             {
                 job.unit.ClearMoveTarget();
                 if (index < huntJobs.Count && huntJobs[index].unit == job.unit)
@@ -792,7 +792,7 @@ namespace AoE.RTS.Economy
 
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
-                ResourceManager.AddFood(job.unit.Team, job.carriedFood);
+                ResourceManager.AddFood(job.unit.OwnerId, job.carriedFood);
                 CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedFood = 0f;
 

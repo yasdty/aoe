@@ -13,6 +13,7 @@ namespace AoE.RTS.Buildings
     {
         [SerializeField] BuildingData data;
         [SerializeField] UnitTeam team = UnitTeam.Player;
+        [SerializeField] PlayerId ownerId = PlayerId.Player0;
 
         Renderer cachedRenderer;
         MaterialPropertyBlock propertyBlock;
@@ -21,6 +22,7 @@ namespace AoE.RTS.Buildings
 
         public BuildingData Data => data;
         public UnitTeam Team => team;
+        public PlayerId OwnerId => ownerId;
         public bool IsSelected => isSelected;
         public ProductionRallyPoint Rally => rally;
         public bool HasRally => rally.kind != RallyTargetKind.None;
@@ -69,10 +71,20 @@ namespace AoE.RTS.Buildings
 
         public void SetTeam(UnitTeam unitTeam)
         {
-            team = unitTeam;
+            SetOwner(PlayerIdMapping.FromLegacyTeam(unitTeam));
+        }
+
+        public void SetOwner(PlayerId playerId)
+        {
+            ownerId = playerId;
+            team = PlayerIdMapping.ToLegacyTeam(playerId);
             BuildingHealth health = GetComponent<BuildingHealth>();
             if (health != null && data != null)
+            {
                 health.Configure(data.maxHp, data.meleeArmor, data.pierceArmor, team, townCenter: true);
+                health.SetOwnerId(playerId);
+            }
+
             UpdateVisual();
         }
 

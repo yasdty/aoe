@@ -65,7 +65,7 @@ namespace AoE.RTS.Buildings
                     continue;
                 }
 
-                if (!PopulationManager.CanTrainUnit(job.townCenter.Team))
+                if (!PopulationManager.CanTrainUnit(job.townCenter.OwnerId))
                 {
                     job.remainingSeconds = 0f;
                     activeJobs[i] = job;
@@ -75,7 +75,7 @@ namespace AoE.RTS.Buildings
                 Unit unit = UnitSpawner.Spawn(
                     job.unitData,
                     job.townCenter.GetVillagerSpawnPosition(),
-                    job.townCenter.Team);
+                    job.townCenter.OwnerId);
                 if (unit != null)
                     ProductionRallyApplier.Apply(job.townCenter, unit);
                 activeJobs.RemoveAt(i);
@@ -112,7 +112,7 @@ namespace AoE.RTS.Buildings
             instance.activeJobs.RemoveAll(job => job.townCenter == townCenter);
         }
 
-        public static TownCenter GetTownCenterForTeam(UnitTeam team)
+        public static TownCenter GetTownCenterForPlayer(PlayerId playerId)
         {
             if (instance == null)
                 return null;
@@ -120,14 +120,19 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < instance.townCenters.Count; i++)
             {
                 TownCenter townCenter = instance.townCenters[i];
-                if (townCenter != null && townCenter.Team == team && IsActiveTownCenter(townCenter))
+                if (townCenter != null && townCenter.OwnerId == playerId && IsActiveTownCenter(townCenter))
                     return townCenter;
             }
 
             return null;
         }
 
-        public static int GetTownCenterCountForTeam(UnitTeam team)
+        public static TownCenter GetTownCenterForTeam(UnitTeam team)
+        {
+            return GetTownCenterForPlayer(PlayerIdMapping.FromLegacyTeam(team));
+        }
+
+        public static int GetTownCenterCountForPlayer(PlayerId playerId)
         {
             if (instance == null)
                 return 0;
@@ -136,19 +141,23 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < instance.townCenters.Count; i++)
             {
                 TownCenter townCenter = instance.townCenters[i];
-                if (townCenter != null && townCenter.Team == team && IsActiveTownCenter(townCenter))
+                if (townCenter != null && townCenter.OwnerId == playerId && IsActiveTownCenter(townCenter))
                     count++;
             }
 
             return count;
         }
 
-        public static bool HasAnyTownCenterForTeam(UnitTeam team)
-        {
-            return GetTownCenterCountForTeam(team) > 0;
-        }
+        public static int GetTownCenterCountForTeam(UnitTeam team) =>
+            GetTownCenterCountForPlayer(PlayerIdMapping.FromLegacyTeam(team));
 
-        public static TownCenter GetNearestTownCenter(UnitTeam team, Vector3 fromPosition)
+        public static bool HasAnyTownCenterForPlayer(PlayerId playerId) =>
+            GetTownCenterCountForPlayer(playerId) > 0;
+
+        public static bool HasAnyTownCenterForTeam(UnitTeam team) =>
+            HasAnyTownCenterForPlayer(PlayerIdMapping.FromLegacyTeam(team));
+
+        public static TownCenter GetNearestTownCenter(PlayerId playerId, Vector3 fromPosition)
         {
             if (instance == null)
                 return null;
@@ -161,7 +170,7 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < instance.townCenters.Count; i++)
             {
                 TownCenter townCenter = instance.townCenters[i];
-                if (townCenter == null || townCenter.Team != team || !IsActiveTownCenter(townCenter))
+                if (townCenter == null || townCenter.OwnerId != playerId || !IsActiveTownCenter(townCenter))
                     continue;
 
                 Vector3 flatCenter = townCenter.transform.position;
@@ -176,6 +185,9 @@ namespace AoE.RTS.Buildings
 
             return nearest;
         }
+
+        public static TownCenter GetNearestTownCenter(UnitTeam team, Vector3 fromPosition) =>
+            GetNearestTownCenter(PlayerIdMapping.FromLegacyTeam(team), fromPosition);
 
         static bool IsActiveTownCenter(TownCenter townCenter)
         {
@@ -198,10 +210,10 @@ namespace AoE.RTS.Buildings
             if (GetQueueCount(townCenter) >= MaxQueueSize)
                 return false;
 
-            if (!PopulationManager.CanTrainUnit(townCenter.Team))
+            if (!PopulationManager.CanTrainUnit(townCenter.OwnerId))
                 return false;
 
-            if (foodCost > 0f && !ResourceManager.TrySpendFood(townCenter.Team, foodCost))
+            if (foodCost > 0f && !ResourceManager.TrySpendFood(townCenter.OwnerId, foodCost))
                 return false;
 
             instance.activeJobs.Add(new ProductionJob

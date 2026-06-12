@@ -90,7 +90,7 @@ namespace AoE.RTS.Buildings
             return false;
         }
 
-        public static bool HasActiveConstructionForTeam(UnitTeam team)
+        public static bool HasActiveConstructionForPlayer(PlayerId playerId)
         {
             if (instance == null)
                 return false;
@@ -98,14 +98,17 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < instance.sites.Count; i++)
             {
                 Unit builder = instance.sites[i].builder;
-                if (builder != null && builder.Team == team)
+                if (builder != null && builder.OwnerId == playerId)
                     return true;
             }
 
             return false;
         }
 
-        public static bool HasActiveBarracksConstructionForTeam(UnitTeam team)
+        public static bool HasActiveConstructionForTeam(UnitTeam team) =>
+            HasActiveConstructionForPlayer(PlayerIdMapping.FromLegacyTeam(team));
+
+        public static bool HasActiveBarracksConstructionForPlayer(PlayerId playerId)
         {
             if (instance == null)
                 return false;
@@ -113,7 +116,7 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < instance.sites.Count; i++)
             {
                 ConstructionSite site = instance.sites[i];
-                if (site.builder == null || site.builder.Team != team)
+                if (site.builder == null || site.builder.OwnerId != playerId)
                     continue;
 
                 if (site.data != null && site.data.kind == PlacedBuildingKind.Barracks)
@@ -123,7 +126,10 @@ namespace AoE.RTS.Buildings
             return false;
         }
 
-        public static bool HasActiveArcheryRangeConstructionForTeam(UnitTeam team)
+        public static bool HasActiveBarracksConstructionForTeam(UnitTeam team) =>
+            HasActiveBarracksConstructionForPlayer(PlayerIdMapping.FromLegacyTeam(team));
+
+        public static bool HasActiveArcheryRangeConstructionForPlayer(PlayerId playerId)
         {
             if (instance == null)
                 return false;
@@ -131,7 +137,7 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < instance.sites.Count; i++)
             {
                 ConstructionSite site = instance.sites[i];
-                if (site.builder == null || site.builder.Team != team)
+                if (site.builder == null || site.builder.OwnerId != playerId)
                     continue;
 
                 if (site.data != null && site.data.kind == PlacedBuildingKind.ArcheryRange)
@@ -141,7 +147,10 @@ namespace AoE.RTS.Buildings
             return false;
         }
 
-        public static bool HasActiveStableConstructionForTeam(UnitTeam team)
+        public static bool HasActiveArcheryRangeConstructionForTeam(UnitTeam team) =>
+            HasActiveArcheryRangeConstructionForPlayer(PlayerIdMapping.FromLegacyTeam(team));
+
+        public static bool HasActiveStableConstructionForPlayer(PlayerId playerId)
         {
             if (instance == null)
                 return false;
@@ -149,7 +158,7 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < instance.sites.Count; i++)
             {
                 ConstructionSite site = instance.sites[i];
-                if (site.builder == null || site.builder.Team != team)
+                if (site.builder == null || site.builder.OwnerId != playerId)
                     continue;
 
                 if (site.data != null && site.data.kind == PlacedBuildingKind.Stable)
@@ -158,6 +167,9 @@ namespace AoE.RTS.Buildings
 
             return false;
         }
+
+        public static bool HasActiveStableConstructionForTeam(UnitTeam team) =>
+            HasActiveStableConstructionForPlayer(PlayerIdMapping.FromLegacyTeam(team));
 
         void Awake()
         {
@@ -854,14 +866,14 @@ namespace AoE.RTS.Buildings
             if (instance == null || data == null || builder == null || !builder.IsAlive)
                 return false;
 
-            if (!GameSessionManager.CanBuild(data, builder.Team))
+            if (!GameSessionManager.CanBuild(data, builder.OwnerId))
                 return false;
 
             position = instance.SnapToFootprint(position);
             if (!instance.CanPlaceAt(position, data))
                 return false;
 
-            if (!PlacementCostUtility.TrySpend(builder.Team, data))
+            if (!PlacementCostUtility.TrySpend(builder.OwnerId, data))
                 return false;
 
             instance.builderLookupBuffer.Clear();
@@ -1249,7 +1261,11 @@ namespace AoE.RTS.Buildings
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
                 Barracks barracks = RuntimeBuildingFactory.CreateBarracks(site.data, site.position, team);
                 if (barracks != null && site.builder != null)
+                {
                     barracks.SetTeam(site.builder.Team);
+                    ApplyBuildingOwner(barracks, site.builder);
+                }
+
                 return;
             }
 
@@ -1322,45 +1338,63 @@ namespace AoE.RTS.Buildings
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
                 TownCenter townCenter = RuntimeBuildingFactory.CreatePlacedTownCenter(site.position, team);
                 if (townCenter != null && site.builder != null)
-                    townCenter.SetTeam(site.builder.Team);
+                    townCenter.SetOwner(site.builder.OwnerId);
                 return;
             }
 
             if (site.data.kind == PlacedBuildingKind.Farm)
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
-                RuntimeBuildingFactory.CreateFarm(site.data, site.position, team);
+                Farm farm = RuntimeBuildingFactory.CreateFarm(site.data, site.position, team);
+                ApplyBuildingOwner(farm, site.builder);
                 return;
             }
 
             if (site.data.kind == PlacedBuildingKind.LumberCamp)
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
-                RuntimeBuildingFactory.CreateLumberCamp(site.data, site.position, team);
+                LumberCamp lumberCamp = RuntimeBuildingFactory.CreateLumberCamp(site.data, site.position, team);
+                ApplyBuildingOwner(lumberCamp, site.builder);
                 return;
             }
 
             if (site.data.kind == PlacedBuildingKind.MiningCamp)
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
-                RuntimeBuildingFactory.CreateMiningCamp(site.data, site.position, team);
+                MiningCamp miningCamp = RuntimeBuildingFactory.CreateMiningCamp(site.data, site.position, team);
+                ApplyBuildingOwner(miningCamp, site.builder);
                 return;
             }
 
             if (site.data.kind == PlacedBuildingKind.Mill)
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
-                RuntimeBuildingFactory.CreateMill(site.data, site.position, team);
+                Mill mill = RuntimeBuildingFactory.CreateMill(site.data, site.position, team);
+                ApplyBuildingOwner(mill, site.builder);
                 return;
             }
 
             if (site.data.kind == PlacedBuildingKind.House)
             {
                 UnitTeam team = site.builder != null ? site.builder.Team : UnitTeam.Player;
-                RuntimeBuildingFactory.CreateHouse(site.data, site.position, team);
+                House house = RuntimeBuildingFactory.CreateHouse(site.data, site.position, team);
+                ApplyBuildingOwner(house, site.builder);
                 if (site.data.housingProvided > 0)
-                    PopulationManager.AddHousing(team, site.data.housingProvided);
+                {
+                    PlayerId ownerId = site.builder != null ? site.builder.OwnerId : PlayerId.Player0;
+                    PopulationManager.AddHousing(ownerId, site.data.housingProvided);
+                }
             }
+        }
+
+        static void ApplyBuildingOwner(Component building, Unit builder)
+        {
+            if (building == null || builder == null)
+                return;
+
+            BuildingHealth health = building.GetComponent<BuildingHealth>();
+            if (health != null)
+                health.SetOwnerId(builder.OwnerId);
         }
 
         Vector3 SnapToFootprint(Vector3 worldPoint)

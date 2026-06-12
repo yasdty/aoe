@@ -1,6 +1,6 @@
 # Phase 59 実行プロンプト
 
-> **状態:** ⬜ 未着手  
+> **状態:** ✅ 完了  
 > **前提:** Phase 1〜58 完了（Entity ID / PlayerId / CPU Command Queue）  
 > **マイルストン:** M6 — **Four-Player Match**（人間1 + CPU3）  
 > **ロードマップ:** [10_M6_MULTIPLAYER_FOUNDATION.md](../10_M6_MULTIPLAYER_FOUNDATION.md)  
@@ -201,13 +201,13 @@ public static class MatchSettings
 
 ## ⑦ 完了時ドキュメント
 
-- [ ] `IMPLEMENTATION_STATUS.md` — Phase 59 ✅
-- [ ] `10_M6_MULTIPLAYER_FOUNDATION.md` — Phase 59 ✅
-- [ ] 本プロンプト — ✅
-- [ ] `README.md` — M6 表（必要時）
+- [x] `IMPLEMENTATION_STATUS.md` — Phase 59 ✅
+- [x] `10_M6_MULTIPLAYER_FOUNDATION.md` — Phase 59 ✅
+- [x] 本プロンプト — ✅
+- [x] `README.md` — M6 表（必要時）
 
 ---
 
 Phase 59 のみ。**Phase 60（2v2）・Phase 61（大マップ）・Phase 62〜64（敵HP/修理/複数建設）には触れない。**
 
-> **次:** Phase 60 Team & 2v2
+> **次:** [phase60-prompt.md](phase60-prompt.md) — Team & 2v2（未作成）

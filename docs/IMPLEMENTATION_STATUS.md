@@ -2,7 +2,7 @@
 
 > **用途:** このファイル単体を AI に渡すことで、現状の実装範囲・未実装・AoE2 との差分・技術構成・拡張方針を把握できる。
 >
-> **最終更新:** Phase 58 ✅（CPU Command Queue）。**M6 進行中 — 次: Phase 59 Four-Player Match。**
+> **最終更新:** Phase 59 ✅（Four-Player Match）。**M6 進行中 — 次: Phase 60 Team & 2v2。**
 >
 > **関連:** [CONSTITUTION.md](../CONSTITUTION.md) / [README.md](../README.md) / [docs/README.md](README.md)  
 > **ロードマップ:** [05_M2_6](05_M2_6_RTS_UX_PHASES.md) / [06_M2_7](06_M2_7_SANDBOX_PHASES.md) / [07_M3](07_M3_MILITARY_PHASES.md) / [08_M4](08_M4_GAMEPLAY_PHASES.md) / [09_M5](09_M5_VISUAL_UI_PHASES.md) / [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) / [11 拡張設計](11_DEFERRED_EXTENSION_DESIGN.md) / [12 Balance Mode](12_GAMEPLAY_BALANCE_MODE.md)
@@ -19,7 +19,7 @@
 | **目的** | Age of Empires II ライクな Low-Spec RTS エンジンのプロトタイプ。MacBook Air 16GB 級で大規模戦闘を目指す基盤を Phase 単位で構築する |
 | **技術スタック** | Unity 6 / C# / URP / New Input System |
 | **対象スペック** | MacBook Air 16GB 級（将来: 4 チーム × 200 ユニット + 建築多数 + 大規模戦闘） |
-| **対戦想定** | 現状は **1 人間 vs 1 CPU** のローカルシングルプレイ。**M6 目標: 人間1+CPU3・2v2・大マップ・敵HP/修理/複数建設・Fog**（Phase 57〜65） |
+| **対戦想定** | **4人 FFA（人間1 + CPU3）** または **1v1 CPU**（`MatchMode` / **M** キー切替・シーン再生成で反映）。**M6 目標: 2v2・大マップ・敵HP/修理/複数建設・Fog**（Phase 60〜65） |
 | **設計方針** | Manager 集中更新 / NavMesh 禁止 / Unit 個別 Update 禁止 / Asset Store 購入禁止 / Unity アセット手書き禁止（Editor API のみ）/ Phase 単位の small diff / マルチプレイ将来互換を意識した simulation 分離 |
 
 ### アーキテクチャ原則（CONSTITUTION より）
@@ -93,8 +93,8 @@
 | 56 | Combat VFX & Audio | `Phase10.unity` | ✅ 完了（M5）— 弾丸 / ヒット VFX / SE / 死亡 puff |
 | 57 | Entity ID & PlayerId | `Phase10.unity` | ✅ 完了（M6）— `EntityRegistry` / `PlayerId` / Move・Attack Command ID 化 |
 | 58 | CPU Command Queue | `Phase10.unity` | ✅ 完了（M6）— CPU AI → `CommandQueue` / `PlayerId` 対応 |
-| 59 | Four-Player Match（1H + 3CPU） | `Phase10.unity` | ⬜ 未着手（M6）— **次** |
-| 60 | Team & 2v2 | `Phase10.unity` | ⬜ 未着手（M6） |
+| 59 | Four-Player Match（1H + 3CPU） | `Phase10.unity` | ✅ 完了（M6） |
+| 60 | Team & 2v2 | `Phase10.unity` | ⬜ 未着手（M6）— **次** |
 | 61 | Large Map | `Phase10.unity` | ⬜ 未着手（M6） |
 | 62 | Enemy HP Display（敵選択・HP バー） | `Phase10.unity` | ⬜ 未着手（M6） |
 | 63 | Building Repair（建物修理） | `Phase10.unity` | ⬜ 未着手（M6） |
@@ -120,7 +120,7 @@
 
 **Milestone 5 Gameplay Polish & Visual / UI:** ✅ 完了（Phase 49〜56）
 
-**Milestone 6 — 4-Player & World Scale:** ⬜ 進行中（Phase 59〜65 が本体 / 66 は LAN 前 — **次: Phase 59**）
+**Milestone 6 — 4-Player & World Scale:** ⬜ 進行中（Phase 60〜65 が本体 / 66 は LAN 前 — **次: Phase 60**）
 
 ---
 
@@ -710,7 +710,7 @@ enum UnitTeam { Player = 0, Enemy = 1 }
 | **Replay 再生** | ❌ | 未実装 |
 | **State Snapshot** | ❌ | セーブデータ構造なし |
 | **Network Layer** | ❌ | 憲法で現時点禁止 |
-| **Team / Player ID** | △ | `PlayerId` 0〜3 + `PlayerIdMapping`（実行は `UnitTeam` 2 値のまま） |
+| **Team / Player ID** | △ | `PlayerId` 0〜3 + per-player 資源/人口/TC（Phase 59）。`UnitTeam` は Player/Enemy 2 値のまま |
 | **Entity ID** | ✅ | `EntityRegistry` — Unit / Building / Resource。Move・AttackUnit は ID 参照 |
 | **Simulation / View 分離** | △ | Manager に OnGUI View 混在 |
 
@@ -738,8 +738,8 @@ Phase 11 以降の候補（優先度順）。
 | P2 | 壁時代グレード | ✅ M5 Phase 50 |
 | P1 | Entity ID & PlayerId | ✅ M6 Phase 57 |
 | P2 | CPU Command 化 | ✅ M6 Phase 58 |
-| P3 | 4 人（1H+3CPU） | M6 Phase 59 — **次** |
-| P3 | 2v2 同盟 | M6 Phase 60 |
+| P3 | 4 人（1H+3CPU） | ✅ M6 Phase 59 |
+| P3 | 2v2 同盟 | M6 Phase 60 — **次** |
 | P4 | 大型マップ | M6 Phase 61 |
 | P4 | 敵 HP 表示 | M6 Phase 62 |
 | P4 | 建物修理 | M6 Phase 63 |
@@ -1074,7 +1074,7 @@ Assets/Scripts/
 |------|------|
 | AoE2 にどれくらい近い？ | 4 資源・Feudal 経済・多兵種・1 CPU — **Dark〜Feudal 垂直スライス**（全体 ~38%） |
 | 何が一番足りない？ | 兵種多様性・時代・本格 UI・マルチ同期基盤 |
-| 次に何を作るべき？ | **Phase 59 Four-Player Match** — [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) |
+| 次に何を作るべき？ | **Phase 60 Team & 2v2** — [10_M6](10_M6_MULTIPLAYER_FOUNDATION.md) |
 | M6 のゴールは？ | **人間1+CPU3・2v2・大マップ・敵HP/修理/複数建設・Fog**（57→58→59→60→61→62→63→64→65） |
 | リプレイ・ホットシートは？ | **M6 スコープ外（後回し）** |
 | M5 完了時の全体完成度？ | **約 50〜55%**（§AoE2 Completion Analysis 投影表） |

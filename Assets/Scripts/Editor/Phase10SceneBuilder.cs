@@ -33,6 +33,38 @@ namespace AoE.RTS.EditorTools
         static readonly Vector3 PlayerTownCenterPosition = Vector3.zero;
         static readonly Vector3 CpuTownCenterPosition = new Vector3(0f, 0f, -60f);
         static readonly Vector3 CameraFocus = new Vector3(0f, 0f, -30f);
+        static readonly Vector3 FourPlayerCameraFocus = new Vector3(0f, 0f, 0f);
+
+        static readonly Vector3[] FourPlayerTownCenterPositions =
+        {
+            new Vector3(-80f, 0f, -80f),
+            new Vector3(80f, 0f, 80f),
+            new Vector3(-80f, 0f, 80f),
+            new Vector3(80f, 0f, -80f)
+        };
+
+        static readonly Vector3[] VillagerSpawnOffsets =
+        {
+            new Vector3(-5f, 1f, 5f),
+            new Vector3(5f, 1f, 5f),
+            new Vector3(0f, 1f, 8f)
+        };
+
+        static readonly Vector3[] CornerTreeOffsets =
+        {
+            new Vector3(12f, 0f, 8f),
+            new Vector3(-10f, 0f, 10f),
+            new Vector3(8f, 0f, -6f),
+            new Vector3(-8f, 0f, -8f),
+            new Vector3(14f, 0f, 4f)
+        };
+
+        static readonly Vector3[] CornerBerryOffsets =
+        {
+            new Vector3(10f, 0f, 6f),
+            new Vector3(-8f, 0f, 8f),
+            new Vector3(6f, 0f, -6f)
+        };
         static readonly Vector3 SandboxGroundScale = new Vector3(18f, 1f, 18f);
         static readonly Vector3 SandboxGroundPosition = new Vector3(0f, 0f, -30f);
 
@@ -241,17 +273,33 @@ namespace AoE.RTS.EditorTools
 
             Phase1SceneBuilder.CreateLighting();
             CreateSandboxGround();
-            GameObject playerTownCenter = Phase1SceneBuilder.CreateTownCenter(townCenterData, PlayerTownCenterPosition);
-            GameObject cpuTownCenter = CreateCpuTownCenter(townCenterData);
-            CreateTrees(treeData);
-            CreateBerryBushes(berryBushData);
-            CreateHuntableAnimals(deerData, sheepData);
-            CreateBoars(boarData);
-            CreateMineralMines(goldMineData, stoneMineData);
-            CreateStartingVillagers(villagerData, PlayerVillagerPositions, UnitTeam.Player);
-            CreateStartingVillagers(villagerData, CpuVillagerPositions, UnitTeam.Enemy);
+            GameObject playerTownCenter;
+            if (ShouldBuildFourPlayerFfa())
+            {
+                playerTownCenter = CreateFourPlayerMatch(
+                    townCenterData,
+                    villagerData,
+                    treeData,
+                    berryBushData);
+            }
+            else
+            {
+                playerTownCenter = Phase1SceneBuilder.CreateTownCenter(townCenterData, PlayerTownCenterPosition);
+                TownCenter playerTc = playerTownCenter.GetComponent<TownCenter>();
+                playerTc.SetOwner(PlayerId.Player0);
+                GameObject cpuTownCenter = CreateCpuTownCenter(townCenterData);
+                CreateTrees(treeData);
+                CreateBerryBushes(berryBushData);
+                CreateHuntableAnimals(deerData, sheepData);
+                CreateBoars(boarData);
+                CreateMineralMines(goldMineData, stoneMineData);
+                CreateStartingVillagersForPlayer(villagerData, PlayerVillagerPositions, PlayerId.Player0);
+                CreateStartingVillagersForPlayer(villagerData, CpuVillagerPositions, PlayerId.Player1);
+            }
+
             GameObject cameraRig = Phase1SceneBuilder.CreateCameraRig(inputActions);
-            Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, CameraFocus);
+            Vector3 cameraFocus = ShouldBuildFourPlayerFfa() ? FourPlayerCameraFocus : CameraFocus;
+            Phase1SceneBuilder.ApplyOverviewCamera(cameraRig.transform, cameraFocus);
             CreateManagers(
                 inputActions,
                 cameraRig.GetComponent<UnityEngine.Camera>(),
@@ -1065,27 +1113,79 @@ namespace AoE.RTS.EditorTools
                 Object.DestroyImmediate(sheep[i].gameObject);
         }
 
+        static bool ShouldBuildFourPlayerFfa() => true;
+
+        static GameObject CreateFourPlayerMatch(
+            BuildingData townCenterData,
+            UnitData villagerData,
+            ResourceNodeData treeData,
+            FoodNodeData berryBushData)
+        {
+            GameObject playerTownCenter = null;
+            for (int i = 0; i < FourPlayerTownCenterPositions.Length; i++)
+            {
+                PlayerId playerId = (PlayerId)i;
+                Vector3 tcPosition = FourPlayerTownCenterPositions[i];
+                GameObject townCenterObject = Phase1SceneBuilder.CreateTownCenter(townCenterData, tcPosition);
+                TownCenter townCenter = townCenterObject.GetComponent<TownCenter>();
+                townCenter.SetOwner(playerId);
+
+                if (playerId == PlayerId.Player0)
+                    playerTownCenter = townCenterObject;
+
+                Vector3[] villagerPositions = new Vector3[VillagerSpawnOffsets.Length];
+                for (int v = 0; v < VillagerSpawnOffsets.Length; v++)
+                    villagerPositions[v] = tcPosition + VillagerSpawnOffsets[v];
+
+                CreateStartingVillagersForPlayer(villagerData, villagerPositions, playerId);
+                CreateCornerTrees(treeData, tcPosition);
+                CreateCornerBerryBushes(berryBushData, tcPosition);
+            }
+
+            return playerTownCenter;
+        }
+
+        static void CreateCornerTrees(ResourceNodeData treeData, Vector3 tcPosition)
+        {
+            for (int i = 0; i < CornerTreeOffsets.Length; i++)
+                Phase1SceneBuilder.CreateTree(treeData, tcPosition + CornerTreeOffsets[i]);
+        }
+
+        static void CreateCornerBerryBushes(FoodNodeData berryBushData, Vector3 tcPosition)
+        {
+            for (int i = 0; i < CornerBerryOffsets.Length; i++)
+                Phase1SceneBuilder.CreateBerryBush(berryBushData, tcPosition + CornerBerryOffsets[i]);
+        }
+
         static GameObject CreateCpuTownCenter(BuildingData townCenterData)
         {
             GameObject townCenterObject = Phase1SceneBuilder.CreateTownCenter(townCenterData, CpuTownCenterPosition);
             TownCenter townCenter = townCenterObject.GetComponent<TownCenter>();
-            townCenter.SetTeam(UnitTeam.Enemy);
+            townCenter.SetOwner(PlayerId.Player1);
             EditorUtility.SetDirty(townCenter);
             return townCenterObject;
         }
 
-        static void CreateStartingVillagers(UnitData villagerData, Vector3[] positions, UnitTeam team)
+        static void CreateStartingVillagersForPlayer(UnitData villagerData, Vector3[] positions, PlayerId playerId)
         {
             for (int i = 0; i < positions.Length; i++)
             {
                 GameObject unitObject = Phase1SceneBuilder.CreateUnit(
                     villagerData,
                     positions[i],
-                    team);
+                    PlayerIdMapping.ToLegacyTeam(playerId));
                 Unit unit = unitObject.GetComponent<Unit>();
                 if (unit != null)
-                    unit.SetTeam(team);
+                    unit.SetOwner(playerId);
             }
+        }
+
+        static void CreateStartingVillagers(UnitData villagerData, Vector3[] positions, UnitTeam team)
+        {
+            CreateStartingVillagersForPlayer(
+                villagerData,
+                positions,
+                PlayerIdMapping.FromLegacyTeam(team));
         }
 
         [MenuItem("AoE/Sync AoE2 Classic Start (Phase10)", true)]
@@ -1127,10 +1227,8 @@ namespace AoE.RTS.EditorTools
             }
 
             SerializedObject serialized = new SerializedObject(resourceManager);
-            serialized.FindProperty("initialPlayerFood").floatValue = 200f;
-            serialized.FindProperty("initialPlayerWood").floatValue = 200f;
-            serialized.FindProperty("initialEnemyFood").floatValue = 200f;
-            serialized.FindProperty("initialEnemyWood").floatValue = 200f;
+            serialized.FindProperty("initialFoodPerPlayer").floatValue = 200f;
+            serialized.FindProperty("initialWoodPerPlayer").floatValue = 200f;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(resourceManager);
         }
@@ -1301,6 +1399,8 @@ namespace AoE.RTS.EditorTools
             GameSessionManager sessionManager = systems.AddComponent<GameSessionManager>();
             systems.AddComponent<DebugPlaytestInput>();
             SerializedObject serializedSession = new SerializedObject(sessionManager);
+            serializedSession.FindProperty("matchMode").enumValueIndex =
+                ShouldBuildFourPlayerFfa() ? (int)MatchMode.FourPlayerFfa : (int)MatchMode.OneVsOneCpu;
             serializedSession.FindProperty("balanceMode").enumValueIndex = (int)GameplayBalanceMode.Debug;
             serializedSession.FindProperty("cpuAttackPace").enumValueIndex = (int)CpuAttackPace.Relaxed;
             serializedSession.FindProperty("feudalAgeData").objectReferenceValue = feudalAgeData;
@@ -1408,10 +1508,8 @@ namespace AoE.RTS.EditorTools
             resourceManagerObject.transform.SetParent(systems.transform);
             ResourceManager resourceManager = resourceManagerObject.AddComponent<ResourceManager>();
             SerializedObject serializedResourceManager = new SerializedObject(resourceManager);
-            serializedResourceManager.FindProperty("initialPlayerFood").floatValue = 200f;
-            serializedResourceManager.FindProperty("initialPlayerWood").floatValue = 200f;
-            serializedResourceManager.FindProperty("initialEnemyFood").floatValue = 200f;
-            serializedResourceManager.FindProperty("initialEnemyWood").floatValue = 200f;
+            serializedResourceManager.FindProperty("initialFoodPerPlayer").floatValue = 200f;
+            serializedResourceManager.FindProperty("initialWoodPerPlayer").floatValue = 200f;
             serializedResourceManager.ApplyModifiedPropertiesWithoutUndo();
 
             GameObject gatherManagerObject = new GameObject("GatherManager");
@@ -1437,13 +1535,22 @@ namespace AoE.RTS.EditorTools
 
             CombatFeedbackView.Ensure(systems);
 
-            GameObject cpuEconomyObject = new GameObject("CpuEconomyAiManager");
-            cpuEconomyObject.transform.SetParent(systems.transform);
-            CpuEconomyAiManager cpuEconomy = cpuEconomyObject.AddComponent<CpuEconomyAiManager>();
-
-            GameObject cpuMilitaryObject = new GameObject("CpuMilitaryAiManager");
-            cpuMilitaryObject.transform.SetParent(systems.transform);
-            CpuMilitaryAiManager cpuMilitary = cpuMilitaryObject.AddComponent<CpuMilitaryAiManager>();
+            CpuEconomyAiManager cpuEconomy = null;
+            CpuMilitaryAiManager cpuMilitary = null;
+            if (ShouldBuildFourPlayerFfa())
+            {
+                cpuEconomy = CreateCpuEconomyAi(systems.transform, PlayerId.Player1, houseData, millData);
+                CreateCpuEconomyAi(systems.transform, PlayerId.Player2, houseData, millData);
+                CreateCpuEconomyAi(systems.transform, PlayerId.Player3, houseData, millData);
+                cpuMilitary = CreateCpuMilitaryAi(systems.transform, PlayerId.Player1, barracksData, archeryRangeData, stableData);
+                CreateCpuMilitaryAi(systems.transform, PlayerId.Player2, barracksData, archeryRangeData, stableData);
+                CreateCpuMilitaryAi(systems.transform, PlayerId.Player3, barracksData, archeryRangeData, stableData);
+            }
+            else
+            {
+                cpuEconomy = CreateCpuEconomyAi(systems.transform, PlayerId.Player1, houseData, millData);
+                cpuMilitary = CreateCpuMilitaryAi(systems.transform, PlayerId.Player1, barracksData, archeryRangeData, stableData);
+            }
 
             GameObject selectionManagerObject = new GameObject("SelectionManager");
             selectionManagerObject.transform.SetParent(systems.transform);
@@ -1581,16 +1688,48 @@ namespace AoE.RTS.EditorTools
             serializedResourceHud.FindProperty("millData").objectReferenceValue = millData;
             serializedResourceHud.ApplyModifiedPropertiesWithoutUndo();
 
-            SerializedObject serializedCpuEconomy = new SerializedObject(cpuEconomy);
-            serializedCpuEconomy.FindProperty("houseData").objectReferenceValue = houseData;
-            serializedCpuEconomy.FindProperty("millData").objectReferenceValue = millData;
+            EditorUtility.SetDirty(resourceHud);
+            EditorUtility.SetDirty(placementManager);
+            if (cpuEconomy != null)
+                EditorUtility.SetDirty(cpuEconomy);
+            if (cpuMilitary != null)
+                EditorUtility.SetDirty(cpuMilitary);
+        }
+
+        static CpuEconomyAiManager CreateCpuEconomyAi(
+            Transform parent,
+            PlayerId playerId,
+            PlacedBuildingData houseData,
+            PlacedBuildingData millData)
+        {
+            GameObject cpuEconomyObject = new GameObject($"CpuEconomyAi_{playerId}");
+            cpuEconomyObject.transform.SetParent(parent);
+            CpuEconomyAiManager cpuEconomy = cpuEconomyObject.AddComponent<CpuEconomyAiManager>();
             PlacedBuildingData miningCampData = Phase1SceneBuilder.EnsureMiningCampData();
             PlacedBuildingData farmData = Phase1SceneBuilder.EnsureFarmData();
+            SerializedObject serializedCpuEconomy = new SerializedObject(cpuEconomy);
+            serializedCpuEconomy.FindProperty("cpuPlayerId").enumValueIndex = (int)playerId;
+            serializedCpuEconomy.FindProperty("houseData").objectReferenceValue = houseData;
+            serializedCpuEconomy.FindProperty("millData").objectReferenceValue = millData;
             serializedCpuEconomy.FindProperty("miningCampData").objectReferenceValue = miningCampData;
             serializedCpuEconomy.FindProperty("farmData").objectReferenceValue = farmData;
             serializedCpuEconomy.ApplyModifiedPropertiesWithoutUndo();
+            return cpuEconomy;
+        }
 
+        static CpuMilitaryAiManager CreateCpuMilitaryAi(
+            Transform parent,
+            PlayerId playerId,
+            PlacedBuildingData barracksData,
+            PlacedBuildingData archeryRangeData,
+            PlacedBuildingData stableData)
+        {
+            GameObject cpuMilitaryObject = new GameObject($"CpuMilitaryAi_{playerId}");
+            cpuMilitaryObject.transform.SetParent(parent);
+            CpuMilitaryAiManager cpuMilitary = cpuMilitaryObject.AddComponent<CpuMilitaryAiManager>();
             SerializedObject serializedCpuMilitary = new SerializedObject(cpuMilitary);
+            serializedCpuMilitary.FindProperty("cpuPlayerId").enumValueIndex = (int)playerId;
+            serializedCpuMilitary.FindProperty("opponentPlayerId").enumValueIndex = (int)PlayerId.Player0;
             serializedCpuMilitary.FindProperty("barracksData").objectReferenceValue = barracksData;
             serializedCpuMilitary.FindProperty("archeryRangeData").objectReferenceValue = archeryRangeData;
             serializedCpuMilitary.FindProperty("stableData").objectReferenceValue = stableData;
@@ -1600,11 +1739,7 @@ namespace AoE.RTS.EditorTools
             serializedCpuMilitary.FindProperty("relaxedBarracksBuildDelaySeconds").floatValue = DefaultRelaxedBarracksBuildDelaySeconds;
             serializedCpuMilitary.FindProperty("relaxedAttackWaveIntervalSeconds").floatValue = DefaultRelaxedAttackWaveIntervalSeconds;
             serializedCpuMilitary.ApplyModifiedPropertiesWithoutUndo();
-
-            EditorUtility.SetDirty(resourceHud);
-            EditorUtility.SetDirty(placementManager);
-            EditorUtility.SetDirty(cpuEconomy);
-            EditorUtility.SetDirty(cpuMilitary);
+            return cpuMilitary;
         }
     }
 }

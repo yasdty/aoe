@@ -781,18 +781,23 @@ namespace AoE.RTS.Commands
 
     public sealed class CpuAgeUpCommand : IGameCommand
     {
-        readonly UnitTeam team;
+        readonly PlayerId playerId;
 
         public string DebugName => "CpuAgeUp";
 
-        public CpuAgeUpCommand(UnitTeam team)
+        public CpuAgeUpCommand(PlayerId playerId)
         {
-            this.team = team;
+            this.playerId = playerId;
+        }
+
+        public CpuAgeUpCommand(UnitTeam team)
+            : this(PlayerIdMapping.FromLegacyTeam(team))
+        {
         }
 
         public void Execute()
         {
-            GameSessionManager.TryAgeUpForTeam(team);
+            GameSessionManager.TryAgeUpForPlayer(playerId);
         }
     }
 }

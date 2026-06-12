@@ -77,7 +77,7 @@ namespace AoE.RTS.Economy
                 if (unit == null || unit.CanAttack)
                     continue;
 
-                if (!ProductionManager.HasAnyTownCenterForTeam(unit.Team))
+                if (!ProductionManager.HasAnyTownCenterForPlayer(unit.OwnerId))
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -103,7 +103,7 @@ namespace AoE.RTS.Economy
                 if (unit == null || unit.CanAttack)
                     continue;
 
-                if (!ProductionManager.HasAnyTownCenterForTeam(unit.Team))
+                if (!ProductionManager.HasAnyTownCenterForPlayer(unit.OwnerId))
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -288,7 +288,7 @@ namespace AoE.RTS.Economy
 
         void BeginGoldMoveToDeposit(ref GoldGatherJob job, int index)
         {
-            if (job.carriedAmount <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
+            if (job.carriedAmount <= 0f || !ProductionManager.HasAnyTownCenterForPlayer(job.unit.OwnerId))
             {
                 job.unit.ClearMoveTarget();
                 goldJobs.RemoveAt(index);
@@ -311,7 +311,7 @@ namespace AoE.RTS.Economy
 
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
-                ResourceManager.AddGold(job.unit.Team, job.carriedAmount);
+                ResourceManager.AddGold(job.unit.OwnerId, job.carriedAmount);
                 CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedAmount = 0f;
 
@@ -374,7 +374,7 @@ namespace AoE.RTS.Economy
 
         void BeginStoneMoveToDeposit(ref StoneGatherJob job, int index)
         {
-            if (job.carriedAmount <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
+            if (job.carriedAmount <= 0f || !ProductionManager.HasAnyTownCenterForPlayer(job.unit.OwnerId))
             {
                 job.unit.ClearMoveTarget();
                 stoneJobs.RemoveAt(index);
@@ -397,7 +397,7 @@ namespace AoE.RTS.Economy
 
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
-                ResourceManager.AddStone(job.unit.Team, job.carriedAmount);
+                ResourceManager.AddStone(job.unit.OwnerId, job.carriedAmount);
                 CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedAmount = 0f;
 

@@ -79,15 +79,15 @@ namespace AoE.RTS.AI
 
         void RefreshCpuTownCenter()
         {
-            cpuTownCenter = ProductionManager.GetTownCenterForTeam(Team);
+            cpuTownCenter = ProductionManager.GetTownCenterForPlayer(cpuPlayerId);
         }
 
         void TryBuildEconomyBuildings()
         {
-            if (CpuAiCoordination.ShouldDeferEconomyBuildings(Team))
+            if (CpuAiCoordination.ShouldDeferEconomyBuildings(cpuPlayerId))
                 return;
 
-            if (CpuAiCoordination.HasActiveCpuConstruction(Team))
+            if (CpuAiCoordination.HasActiveCpuConstruction(cpuPlayerId))
                 return;
 
             if (ShouldReserveBuilderForHouse())
@@ -107,8 +107,8 @@ namespace AoE.RTS.AI
             if (miningCampData == null || HasTeamMiningCamp())
                 return false;
 
-            float gold = ResourceManager.GetGold(Team);
-            float stone = ResourceManager.GetStone(Team);
+            float gold = ResourceManager.GetGold(cpuPlayerId);
+            float stone = ResourceManager.GetStone(cpuPlayerId);
             if (gold >= GoldNeedThreshold && stone >= StoneNeedThreshold)
                 return false;
 
@@ -120,7 +120,7 @@ namespace AoE.RTS.AI
             if (millData == null || HasTeamMill())
                 return false;
 
-            if (ResourceManager.GetFood(Team) >= FoodNeedThreshold)
+            if (ResourceManager.GetFood(cpuPlayerId) >= FoodNeedThreshold)
                 return false;
 
             return TryStartEconomyConstruction(millData, "Mill");
@@ -131,7 +131,7 @@ namespace AoE.RTS.AI
             if (farmData == null)
                 return false;
 
-            if (ResourceManager.GetFood(Team) >= FoodNeedThreshold)
+            if (ResourceManager.GetFood(cpuPlayerId) >= FoodNeedThreshold)
                 return false;
 
             return TryStartEconomyConstruction(farmData, "Farm");
@@ -142,10 +142,10 @@ namespace AoE.RTS.AI
             if (data == null || cpuTownCenter == null)
                 return false;
 
-            if (!CpuAiCoordination.HasWoodReserveForBarracks(Team, data.ScaledWoodCost))
+            if (!CpuAiCoordination.HasWoodReserveForBarracks(cpuPlayerId, data.ScaledWoodCost))
                 return false;
 
-            if (ResourceManager.GetWood(Team) < data.ScaledWoodCost)
+            if (ResourceManager.GetWood(cpuPlayerId) < data.ScaledWoodCost)
                 return false;
 
             Unit builder = FindBuilderForHouse();
@@ -165,7 +165,7 @@ namespace AoE.RTS.AI
 
             Debug.Log(
                 $"[CPU Economy] {logName} construction started at {FormatTime(Time.timeSinceLevelLoad)} "
-                + $"(Wood={ResourceManager.GetWood(Team):0})");
+                + $"(Wood={ResourceManager.GetWood(cpuPlayerId):0})");
             return true;
         }
 
@@ -207,7 +207,7 @@ namespace AoE.RTS.AI
 
         bool TryAssignFoodGather(Unit unit)
         {
-            if (ResourceManager.GetFood(Team) >= FoodNeedThreshold)
+            if (ResourceManager.GetFood(cpuPlayerId) >= FoodNeedThreshold)
                 return false;
 
             BerryBushResource bush = BerryBushSpatialIndex.FindNearestAvailable(unit.transform.position);
@@ -217,7 +217,7 @@ namespace AoE.RTS.AI
                 gatherCommandBuffer.Add(unit);
                 EnqueueCpu(new GatherFoodCommand(gatherCommandBuffer, bush));
                 Debug.Log(
-                    $"[CPU Economy] villager → Berry Bush (Food={ResourceManager.GetFood(Team):0})");
+                    $"[CPU Economy] villager → Berry Bush (Food={ResourceManager.GetFood(cpuPlayerId):0})");
                 return true;
             }
 
@@ -258,13 +258,13 @@ namespace AoE.RTS.AI
                 return false;
 
             Debug.Log(
-                $"[CPU Economy] villager → Hunt {animal.name} (Food={ResourceManager.GetFood(Team):0})");
+                $"[CPU Economy] villager → Hunt {animal.name} (Food={ResourceManager.GetFood(cpuPlayerId):0})");
             return true;
         }
 
         bool TryAssignGoldGather(Unit unit)
         {
-            if (!HasTeamMiningCamp() || ResourceManager.GetGold(Team) >= GoldNeedThreshold)
+            if (!HasTeamMiningCamp() || ResourceManager.GetGold(cpuPlayerId) >= GoldNeedThreshold)
                 return false;
 
             GoldMineResource mine = FindNearestGoldMine(unit.transform.position);
@@ -275,13 +275,13 @@ namespace AoE.RTS.AI
             gatherCommandBuffer.Add(unit);
             EnqueueCpu(new GatherGoldCommand(gatherCommandBuffer, mine));
             Debug.Log(
-                $"[CPU Economy] villager → Gold Mine (Gold={ResourceManager.GetGold(Team):0})");
+                $"[CPU Economy] villager → Gold Mine (Gold={ResourceManager.GetGold(cpuPlayerId):0})");
             return true;
         }
 
         bool TryAssignStoneGather(Unit unit)
         {
-            if (!HasTeamMiningCamp() || ResourceManager.GetStone(Team) >= StoneNeedThreshold)
+            if (!HasTeamMiningCamp() || ResourceManager.GetStone(cpuPlayerId) >= StoneNeedThreshold)
                 return false;
 
             StoneMineResource mine = FindNearestStoneMine(unit.transform.position);
@@ -292,13 +292,13 @@ namespace AoE.RTS.AI
             gatherCommandBuffer.Add(unit);
             EnqueueCpu(new GatherStoneCommand(gatherCommandBuffer, mine));
             Debug.Log(
-                $"[CPU Economy] villager → Stone Mine (Stone={ResourceManager.GetStone(Team):0})");
+                $"[CPU Economy] villager → Stone Mine (Stone={ResourceManager.GetStone(cpuPlayerId):0})");
             return true;
         }
 
         bool TryAssignFarmGather(Unit unit)
         {
-            if (ResourceManager.GetFood(Team) >= FoodNeedThreshold)
+            if (ResourceManager.GetFood(cpuPlayerId) >= FoodNeedThreshold)
                 return false;
 
             Farm farm = FindAssignableFarm(unit);
@@ -309,7 +309,7 @@ namespace AoE.RTS.AI
             gatherCommandBuffer.Add(unit);
             EnqueueCpu(new GatherFarmFoodCommand(gatherCommandBuffer, farm));
             Debug.Log(
-                $"[CPU Economy] villager → Farm (Food={ResourceManager.GetFood(Team):0})");
+                $"[CPU Economy] villager → Farm (Food={ResourceManager.GetFood(cpuPlayerId):0})");
             return true;
         }
 
@@ -318,14 +318,14 @@ namespace AoE.RTS.AI
             if (houseData == null)
                 return false;
 
-            if (PopulationManager.GetCurrentPopulation(Team)
-                < PopulationManager.GetMaxPopulation(Team))
+            if (PopulationManager.GetCurrentPopulation(cpuPlayerId)
+                < PopulationManager.GetMaxPopulation(cpuPlayerId))
                 return false;
 
-            if (ResourceManager.GetWood(Team) < houseData.ScaledWoodCost)
+            if (ResourceManager.GetWood(cpuPlayerId) < houseData.ScaledWoodCost)
                 return false;
 
-            return !BuildingPlacementManager.HasActiveConstructionForTeam(Team)
+            return !BuildingPlacementManager.HasActiveConstructionForPlayer(cpuPlayerId)
                 && FindIdleVillagerNearestTownCenter() == null;
         }
 
@@ -334,14 +334,14 @@ namespace AoE.RTS.AI
             if (houseData == null)
                 return;
 
-            if (PopulationManager.GetCurrentPopulation(Team)
-                < PopulationManager.GetMaxPopulation(Team))
+            if (PopulationManager.GetCurrentPopulation(cpuPlayerId)
+                < PopulationManager.GetMaxPopulation(cpuPlayerId))
                 return;
 
-            if (ResourceManager.GetWood(Team) < houseData.ScaledWoodCost)
+            if (ResourceManager.GetWood(cpuPlayerId) < houseData.ScaledWoodCost)
                 return;
 
-            if (BuildingPlacementManager.HasActiveConstructionForTeam(Team))
+            if (BuildingPlacementManager.HasActiveConstructionForPlayer(cpuPlayerId))
                 return;
 
             Unit builder = FindBuilderForHouse();
@@ -362,10 +362,10 @@ namespace AoE.RTS.AI
 
         void TryTrainVillager()
         {
-            if (PopulationManager.GetCurrentPopulation(Team) >= TargetVillagerCount)
+            if (PopulationManager.GetCurrentPopulation(cpuPlayerId) >= TargetVillagerCount)
                 return;
 
-            if (!PopulationManager.CanTrainUnit(Team))
+            if (!PopulationManager.CanTrainUnit(cpuPlayerId))
                 return;
 
             EnqueueCpu(new TrainVillagerCommand(cpuTownCenter));
@@ -375,7 +375,7 @@ namespace AoE.RTS.AI
         {
             return unit != null
                 && unit.IsAlive
-                && unit.Team == Team
+                && unit.OwnerId == cpuPlayerId
                 && !unit.CanAttack;
         }
 
@@ -404,7 +404,7 @@ namespace AoE.RTS.AI
             MiningCamp[] camps = Object.FindObjectsByType<MiningCamp>();
             for (int i = 0; i < camps.Length; i++)
             {
-                if (IsActiveTeamBuilding(camps[i].gameObject, Team))
+                if (IsActivePlayerBuilding(camps[i].gameObject, cpuPlayerId))
                     return true;
             }
 
@@ -416,14 +416,14 @@ namespace AoE.RTS.AI
             Mill[] mills = Object.FindObjectsByType<Mill>();
             for (int i = 0; i < mills.Length; i++)
             {
-                if (IsActiveTeamBuilding(mills[i].gameObject, Team))
+                if (IsActivePlayerBuilding(mills[i].gameObject, cpuPlayerId))
                     return true;
             }
 
             return false;
         }
 
-        static bool IsActiveTeamBuilding(GameObject buildingObject, UnitTeam team)
+        static bool IsActivePlayerBuilding(GameObject buildingObject, PlayerId playerId)
         {
             if (buildingObject == null || !buildingObject.activeInHierarchy)
                 return false;
@@ -432,7 +432,7 @@ namespace AoE.RTS.AI
             if (health == null)
                 return false;
 
-            return health.Team == team && health.IsAlive;
+            return health.OwnerId == playerId && health.IsAlive;
         }
 
         static DeerResource FindNearestDeer(Vector3 origin)
@@ -531,7 +531,7 @@ namespace AoE.RTS.AI
             for (int i = 0; i < farms.Length; i++)
             {
                 Farm farm = farms[i];
-                if (farm == null || farm.IsDepleted || farm.Team != Team)
+                if (farm == null || farm.IsDepleted || !IsActivePlayerBuilding(farm.gameObject, cpuPlayerId))
                     continue;
 
                 farmCheckBuffer.Clear();

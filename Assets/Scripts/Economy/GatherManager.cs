@@ -109,7 +109,7 @@ namespace AoE.RTS.Economy
             for (int i = 0; i < units.Count; i++)
             {
                 Unit unit = units[i];
-                if (unit == null || !ProductionManager.HasAnyTownCenterForTeam(unit.Team))
+                if (unit == null || !ProductionManager.HasAnyTownCenterForPlayer(unit.OwnerId))
                     continue;
 
                 instance.RemoveJobForUnit(unit);
@@ -196,7 +196,7 @@ namespace AoE.RTS.Economy
 
         void BeginMoveToDeposit(ref GatherJob job, int index)
         {
-            if (job.carriedWood <= 0f || !ProductionManager.HasAnyTownCenterForTeam(job.unit.Team))
+            if (job.carriedWood <= 0f || !ProductionManager.HasAnyTownCenterForPlayer(job.unit.OwnerId))
             {
                 job.unit.ClearMoveTarget();
                 jobs.RemoveAt(index);
@@ -219,7 +219,7 @@ namespace AoE.RTS.Economy
 
             if (job.unit.IsNear(depositPosition, DepositReachDistance))
             {
-                ResourceManager.AddWood(job.unit.Team, job.carriedWood);
+                ResourceManager.AddWood(job.unit.OwnerId, job.carriedWood);
                 CivilizationBonusUtility.LogFirstGatherIfNeeded(job.unit.Team);
                 job.carriedWood = 0f;
 

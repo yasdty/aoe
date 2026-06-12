@@ -15,7 +15,7 @@
 | 07 | [07_M3_MILITARY_PHASES.md](07_M3_MILITARY_PHASES.md) | 36〜41 | **Milestone 3 — Military** ✅ 完了 |
 | 08 | [08_M4_GAMEPLAY_PHASES.md](08_M4_GAMEPLAY_PHASES.md) | 42〜48 | **Milestone 4 — AoE Gameplay** ✅ 完了 |
 | 09 | [09_M5_VISUAL_UI_PHASES.md](09_M5_VISUAL_UI_PHASES.md) | 49〜56 | **Milestone 5 — Gameplay Polish & Visual / UI** ✅ 完了 |
-| 10 | [10_M6_MULTIPLAYER_FOUNDATION.md](10_M6_MULTIPLAYER_FOUNDATION.md) | 57〜66 | **Milestone 6 — 4-Player & World Scale** ⬜ 進行中 — **次: Phase 59** |
+| 10 | [10_M6_MULTIPLAYER_FOUNDATION.md](10_M6_MULTIPLAYER_FOUNDATION.md) | 57〜66 | **Milestone 6 — 4-Player & World Scale** ⬜ 進行中 — **次: Phase 60** |
 | 11 | [11_DEFERRED_EXTENSION_DESIGN.md](11_DEFERRED_EXTENSION_DESIGN.md) | — | **意図的スコープ外の拡張設計** |
 | 12 | [12_GAMEPLAY_BALANCE_MODE.md](12_GAMEPLAY_BALANCE_MODE.md) | — | **Gameplay Balance Mode**（AoE2 正本 + Debug 短縮） |
 | — | [prompts/](prompts/) | — | 各 Phase の Agent 実行プロンプト |
@@ -54,7 +54,7 @@
 | M3 Military | `07_M3_MILITARY_PHASES.md` | 36〜41 | ✅ 完了 |
 | M4 AoE Gameplay | `08_M4_GAMEPLAY_PHASES.md` | 42〜48 | ✅ 完了 |
 | M5 Gameplay Polish & Visual / UI | `09_M5_VISUAL_UI_PHASES.md` | 49〜56 | ✅ 完了 |
-| M6 4-Player & World Scale | `10_M6_MULTIPLAYER_FOUNDATION.md` | 57〜66 | ⬜ 進行中 — **次: Phase 59** |
+| M6 4-Player & World Scale | `10_M6_MULTIPLAYER_FOUNDATION.md` | 57〜66 | ⬜ 進行中 — **次: Phase 60** |
 
 ---
 

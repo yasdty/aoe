@@ -12,6 +12,7 @@ namespace AoE.RTS.Buildings
         [SerializeField] float meleeArmor;
         [SerializeField] float pierceArmor;
         [SerializeField] UnitTeam team = UnitTeam.Player;
+        [SerializeField] PlayerId ownerId = PlayerId.Player0;
         [SerializeField] bool isTownCenter;
 
         float currentHp;
@@ -24,6 +25,7 @@ namespace AoE.RTS.Buildings
         public float MeleeArmor => meleeArmor;
         public float PierceArmor => pierceArmor;
         public UnitTeam Team => team;
+        public PlayerId OwnerId => ownerId;
         public bool IsTownCenter => isTownCenter;
         public bool IsAlive => currentHp > 0f;
 
@@ -38,9 +40,16 @@ namespace AoE.RTS.Buildings
             meleeArmor = Mathf.Max(0f, buildingMeleeArmor);
             pierceArmor = Mathf.Max(0f, buildingPierceArmor);
             team = buildingTeam;
+            ownerId = PlayerIdMapping.FromLegacyTeam(buildingTeam);
             isTownCenter = townCenter;
             currentHp = maxHp;
             isConfigured = true;
+        }
+
+        public void SetOwnerId(PlayerId playerId)
+        {
+            ownerId = playerId;
+            team = PlayerIdMapping.ToLegacyTeam(playerId);
         }
 
         void Awake()
@@ -79,15 +88,15 @@ namespace AoE.RTS.Buildings
             bool countsAsTownCenter = isTownCenter || GetComponent<TownCenter>() != null;
             if (countsAsTownCenter)
             {
-                UnitTeam destroyedTeam = team;
+                PlayerId destroyedPlayer = ownerId;
                 TownCenter townCenter = GetComponent<TownCenter>();
                 if (townCenter != null)
                     ProductionManager.Unregister(townCenter);
 
                 Destroy(gameObject);
 
-                if (!ProductionManager.HasAnyTownCenterForTeam(destroyedTeam))
-                    GameSessionManager.NotifyTownCenterDestroyed(destroyedTeam);
+                if (!ProductionManager.HasAnyTownCenterForPlayer(destroyedPlayer))
+                    GameSessionManager.NotifyTownCenterDestroyed(destroyedPlayer);
                 return;
             }
 
@@ -104,7 +113,7 @@ namespace AoE.RTS.Buildings
                 PlacedBuildingData houseData = house.Data;
                 int housing = houseData != null ? houseData.housingProvided : 0;
                 if (housing > 0)
-                    PopulationManager.RemoveHousing(team, housing);
+                    PopulationManager.RemoveHousing(ownerId, housing);
 
                 BuildingPool.ReturnHouse(house);
                 return;

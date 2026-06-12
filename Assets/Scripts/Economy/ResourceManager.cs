@@ -1,3 +1,4 @@
+using AoE.RTS.Core;
 using AoE.RTS.Units;
 using UnityEngine;
 
@@ -5,24 +6,19 @@ namespace AoE.RTS.Economy
 {
     public class ResourceManager : MonoBehaviour
     {
+        const int PlayerCount = 4;
         const float ClassicStartFood = 200f;
         const float ClassicStartWood = 200f;
 
         static ResourceManager instance;
 
-        [SerializeField] float initialPlayerFood = ClassicStartFood;
-        [SerializeField] float initialPlayerWood = ClassicStartWood;
-        [SerializeField] float initialEnemyFood = ClassicStartFood;
-        [SerializeField] float initialEnemyWood = ClassicStartWood;
+        [SerializeField] float initialFoodPerPlayer = ClassicStartFood;
+        [SerializeField] float initialWoodPerPlayer = ClassicStartWood;
 
-        float playerWood;
-        float enemyWood;
-        float playerFood;
-        float enemyFood;
-        float playerGold;
-        float enemyGold;
-        float playerStone;
-        float enemyStone;
+        readonly float[] wood = new float[PlayerCount];
+        readonly float[] food = new float[PlayerCount];
+        readonly float[] gold = new float[PlayerCount];
+        readonly float[] stone = new float[PlayerCount];
 
         public static float Wood => GetWood(UnitTeam.Player);
         public static float Food => GetFood(UnitTeam.Player);
@@ -32,10 +28,11 @@ namespace AoE.RTS.Economy
         void Awake()
         {
             instance = this;
-            playerFood = initialPlayerFood;
-            playerWood = initialPlayerWood;
-            enemyFood = initialEnemyFood;
-            enemyWood = initialEnemyWood;
+            for (int i = 0; i < PlayerCount; i++)
+            {
+                food[i] = initialFoodPerPlayer;
+                wood[i] = initialWoodPerPlayer;
+            }
         }
 
         void OnDestroy()
@@ -44,174 +41,166 @@ namespace AoE.RTS.Economy
                 instance = null;
         }
 
-        public static float GetWood(UnitTeam team)
+        static int ResolveIndex(PlayerId playerId) => PlayerIdMapping.ToIndex(playerId);
+
+        static int ResolveIndex(UnitTeam team) => ResolveIndex(PlayerIdMapping.FromLegacyTeam(team));
+
+        public static float GetWood(PlayerId playerId)
         {
             if (instance == null)
                 return 0f;
 
-            return team == UnitTeam.Enemy ? instance.enemyWood : instance.playerWood;
+            return instance.wood[ResolveIndex(playerId)];
         }
 
-        public static float GetFood(UnitTeam team)
+        public static float GetWood(UnitTeam team) => GetWood(PlayerIdMapping.FromLegacyTeam(team));
+
+        public static float GetFood(PlayerId playerId)
         {
             if (instance == null)
                 return 0f;
 
-            return team == UnitTeam.Enemy ? instance.enemyFood : instance.playerFood;
+            return instance.food[ResolveIndex(playerId)];
         }
 
-        public static float GetGold(UnitTeam team)
+        public static float GetFood(UnitTeam team) => GetFood(PlayerIdMapping.FromLegacyTeam(team));
+
+        public static float GetGold(PlayerId playerId)
         {
             if (instance == null)
                 return 0f;
 
-            return team == UnitTeam.Enemy ? instance.enemyGold : instance.playerGold;
+            return instance.gold[ResolveIndex(playerId)];
         }
 
-        public static float GetStone(UnitTeam team)
+        public static float GetGold(UnitTeam team) => GetGold(PlayerIdMapping.FromLegacyTeam(team));
+
+        public static float GetStone(PlayerId playerId)
         {
             if (instance == null)
                 return 0f;
 
-            return team == UnitTeam.Enemy ? instance.enemyStone : instance.playerStone;
+            return instance.stone[ResolveIndex(playerId)];
         }
+
+        public static float GetStone(UnitTeam team) => GetStone(PlayerIdMapping.FromLegacyTeam(team));
 
         public static void AddWood(float amount)
         {
             AddWood(UnitTeam.Player, amount);
         }
 
-        public static void AddWood(UnitTeam team, float amount)
+        public static void AddWood(PlayerId playerId, float amount)
         {
             if (instance == null || amount <= 0f)
                 return;
 
-            if (team == UnitTeam.Enemy)
-                instance.enemyWood += amount;
-            else
-                instance.playerWood += amount;
+            instance.wood[ResolveIndex(playerId)] += amount;
         }
 
-        public static void AddFood(UnitTeam team, float amount)
+        public static void AddWood(UnitTeam team, float amount) =>
+            AddWood(PlayerIdMapping.FromLegacyTeam(team), amount);
+
+        public static void AddFood(PlayerId playerId, float amount)
         {
             if (instance == null || amount <= 0f)
                 return;
 
-            if (team == UnitTeam.Enemy)
-                instance.enemyFood += amount;
-            else
-                instance.playerFood += amount;
+            instance.food[ResolveIndex(playerId)] += amount;
         }
 
-        public static void AddGold(UnitTeam team, float amount)
+        public static void AddFood(UnitTeam team, float amount) =>
+            AddFood(PlayerIdMapping.FromLegacyTeam(team), amount);
+
+        public static void AddGold(PlayerId playerId, float amount)
         {
             if (instance == null || amount <= 0f)
                 return;
 
-            if (team == UnitTeam.Enemy)
-                instance.enemyGold += amount;
-            else
-                instance.playerGold += amount;
+            instance.gold[ResolveIndex(playerId)] += amount;
         }
 
-        public static void AddStone(UnitTeam team, float amount)
+        public static void AddGold(UnitTeam team, float amount) =>
+            AddGold(PlayerIdMapping.FromLegacyTeam(team), amount);
+
+        public static void AddStone(PlayerId playerId, float amount)
         {
             if (instance == null || amount <= 0f)
                 return;
 
-            if (team == UnitTeam.Enemy)
-                instance.enemyStone += amount;
-            else
-                instance.playerStone += amount;
+            instance.stone[ResolveIndex(playerId)] += amount;
         }
+
+        public static void AddStone(UnitTeam team, float amount) =>
+            AddStone(PlayerIdMapping.FromLegacyTeam(team), amount);
 
         public static bool TrySpendWood(float amount)
         {
             return TrySpendWood(UnitTeam.Player, amount);
         }
 
-        public static bool TrySpendWood(UnitTeam team, float amount)
+        public static bool TrySpendWood(PlayerId playerId, float amount)
         {
             if (instance == null || amount <= 0f)
                 return false;
 
-            if (team == UnitTeam.Enemy)
-            {
-                if (instance.enemyWood < amount)
-                    return false;
-
-                instance.enemyWood -= amount;
-                return true;
-            }
-
-            if (instance.playerWood < amount)
+            int index = ResolveIndex(playerId);
+            if (instance.wood[index] < amount)
                 return false;
 
-            instance.playerWood -= amount;
+            instance.wood[index] -= amount;
             return true;
         }
 
-        public static bool TrySpendFood(UnitTeam team, float amount)
+        public static bool TrySpendWood(UnitTeam team, float amount) =>
+            TrySpendWood(PlayerIdMapping.FromLegacyTeam(team), amount);
+
+        public static bool TrySpendFood(PlayerId playerId, float amount)
         {
             if (instance == null || amount <= 0f)
                 return false;
 
-            if (team == UnitTeam.Enemy)
-            {
-                if (instance.enemyFood < amount)
-                    return false;
-
-                instance.enemyFood -= amount;
-                return true;
-            }
-
-            if (instance.playerFood < amount)
+            int index = ResolveIndex(playerId);
+            if (instance.food[index] < amount)
                 return false;
 
-            instance.playerFood -= amount;
+            instance.food[index] -= amount;
             return true;
         }
 
-        public static bool TrySpendGold(UnitTeam team, float amount)
+        public static bool TrySpendFood(UnitTeam team, float amount) =>
+            TrySpendFood(PlayerIdMapping.FromLegacyTeam(team), amount);
+
+        public static bool TrySpendGold(PlayerId playerId, float amount)
         {
             if (instance == null || amount <= 0f)
                 return false;
 
-            if (team == UnitTeam.Enemy)
-            {
-                if (instance.enemyGold < amount)
-                    return false;
-
-                instance.enemyGold -= amount;
-                return true;
-            }
-
-            if (instance.playerGold < amount)
+            int index = ResolveIndex(playerId);
+            if (instance.gold[index] < amount)
                 return false;
 
-            instance.playerGold -= amount;
+            instance.gold[index] -= amount;
             return true;
         }
 
-        public static bool TrySpendStone(UnitTeam team, float amount)
+        public static bool TrySpendGold(UnitTeam team, float amount) =>
+            TrySpendGold(PlayerIdMapping.FromLegacyTeam(team), amount);
+
+        public static bool TrySpendStone(PlayerId playerId, float amount)
         {
             if (instance == null || amount <= 0f)
                 return false;
 
-            if (team == UnitTeam.Enemy)
-            {
-                if (instance.enemyStone < amount)
-                    return false;
-
-                instance.enemyStone -= amount;
-                return true;
-            }
-
-            if (instance.playerStone < amount)
+            int index = ResolveIndex(playerId);
+            if (instance.stone[index] < amount)
                 return false;
 
-            instance.playerStone -= amount;
+            instance.stone[index] -= amount;
             return true;
         }
+
+        public static bool TrySpendStone(UnitTeam team, float amount) =>
+            TrySpendStone(PlayerIdMapping.FromLegacyTeam(team), amount);
     }
 }

@@ -16,6 +16,7 @@ namespace AoE.RTS.Units
 
         [SerializeField] UnitData data;
         [SerializeField] UnitTeam team = UnitTeam.Player;
+        [SerializeField] PlayerId ownerId = PlayerId.Player0;
 
         float currentHp;
         float effectiveMaxHp;
@@ -35,6 +36,7 @@ namespace AoE.RTS.Units
         public bool IsSelected => isSelected;
         public UnitData Data => data;
         public UnitTeam Team => team;
+        public PlayerId OwnerId => ownerId;
         public bool HasMoveTarget => moveTarget.HasValue;
         public bool CanAttack => IsAlive && data != null && data.CanAttack;
         public float AttackPower => data != null ? data.attack : 0f;
@@ -141,6 +143,15 @@ namespace AoE.RTS.Units
         public void SetTeam(UnitTeam unitTeam)
         {
             team = unitTeam;
+            ownerId = PlayerIdMapping.FromLegacyTeam(unitTeam);
+            UpdateVisual();
+        }
+
+        public void SetOwner(PlayerId playerId)
+        {
+            ownerId = playerId;
+            team = PlayerIdMapping.ToLegacyTeam(playerId);
+            RefreshEffectiveMaxHp();
             UpdateVisual();
         }
 
@@ -169,6 +180,7 @@ namespace AoE.RTS.Units
 
             ApplyTeamFromData();
             team = unitTeam;
+            ownerId = PlayerIdMapping.FromLegacyTeam(unitTeam);
             RefreshEffectiveMaxHp();
             currentHp = MaxHp;
             transform.position = position;

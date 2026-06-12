@@ -15,5 +15,9 @@ namespace AoE.RTS.Core
         {
             return team == UnitTeam.Player ? PlayerId.Player0 : PlayerId.Player1;
         }
+
+        public static int ToIndex(PlayerId id) => (int)id;
+
+        public static bool IsHumanPlayer(PlayerId id) => id == PlayerId.Player0;
     }
 }

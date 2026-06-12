@@ -37,7 +37,7 @@ namespace AoE.RTS.Buildings
             float bestDistanceSq = float.MaxValue;
             Vector3 bestCenter = Vector3.zero;
 
-            TownCenter townCenter = ProductionManager.GetNearestTownCenter(unit.Team, unitPosition);
+            TownCenter townCenter = ProductionManager.GetNearestTownCenter(unit.OwnerId, unitPosition);
             if (townCenter != null)
             {
                 Vector3 townCenterPosition = townCenter.transform.position;
@@ -51,7 +51,7 @@ namespace AoE.RTS.Buildings
             for (int i = 0; i < camps.Count; i++)
             {
                 LumberCamp lumberCamp = camps[i];
-                if (!IsActiveDropOff(lumberCamp, unit.Team))
+                if (!IsActiveDropOff(lumberCamp, unit))
                     continue;
 
                 Vector3 campPosition = lumberCamp.GetDepositPosition();
@@ -73,13 +73,13 @@ namespace AoE.RTS.Buildings
             return true;
         }
 
-        static bool IsActiveDropOff(LumberCamp lumberCamp, UnitTeam team)
+        static bool IsActiveDropOff(LumberCamp lumberCamp, Unit unit)
         {
-            if (lumberCamp == null || !lumberCamp.gameObject.activeInHierarchy || lumberCamp.Team != team)
+            if (lumberCamp == null || !lumberCamp.gameObject.activeInHierarchy || unit == null)
                 return false;
 
             BuildingHealth health = lumberCamp.GetComponent<BuildingHealth>();
-            return health == null || health.IsAlive;
+            return health != null && health.IsAlive && health.OwnerId == unit.OwnerId;
         }
     }
 }
