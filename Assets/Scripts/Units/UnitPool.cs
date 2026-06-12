@@ -90,8 +90,9 @@ namespace AoE.RTS.Units
                 IncrementSpawn(kind);
             }
 
-            unit.gameObject.SetActive(true);
+            // PrepareForSpawn must run while inactive so OnEnable sees isDead=false after pool reuse.
             unit.PrepareForSpawn(data, position, team);
+            unit.gameObject.SetActive(true);
 
             UnitAnimationView animationView = UnitAnimationView.Ensure(unit.gameObject);
             if (animationView != null)

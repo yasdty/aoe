@@ -62,6 +62,7 @@ namespace AoE.RTS.Units
                 instance.units.Add(unit);
 
             UnitSpatialIndex.Register(unit);
+            UnitSpatialIndex.UpdatePosition(unit, unit.transform.position);
         }
 
         public static void Unregister(Unit unit)

@@ -4,6 +4,7 @@ using AoE.RTS.Combat;
 using AoE.RTS.Core;
 using AoE.RTS.Economy;
 using AoE.RTS.Selection;
+using AoE.RTS.Spatial;
 using UnityEngine;
 
 namespace AoE.RTS.Units
@@ -185,6 +186,17 @@ namespace AoE.RTS.Units
             currentHp = MaxHp;
             transform.position = position;
             UpdateVisual();
+            SyncSpawnRegistries();
+        }
+
+        void SyncSpawnRegistries()
+        {
+            if (isDead || !gameObject.activeInHierarchy)
+                return;
+
+            UnitManager.Register(this);
+            EntityRegistry.Register(this);
+            UnitSpatialIndex.UpdatePosition(this, transform.position);
         }
 
         void RefreshEffectiveMaxHp()
